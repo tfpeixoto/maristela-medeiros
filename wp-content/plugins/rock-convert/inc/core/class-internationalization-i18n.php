@@ -1,4 +1,13 @@
 <?php
+/**
+ * The internationalization class
+ *
+ * @package    Rock_Convert\Inc\Core
+ * @link       https://rockcontent.com
+ * @since      2.0.0
+ *
+ * @author     Rock Content
+ */
 
 namespace Rock_Convert\Inc\Core;
 
@@ -13,38 +22,39 @@ namespace Rock_Convert\Inc\Core;
  *
  * @author     Rock Content
  */
-class Internationalization_i18n
-{
+class Internationalization_i18n {//phpcs:ignore
 
-    private $text_domain;
+	/**
+	 * Text domain of translate.
+	 *
+	 * @var string
+	 */
+	private $text_domain;
 
-    /**
-     * Initialize the class and set its properties.
-     *
-     * @since    1.0.0
-     *
-     * @param      string $plugin_name The name of this plugin.
-     * @param      string $version     The version of this plugin.
-     */
-    public function __construct($plugin_text_domain)
-    {
+	/**
+	 * Initialize the class and set its properties.
+	 *
+	 * @since    1.0.0
+	 *
+	 * @param      string $plugin_text_domain The domain text od plugin.
+	 */
+	public function __construct( $plugin_text_domain ) {
 
-        $this->text_domain = $plugin_text_domain;
+		$this->text_domain = $plugin_text_domain;
 
-    }
+	}
 
 
-    /**
-     * Load the plugin text domain for translation.
-     *
-     * @since    1.0.0
-     */
-    public function load_plugin_textdomain()
-    {
-        load_plugin_textdomain(
-            $this->text_domain,
-            false,
-            dirname(dirname(dirname(plugin_basename(__FILE__)))) . '/languages/'
-        );
-    }
+	/**
+	 * Load the plugin text domain for translation.
+	 *
+	 * @since    1.0.0
+	 */
+	public function load_plugin_textdomain() {
+		load_plugin_textdomain(
+			$this->text_domain,
+			false,
+			dirname( dirname( dirname( plugin_basename( __FILE__ ) ) ) ) . '/languages/'
+		);
+	}
 }

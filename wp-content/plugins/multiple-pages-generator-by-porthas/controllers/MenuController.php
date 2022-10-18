@@ -1,44 +1,37 @@
 <?php
 
-if (!defined('ABSPATH')) exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
-require_once(realpath(__DIR__ . '/DatasetController.php'));
-require_once(realpath(__DIR__ . '/ProjectController.php'));
-require_once(realpath(__DIR__ . '/AdvancedSettingsController.php'));
-require_once(realpath(__DIR__ . '/SearchController.php'));
-
-
-class MPG_MenuController
-{
-    public static function init()
-    {
-        add_action('admin_menu', 'mpg_main_sidebar_menu', 9, 0);
-
-        function mpg_main_sidebar_menu()
-        {
-
-            $role = 'edit_pages';
-
-            add_menu_page(__('MPG', 'mpg'), __('MPG', 'mpg'), $role, 'mpg-dataset-library', array('MPG_DatasetController', 'get_all'),  plugin_dir_url(__FILE__) . '/../../frontend/images/logo_mpg.svg');
-
-            add_submenu_page('mpg-dataset-library', __('Create new', 'mpg'), __('Create New +', 'mpg'),  $role, 'mpg-dataset-library', array('MPG_DatasetController', 'get_all'));
+require_once( realpath( __DIR__ . '/DatasetController.php' ) );
+require_once( realpath( __DIR__ . '/ProjectController.php' ) );
+require_once( realpath( __DIR__ . '/AdvancedSettingsController.php' ) );
+require_once( realpath( __DIR__ . '/SearchController.php' ) );
+require_once( realpath( __DIR__ . '/ProjectsListManage.php' ) );
+require_once( realpath( __DIR__ . '/ProjectsListTable.php' ) );
 
 
-            add_submenu_page('mpg-dataset-library', __('Project builder', 'mpg'), null, $role, 'mpg-project-builder', array('MPG_ProjectController', 'builder'));
+class MPG_MenuController {
 
+	public static function init() {
+		add_action( 'admin_menu', 'mpg_main_sidebar_menu', 9, 0 );
 
-            global $wpdb;
-            $projects = $wpdb->get_results("SELECT id, name FROM {$wpdb->prefix}" .  MPG_Constant::MPG_PROJECTS_TABLE);
+		function mpg_main_sidebar_menu() {
 
-            if ($projects) {
-                foreach ($projects as $project) {
-                    add_submenu_page('mpg-dataset-library', __($project->name, 'mpg'), '- &nbsp;' . $project->name, $role, 'mpg-project-builder&id=' . $project->id, '__return_null');
-                }
-            }
-            add_submenu_page('mpg-dataset-library', __('Advanced settings', 'mpg'), __('Advanced settings', 'mpg'), $role, 'mpg-advanced-settings', array('MPG_AdvancedSettingsController', 'render'));
-  
-            // add_submenu_page('mpg-dataset-library', __('Search settings', 'mpg'), __('Search settings', 'mpg'), $role, 'mpg-search-settings', array('MPG_SearchController', 'render'));
+			$role = 'edit_pages';
 
-        }
-    }
+			add_menu_page( 'MPG', 'MPG', $role, 'mpg-dataset-library', array( 'MPG_DatasetController', 'get_all' ), plugin_dir_url( __FILE__ ) . '/../../frontend/images/logo_mpg.svg' );
+
+			add_submenu_page( 'mpg-dataset-library', __( 'Create new', 'mpg' ), __( 'Create New +', 'mpg' ), $role, 'mpg-dataset-library', array( 'MPG_DatasetController', 'get_all' ) );
+
+			$hook = add_submenu_page( 'mpg-dataset-library', __( 'All Projects', 'mpg' ), __( 'All Projects', 'mpg' ), $role, 'mpg-project-builder', array( 'MPG_ProjectController', 'builder' ) );
+			add_action( 'load-' . $hook, array( 'MPG_ProjectController', 'handle_project_builder' ) );
+
+			add_submenu_page( 'mpg-dataset-library', __( 'Advanced settings', 'mpg' ), __( 'Advanced settings', 'mpg' ), $role, 'mpg-advanced-settings', array( 'MPG_AdvancedSettingsController', 'render' ) );
+
+			add_submenu_page( 'mpg-dataset-library', __( 'Search settings', 'mpg' ), __( 'Search settings', 'mpg' ), $role, 'mpg-search-settings', array( 'MPG_SearchController', 'render' ) );
+
+		}
+	}
 }

@@ -1,126 +1,139 @@
 <?php
+/**
+ * The CSV class.
+ *
+ * @package    Rock_Convert\Inc\Admin
+ * @link       https://rockcontent.com
+ * @since      1.0.0
+ *
+ * @author     Rock Content
+ */
 
 namespace Rock_Convert\inc\admin;
 
 /**
  * Class CSV
  *
- * Export any wordpress table in CSV format
+ * Export any WordPress table in CSV format
  *
  * @since   2.0.0
  * @example $csv = new CSV('posts'); // Will export wp-posts table
  *
  * @package Rock_Convert\inc\admin
  */
-class CSV
-{
-    /**
-     * @var \wpdb
-     */
-    private $db;
+class CSV {
 
-    /**
-     * @var
-     */
-    private $separator;
+	/**
+	 * DB var.
+	 *
+	 * @var \wpdb
+	 */
+	private $db;
 
-    /**
-     * @var string
-     */
-    private $table;
+	/**
+	 * Separator.
+	 *
+	 * @var string
+	 */
+	private $separator;
 
-    /**
-     * CSV constructor.
-     *
-     * @param null   $table_name Table name without prefix
-     * @param string $sep        CSV separator
-     * @param string $filename   Name of the csv file
-     *
-     * @throws \Exception
-     */
-    public function __construct(
-        $table_name = null,
-        $sep = ",",
-        $filename = "rconvert-contacts"
-    ) {
-        if ( ! isset($table_name)) {
-            throw new \Exception("Table name argument is required");
-        }
+	/**
+	 * Table var
+	 *
+	 * @var string
+	 */
+	private $table;
 
-        global $wpdb;
-        $this->db        = $wpdb;
-        $this->separator = $sep;
-        $this->table     = $this->db->prefix . $table_name;
+	/**
+	 * CSV constructor.
+	 *
+	 * @param null   $table_name Table name without prefix.
+	 * @param string $sep        CSV separator.
+	 * @param string $filename   Name of the csv file.
+	 *
+	 * @throws \Exception Thrwos a exception.
+	 */
+	public function __construct(
+		$table_name = null,
+		$sep = ',',
+		$filename = 'rconvert-contacts'
+	) {
+		if ( ! isset( $table_name ) ) {
+			throw new \Exception( 'Table name argument is required' );
+		}
 
-        $generatedDate = date('d-m-Y His');
+		global $wpdb;
+		$this->db        = $wpdb;
+		$this->separator = $sep;
+		$this->table     = $this->db->prefix . $table_name;
 
-        $csvFile = $this->generate_csv();
-        header("Pragma: public");
-        header("Expires: 0");
-        header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-        header("Cache-Control: private", false);
-        header("Content-Type: application/octet-stream");
-        header("Content-Disposition: attachment; filename=\"" . $filename . "-"
-               . $generatedDate . ".csv\";");
-        header("Content-Transfer-Encoding: binary");
+		$generated_date = gmdate( 'd-m-Y His' );
 
-        echo $csvFile;
-        exit;
-    }
+		$csv_file = $this->generate_csv();
+		header( 'Pragma: public' );
+		header( 'Expires: 0' );
+		header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' );
+		header( 'Cache-Control: private', false );
+		header( 'Content-Type: application/octet-stream' );
+		header(
+			'Content-Disposition: attachment; filename="' . $filename . '-'
+			. $generated_date . '.csv";'
+		);
+		header( 'Content-Transfer-Encoding: binary' );
 
-    /**
-     * Fetch results from table and return a string containing all the data
-     *
-     * @return string
-     */
-    public function generate_csv()
-    {
-        $csv_output = '';
-        $csv_output .= $this->get_columns();
-        $csv_output .= "\n";
-        $csv_output .= $this->get_data();
+		echo $csv_file; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		exit;
+	}
 
-        return $csv_output;
-    }
+	/**
+	 * Fetch results from table and return a string containing all the data
+	 *
+	 * @return string
+	 */
+	public function generate_csv() {
+		$csv_output  = '';
+		$csv_output .= $this->get_columns();
+		$csv_output .= "\n";
+		$csv_output .= $this->get_data();
 
-    /**
-     * Get table columns as a string separated by $this->separator;
-     *
-     * @return string
-     */
-    public function get_columns()
-    {
-        $output = "";
-        $query  = "SHOW COLUMNS FROM `" . $this->table . "`";
-        $result = $this->db->get_results($query);
+		return $csv_output;
+	}
 
-        if (count($result) > 0) {
-            foreach ($result as $row) {
-                $output = $output . $row->Field . $this->separator;
-            }
-            $output = substr($output, 0, -1);
-        }
+	/**
+	 * Get table columns as a string separated by $this->separator;
+	 *
+	 * @return string
+	 */
+	public function get_columns() {
+		$output = '';
+		$query  = 'SHOW COLUMNS FROM `' . $this->table . '`';
+		$result = $this->db->get_results( $query );
 
-        return $output;
-    }
+		if ( count( $result ) > 0 ) {
+			foreach ( $result as $row ) {
+				$output = $output . $row->Field . $this->separator; //phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+			}
+			$output = substr( $output, 0, -1 );
+		}
+		return $output;
+	}
 
-    /**
-     * Get table data as a string separated by $this->separator
-     *
-     * @return string
-     */
-    public function get_data()
-    {
-        $output = "";
-        $query  = "SELECT * FROM `" . $this->table . "`";
-        $values = $this->db->get_results($query);
+	/**
+	 * Get table data as a string separated by $this->separator
+	 *
+	 * @return string
+	 */
+	public function get_data() {
+		$output = '';
+		$query  = 'SELECT * FROM `' . $this->table . '`';
+		$values = $this->db->get_results( $query );
 
-        foreach ($values as $rowr) {
-            $fields = array_values((array)$rowr);
-            $output .= implode($this->separator, $fields);
-            $output .= "\n";
-        }
+		foreach ( $values as $rowr ) {
+			$fields  = array_values( (array) $rowr );
+			$output .= implode( $this->separator, $fields );
+			$output .= "\n";
+		}
 
-        return $output;
-    }
+		return $output;
+	}
 }

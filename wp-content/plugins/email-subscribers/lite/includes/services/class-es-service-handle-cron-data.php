@@ -47,7 +47,7 @@ class ES_Service_Handle_Cron_Data extends ES_Services {
 			delete_option( 'ig_es_cron_data_deleted' );
 		} else {
 
-			if ( ES()->is_trial() ) {
+			if ( ES()->trial->is_trial() ) {
 				$ig_es_cron_data_deleted = get_option( 'ig_es_cron_data_deleted', 'no' );
 
 				// Check if we have already deleted the cron data.

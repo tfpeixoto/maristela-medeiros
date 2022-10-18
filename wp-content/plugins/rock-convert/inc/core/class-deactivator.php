@@ -1,4 +1,13 @@
 <?php
+/**
+ * The deactivator class
+ *
+ * @package    Rock_Convert\Inc\Core
+ * @link       https://rockcontent.com
+ * @since      1.0.0
+ *
+ * @author     Rock Content
+ */
 
 namespace Rock_Convert\Inc\Core;
 
@@ -12,23 +21,20 @@ namespace Rock_Convert\Inc\Core;
  *
  * @author     Rock Content
  */
+class Deactivator {
 
-class Deactivator
-{
+	/**
+	 * Short Description.
+	 *
+	 * Long Description.
+	 *
+	 * @since    1.0.0
+	 */
+	public static function deactivate() {
+		// Get the timestamp for the next event.
+		$timestamp = wp_next_scheduled( 'rock_convert_license_check_event' );
 
-    /**
-     * Short Description.
-     *
-     * Long Description.
-     *
-     * @since    1.0.0
-     */
-    public static function deactivate()
-    {
-        // Get the timestamp for the next event.
-        $timestamp = wp_next_scheduled('rock_convert_license_check_event');
-
-        $original_args = array();
-    }
+		$original_args = array();
+	}
 
 }

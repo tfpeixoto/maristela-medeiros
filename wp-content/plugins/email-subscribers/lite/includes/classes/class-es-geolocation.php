@@ -74,6 +74,29 @@ class ES_Geolocation {
 	}
 
 	/**
+	 * Convert the String TimeZone to seconds
+	 *
+	 * @param $timezone
+	 *
+	 * @return string
+	 */
+	public static function convert_timezone_to_seconds( $timezone ) {
+		if ( empty( $timezone ) ) {
+			return '+0:00';
+		}
+		try {
+			$current = timezone_open( $timezone );
+			$utcTime = new DateTime( 'now', new DateTimeZone( 'UTC' ) );
+			$offset_in_secs = $current->getOffset( $utcTime );
+			$hours_and_sec  = gmdate( 'H:i', abs( $offset_in_secs ) );
+
+			return stripos( $offset_in_secs, '-' ) === false ? "+{$hours_and_sec}" : "-{$hours_and_sec}";
+		} catch ( Exception $exception ) {
+			return '+0:00';
+		}
+	}
+
+	/**
 	 * Use APIs to Geolocate the user.
 	 *
 	 * Geolocation APIs can be added through the use of the ig_es_geolocation_geoip_apis filter.
@@ -110,13 +133,16 @@ class ES_Geolocation {
 						case 'ipinfo.io':
 							$data         = json_decode( $response['body'] );
 							$country_code = isset( $data->country ) ? $data->country : '';
+							$timezone     = isset( $data->timezone ) ? self::convert_timezone_to_seconds( $data->timezone ) : '+0:00';
 							break;
 						case 'ip-api.com':
 							$data         = json_decode( $response['body'] );
 							$country_code = isset( $data->countryCode ) ? $data->countryCode : ''; // @codingStandardsIgnoreLine
+							$timezone     = isset( $data->timezone ) ? self::convert_timezone_to_seconds( $data->timezone ) : '+0:00';
 							break;
 						default:
 							$country_code = apply_filters( 'ig_es_geolocation_geoip_response_' . $service_name, '', $response['body'] );
+							$timezone     = apply_filters( 'ig_es_geolocation_geoip_timezone_response_' . $service_name, '', $response['body'] );
 							break;
 					}
 
@@ -124,6 +150,7 @@ class ES_Geolocation {
 
 					if ( $country_code ) {
 						$geo_ip_data['country_code'] = $country_code;
+						$geo_ip_data['timezone']     = $timezone;
 						break;
 					}
 				}
@@ -140,8 +167,10 @@ class ES_Geolocation {
 				if ( ! is_wp_error( $response ) && $response['body'] ) {
 					$data         = json_decode( $response['body'] );
 					$country_code = isset( $data->country_code ) ? $data->country_code : '';
+					$timezone     = isset( $data->timezone ) ? self::convert_timezone_to_seconds( $data->timezone ) : '+0:00';
 					if ( $country_code ) {
 						$geo_ip_data['country_code'] = $country_code;
+						$geo_ip_data['timezone']     = $timezone;
 					}
 				}
 			}

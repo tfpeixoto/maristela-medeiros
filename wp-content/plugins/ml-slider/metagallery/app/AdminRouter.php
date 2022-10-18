@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Admin page router.
  */
@@ -117,7 +118,14 @@ class AdminRouter
 
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         if (!isset($_SERVER['REQUEST_METHOD']) || !isset($_GET['route'])) {
-            \wp_safe_redirect(\admin_url('admin.php?page=' . \esc_attr(METAGALLERY_PAGE_NAME) . '&route=archive'));
+            $redirect = add_query_arg(
+                [
+                    'page' => METAGALLERY_PAGE_NAME,
+                    'route' => 'archive'
+                ],
+                \admin_url('admin.php')
+            );
+            \wp_safe_redirect($redirect);
             exit;
         }
 
@@ -163,9 +171,14 @@ class AdminRouter
         }
 
         // Default to archive page.
-        \wp_safe_redirect(
-            \admin_url('admin.php?page=' . \esc_attr(METAGALLERY_PAGE_NAME) . '&route=archive')
+        $redirect = add_query_arg(
+            [
+                'page' => METAGALLERY_PAGE_NAME,
+                'route' => 'archive'
+            ],
+            \admin_url('admin.php')
         );
+        \wp_safe_redirect($redirect);
         exit;
     }
 
@@ -183,6 +196,22 @@ class AdminRouter
                 $this->addAdminPage();
             },
             9999
+        );
+
+        \add_action(
+            'init',
+            function () {
+                // First, unload textdomain - Based on https://core.trac.wordpress.org/ticket/34213#comment:26
+                unload_textdomain('metagallery');
+
+                // Call the core translations from plugins languages/ folder
+                if (file_exists(__DIR__ . '/../languages/' . 'metagallery' . '-' . get_locale() . '.mo')) {
+                    load_textdomain(
+                        'metagallery',
+                        __DIR__ . '/../languages/' . 'metagallery' . '-' . get_locale() . '.mo'
+                    );
+                }
+            }
         );
 
         \add_action(
@@ -236,7 +265,7 @@ class AdminRouter
         $addPage = $this->parent ? '\add_submenu_page' : '\add_menu_page';
         $args = [
             App::$name,
-            'Gallery',
+            __('Gallery', 'metagallery'),
             App::$capability,
             App::$slug,
             '\Extendify\MetaGallery\View::admin',
@@ -306,7 +335,9 @@ class AdminRouter
         );
         \wp_enqueue_script(App::$slug . '-scripts');
 
-        \wp_set_script_translations(App::$slug . '-scripts', App::$textDomain);
+        if (function_exists('wp_set_script_translations')) {
+            \wp_set_script_translations(App::$slug . '-scripts', App::$textDomain, __DIR__ . '/../languages');
+        }
 
         \wp_enqueue_style(
             App::$slug . '-theme',

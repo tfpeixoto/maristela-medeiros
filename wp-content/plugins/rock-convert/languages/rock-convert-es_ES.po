@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Rock Convert\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-09-15 10:47-0300\n"
-"PO-Revision-Date: 2021-09-15 10:48-0300\n"
+"POT-Creation-Date: 2022-09-19 13:56-0300\n"
+"PO-Revision-Date: 2022-09-19 13:56-0300\n"
 "Last-Translator: admin <hugo.dias@rockcontent.com>\n"
 "Language-Team: Spanish (Spain)\n"
 "Language: es_ES\n"
@@ -11,7 +11,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.3\n"
+"X-Generator: Poedit 3.1.1\n"
 "X-Loco-Version: 2.2.0; wp-5.1\n"
 "X-Poedit-KeywordsList: __;_e;_n;esc_html__\n"
 "X-Poedit-Basepath: ..\n"
@@ -25,7 +25,7 @@ msgid "Barra de anúncios"
 msgstr "Barra de anuncios"
 
 #: inc/admin/announcements/views/announcements-form-description.php:3
-#: inc/admin/class-page-settings.php:28 inc/admin/class-page-settings.php:898
+#: inc/admin/class-page-settings.php:28 inc/admin/class-page-settings.php:1221
 msgid "Configurações"
 msgstr "Configuraciones"
 
@@ -87,7 +87,6 @@ msgstr "Estilo de la barra de anuncios"
 
 #: inc/admin/announcements/views/announcements-form-style.php:9
 #: inc/frontend/widget/class-banner.php:72
-#: inc/frontend/widget/class-subscribe.php:202
 msgid "Cor do fundo"
 msgstr "Color del fondo"
 
@@ -98,11 +97,13 @@ msgid "Cor do texto"
 msgstr "Color del texto"
 
 #: inc/admin/announcements/views/announcements-form-style.php:23
+#: inc/admin/class-page-settings.php:624
 #: inc/frontend/widget/class-subscribe.php:211
 msgid "Cor do botão"
 msgstr "Color del botón"
 
 #: inc/admin/announcements/views/announcements-form-style.php:30
+#: inc/admin/class-page-settings.php:637
 msgid "Cor do texto do botão"
 msgstr "Color del texto del botón"
 
@@ -213,72 +214,60 @@ msgstr "Configuraciones del Rock Convert"
 msgid "Entre em contato com o suporte"
 msgstr "Contactar con el soporte"
 
-#: inc/admin/class-page-settings.php:185
-msgid "Início"
-msgstr "Bienvenido"
-
-#: inc/admin/class-page-settings.php:188 inc/admin/class-page-settings.php:900
-msgid "Integrações"
-msgstr "Integraciones"
-
-#: inc/admin/class-page-settings.php:191
-msgid "Contatos <span class='rc-new-label contacts'>Novo</span>"
-msgstr "Contactos <span class='rc-new-label contacts'>Nuevo</span>"
-
-#: inc/admin/class-page-settings.php:196
+#: inc/admin/class-page-settings.php:265
 msgid "Atualizações realizadas com sucesso!"
 msgstr "¡Actualizaciones realizadas con éxito!"
 
-#: inc/admin/class-page-settings.php:244
+#: inc/admin/class-page-settings.php:311
 msgid "Comece a usar"
 msgstr "Comience a usar"
 
-#: inc/admin/class-page-settings.php:246
+#: inc/admin/class-page-settings.php:314
 msgid "Adicionar um banner"
 msgstr "Agregar un banner"
 
-#: inc/admin/class-page-settings.php:249 inc/admin/class-page-settings.php:511
-#: inc/admin/class-page-settings.php:650
+#: inc/admin/class-page-settings.php:318 inc/admin/class-page-settings.php:805
+#: inc/admin/class-page-settings.php:944
 msgid "Precisa de ajuda?"
 msgstr "¿Necesitas ayuda?"
 
-#: inc/admin/class-page-settings.php:255
+#: inc/admin/class-page-settings.php:323
 msgid "Dúvidas comuns (FAQ)"
 msgstr "Dudas comunes (FAQ)"
 
-#: inc/admin/class-page-settings.php:261
+#: inc/admin/class-page-settings.php:329
 msgid "Sugerir nova funcionalidade"
 msgstr "Sugerir nuevas funcionalidades"
 
-#: inc/admin/class-page-settings.php:267
+#: inc/admin/class-page-settings.php:335
 msgid "Relatar um problema"
 msgstr "Relatar un problema"
 
-#: inc/admin/class-page-settings.php:273
+#: inc/admin/class-page-settings.php:341
 msgid "Próximos passos"
 msgstr "Próximos pasos"
 
-#: inc/admin/class-page-settings.php:278
+#: inc/admin/class-page-settings.php:345
 msgid "Tudo o que você precisa saber sobre o Rock Convert"
 msgstr "Todo lo que necesita saber sobre Rock Convert"
 
-#: inc/admin/class-page-settings.php:285
+#: inc/admin/class-page-settings.php:351
 msgid "O que é CTA: Tudo que você precisa saber"
 msgstr "Qué es un CTA: todo lo que necesitas saber"
 
-#: inc/admin/class-page-settings.php:291
+#: inc/admin/class-page-settings.php:356
 msgid "Como usar os parâmetros de UTM"
 msgstr "Cómo usar los parámetros de UTM"
 
-#: inc/admin/class-page-settings.php:301
+#: inc/admin/class-page-settings.php:367
 msgid "Recursos disponíveis"
 msgstr "Recursos disponibles"
 
-#: inc/admin/class-page-settings.php:316
+#: inc/admin/class-page-settings.php:382
 msgid "Salvar visualizações e cliques"
 msgstr "Guardar visualizaciones y clics"
 
-#: inc/admin/class-page-settings.php:320
+#: inc/admin/class-page-settings.php:386
 msgid ""
 "Ative esta opção para coletar os dados de visualizações e clicks nos banners "
 "do Rock Convert."
@@ -286,26 +275,22 @@ msgstr ""
 "Activa esta opción para colectar los datos de visualizaciones y clics en los "
 "banners del Rock Convert."
 
-#: inc/admin/class-page-settings.php:324
+#: inc/admin/class-page-settings.php:390
 msgid "Campos adicionais"
 msgstr "Campos adicionales"
 
-#: inc/admin/class-page-settings.php:326
+#: inc/admin/class-page-settings.php:392
 msgid ""
 "Agora, além do email, você também pode captar dados adicionais de seus leads."
 msgstr ""
 "Ahora, además del e-mail, también puedes capturar datos adicionales de tus "
-"leads"
+"leads."
 
-#: inc/admin/class-page-settings.php:332
+#: inc/admin/class-page-settings.php:398
 msgid "Ativar o campo 'Nome' no formulário do Widget"
 msgstr "Active el campo 'Nombre' en el formulario Widget"
 
-#: inc/admin/class-page-settings.php:333 inc/admin/class-page-settings.php:347
-msgid "Novo!"
-msgstr "¡Nuevo!"
-
-#: inc/admin/class-page-settings.php:337
+#: inc/admin/class-page-settings.php:402
 msgid ""
 "Ative esta opção para adicionar um novo campo para capturar o Nome do "
 "usuário."
@@ -313,11 +298,11 @@ msgstr ""
 "Habilite esta opción para agregar un nuevo campo para capturar el nombre de "
 "usuario."
 
-#: inc/admin/class-page-settings.php:346
+#: inc/admin/class-page-settings.php:411
 msgid "Ativar campo customizado"
 msgstr "Habilitar campo personalizado"
 
-#: inc/admin/class-page-settings.php:351
+#: inc/admin/class-page-settings.php:415
 msgid ""
 "Ative esta opção para configurar um campo extra no formulário do widget, "
 "selecione uma label para o campo."
@@ -325,34 +310,19 @@ msgstr ""
 "Habilite esta opción para establecer un campo adicional en el formulario del "
 "widget, seleccione una etiqueta para el campo."
 
-#: inc/admin/class-page-settings.php:356
-msgid "Selecione a label do campo"
-msgstr "Seleccione la etiqueta del campo"
-
-#: inc/admin/class-page-settings.php:360
-msgid ""
-"Selecione o título que será exibido acima do campo no formulário do widget."
-msgstr ""
-"Seleccione el título que se mostrará encima del campo en el formulario del "
-"widget."
-
-#: inc/admin/class-page-settings.php:365
-msgid "Salvar configurações"
-msgstr "Guardar configuraciones"
-
-#: inc/admin/class-page-settings.php:375
+#: inc/admin/class-page-settings.php:439
 msgid "Atualizações"
 msgstr "Actualizaciones"
 
-#: inc/admin/class-page-settings.php:376
+#: inc/admin/class-page-settings.php:440
 msgid "Cadastre seu e-mail abaixo para receber novidades do Rock Convert!"
 msgstr "¡Deja tu email a continuación para recibir novedades del Rock Convert!"
 
-#: inc/admin/class-page-settings.php:400 inc/admin/class-page-settings.php:673
+#: inc/admin/class-page-settings.php:464 inc/admin/class-page-settings.php:967
 msgid "Ferramentas de automação"
 msgstr "Herramientas de automatización"
 
-#: inc/admin/class-page-settings.php:403 inc/admin/class-page-settings.php:676
+#: inc/admin/class-page-settings.php:467 inc/admin/class-page-settings.php:970
 msgid ""
 "Selecione abaixo uma ferramenta de automação e envie os leads gerados pelos "
 "formulários do Rock Convert."
@@ -360,39 +330,52 @@ msgstr ""
 "Selecciona, a continuación, una herramienta de automatización y envía los "
 "leads generados a través de los formularios del Rock Convert."
 
-#: inc/admin/class-page-settings.php:427 inc/admin/class-page-settings.php:699
+#: inc/admin/class-page-settings.php:491 inc/admin/class-page-settings.php:993
 msgid "Salvar integrações"
 msgstr "Guardar integraciones"
 
-#: inc/admin/class-page-settings.php:446
-msgid "Chave do site"
-msgstr "Clave del sitio web"
+#: inc/admin/class-page-settings.php:598
+msgid "Cor de fundo"
+msgstr "Color de fondo"
 
-#: inc/admin/class-page-settings.php:462
-msgid "Chave secreta"
-msgstr "Clave secreta"
+#: inc/admin/class-page-settings.php:611
+msgid "Cor do botão fechar"
+msgstr "Color del botón de cerrar"
 
-#: inc/admin/class-page-settings.php:473
-msgid "Precisa de ajuda para criar a chave?"
-msgstr "¿Necesitas ayuda para crear la clave?"
+#: inc/admin/class-page-settings.php:650
+msgid "Cor do titulo"
+msgstr "Título Color"
 
-#: inc/admin/class-page-settings.php:475
-msgid "Acesse o painel do Google e crie um reCaptcha v2"
-msgstr "Ingresa al panel de Google y crea un reCaptcha v2"
+#: inc/admin/class-page-settings.php:663
+msgid "Cor da descrição"
+msgstr "Descripción de los colores"
 
-#: inc/admin/class-page-settings.php:500
+#: inc/admin/class-page-settings.php:676
+msgid "Ativar funcionalidade"
+msgstr "Sugerir nuevas funcionalidades"
+
+#: inc/admin/class-page-settings.php:691
+msgid "Habilitar imagem"
+msgstr "Activar la imagen"
+
+#: inc/admin/class-page-settings.php:706
+#: inc/admin/cta/class-custom-meta-box.php:178
+msgid "Selecione a imagem do banner"
+msgstr "Selecciona la imagen del banner"
+
+#: inc/admin/class-page-settings.php:794
 msgid "Chave de API do MailChimp"
 msgstr "Clave de API de MailChimp"
 
-#: inc/admin/class-page-settings.php:513
+#: inc/admin/class-page-settings.php:807
 msgid "Veja como criar uma chave de API para o MailChimp"
 msgstr "Mira cómo crear una clave de API para MailChimp"
 
-#: inc/admin/class-page-settings.php:523
+#: inc/admin/class-page-settings.php:817
 msgid "Atenção: nenhuma lista encontrada."
 msgstr "Atención: no se ha encontrado ninguna lista."
 
-#: inc/admin/class-page-settings.php:529
+#: inc/admin/class-page-settings.php:823
 #, php-format
 msgid ""
 "Confira se a chave de API está correta e se esta conta já possui uma lista "
@@ -403,41 +386,41 @@ msgstr ""
 "lista creada. En caso aún no tenga ninguna lista, aprende a crearla <a href="
 "\"%s\">haciendo clic aquí</a>."
 
-#: inc/admin/class-page-settings.php:542 inc/admin/class-page-settings.php:547
+#: inc/admin/class-page-settings.php:836 inc/admin/class-page-settings.php:841
 msgid "Selecione uma lista"
 msgstr "Selecciona una lista"
 
-#: inc/admin/class-page-settings.php:555
+#: inc/admin/class-page-settings.php:849
 msgid "Escolha uma lista para enviar os contatos coletados pelo Rock Convert."
 msgstr ""
 "Elige una lista para enviar los contactos colectados a través del Rock "
 "Convert."
 
-#: inc/admin/class-page-settings.php:599
+#: inc/admin/class-page-settings.php:893
 msgid "Token público da RD Station"
 msgstr "Token público de RD Station"
 
-#: inc/admin/class-page-settings.php:612
+#: inc/admin/class-page-settings.php:906
 msgid "Identificador único de leads:"
 msgstr "Identificador de leads único:"
 
-#: inc/admin/class-page-settings.php:616
+#: inc/admin/class-page-settings.php:910
 msgid "Para encontrar o token público da RD Station acesse:"
 msgstr "Para encontrar el token público de RD Station, ingresa:"
 
-#: inc/admin/class-page-settings.php:639
+#: inc/admin/class-page-settings.php:933
 msgid "URL do form da HubSpot"
 msgstr "URL del formulario de HubSpot"
 
-#: inc/admin/class-page-settings.php:652
+#: inc/admin/class-page-settings.php:946
 msgid "Acesse a central de ajuda da HubSpot"
 msgstr "Ingresa a la central de ayuda de HubSpot"
 
-#: inc/admin/class-page-settings.php:656
+#: inc/admin/class-page-settings.php:950
 msgid "Formato da URL:"
 msgstr "Formato de la URL:"
 
-#: inc/admin/class-page-settings.php:659
+#: inc/admin/class-page-settings.php:953
 msgid ""
 "Onde: <strong>PORTAL_ID</strong> é o id da conta e <strong>FORM_GUID</"
 "strong> é o ID do\n"
@@ -446,11 +429,24 @@ msgstr ""
 "Donde: <strong>PORTAL_ID</strong> es el identificador de cuenta y "
 "<strong>FORM_GUID</strong> es el ID de la cuenta, formulario."
 
-#: inc/admin/class-page-settings.php:727
+#: inc/admin/class-page-settings.php:1014
+msgid "Configurações do popup"
+msgstr "Configuraciones del popup"
+
+#: inc/admin/class-page-settings.php:1016
+msgid "Selecione abaixo as configurações desejadas para o seu popup."
+msgstr ""
+"Seleccione la configuración deseada para su ventana emergente a continuación."
+
+#: inc/admin/class-page-settings.php:1034
+msgid "Salvar configurações"
+msgstr "Guardar configuraciones"
+
+#: inc/admin/class-page-settings.php:1050
 msgid "Exportar"
 msgstr "Exportar"
 
-#: inc/admin/class-page-settings.php:729
+#: inc/admin/class-page-settings.php:1052
 msgid ""
 "Para fazer o download dos contatos capturados pelo formulário de download no "
 "formato <strong>CSV</strong>, clique abaixo."
@@ -458,71 +454,75 @@ msgstr ""
 "Para descargar los contactos capturados por el formulario de descarga en "
 "formato <strong>CSV</strong>, haga clic abajo."
 
-#: inc/admin/class-page-settings.php:734
+#: inc/admin/class-page-settings.php:1057
 msgid "contatos salvos."
 msgstr "contactos guardados."
 
-#: inc/admin/class-page-settings.php:743
+#: inc/admin/class-page-settings.php:1066
 msgid "Exportar no formato CSV"
 msgstr "Exportar en formato CSV"
 
-#: inc/admin/class-page-settings.php:768
+#: inc/admin/class-page-settings.php:1091
 #: inc/frontend/widget/class-subscribe.php:90
 msgid "Nome"
 msgstr "Nombre"
 
-#: inc/admin/class-page-settings.php:770
+#: inc/admin/class-page-settings.php:1093
 msgid "Email"
 msgstr "Email"
 
-#: inc/admin/class-page-settings.php:775
+#: inc/admin/class-page-settings.php:1098
 msgid "Origem"
 msgstr "Fuente"
 
-#: inc/admin/class-page-settings.php:776
+#: inc/admin/class-page-settings.php:1099
 #: inc/admin/cta/class-custom-post-type.php:101
 msgid "Data"
 msgstr "Fecha"
 
-#: inc/admin/class-page-settings.php:785
+#: inc/admin/class-page-settings.php:1108
 msgid "Página Inicial"
 msgstr "Página de inicio"
 
-#: inc/admin/class-page-settings.php:788
+#: inc/admin/class-page-settings.php:1111
 msgid "d-m-Y à\\s H:i:s"
 msgstr "d-m-Y à\\s H:i:s"
 
-#: inc/admin/class-page-settings.php:796
+#: inc/admin/class-page-settings.php:1119
 msgid "Excluir"
 msgstr "Borrar"
 
-#: inc/admin/class-page-settings.php:802
+#: inc/admin/class-page-settings.php:1125
 msgid "Nenhum contato cadastrado ainda"
 msgstr "Aún no hay contactos registrados"
 
-#: inc/admin/class-page-settings.php:809
+#: inc/admin/class-page-settings.php:1132
 msgid "&laquo;"
 msgstr "&laquo;"
 
-#: inc/admin/class-page-settings.php:810
+#: inc/admin/class-page-settings.php:1133
 msgid "&raquo;"
 msgstr "&raquo;"
 
-#: inc/admin/class-page-settings.php:829
+#: inc/admin/class-page-settings.php:1152
 msgid "Confirmar Exclusão?"
 msgstr "¿Confirmar la eliminación?"
 
-#: inc/admin/class-page-settings.php:832
+#: inc/admin/class-page-settings.php:1155
 msgid "Esta ação não poderá ser desfeita"
 msgstr "Esta acción no se puede deshacer"
 
-#: inc/admin/class-page-settings.php:835
+#: inc/admin/class-page-settings.php:1158
 msgid "Confirmar"
 msgstr "Confirmar"
 
-#: inc/admin/class-page-settings.php:836
+#: inc/admin/class-page-settings.php:1159
 msgid "Cancelar"
 msgstr "Cancelar"
+
+#: inc/admin/class-page-settings.php:1223
+msgid "Integrações"
+msgstr "Integraciones"
 
 #: inc/admin/cta/class-custom-meta-box.php:46
 msgid "Categorias de exibição"
@@ -573,10 +573,6 @@ msgstr "Para ver las estadísticas de este CTA"
 #: inc/admin/cta/class-custom-meta-box.php:167
 msgid "habilite a funcionalidade Analytics"
 msgstr "habilita la funcionalidad Analytics"
-
-#: inc/admin/cta/class-custom-meta-box.php:178
-msgid "Selecione a imagem do banner"
-msgstr "Selecciona la imagen del banner"
 
 #: inc/admin/cta/class-custom-meta-box.php:206
 msgid "Exibir em todas as páginas das categorias selecionadas"
@@ -823,6 +819,10 @@ msgstr "¡No te enviaremos spam!"
 msgid "Texto de ajuda"
 msgstr "Texto de ayuda"
 
+#: inc/frontend/widget/class-subscribe.php:202
+msgid " "
+msgstr ""
+
 #: inc/frontend/widget/class-subscribe.php:227
 msgid "Redirecionar para"
 msgstr "Redireccionar a"
@@ -835,6 +835,37 @@ msgstr "Continuar en la misma página"
 msgid "Selecione para onde o usuário será redirecionado ao cadastrar o email."
 msgstr ""
 "Selecciona hacia dónde el usuario será direccionado al registrar el email."
+
+#~ msgid "Início"
+#~ msgstr "Bienvenido"
+
+#~ msgid "Contatos <span class='rc-new-label contacts'>Novo</span>"
+#~ msgstr "Contactos <span class='rc-new-label contacts'>Nuevo</span>"
+
+#~ msgid "Novo!"
+#~ msgstr "¡Nuevo!"
+
+#~ msgid "Selecione a label do campo"
+#~ msgstr "Seleccione la etiqueta del campo"
+
+#~ msgid ""
+#~ "Selecione o título que será exibido acima do campo no formulário do "
+#~ "widget."
+#~ msgstr ""
+#~ "Seleccione el título que se mostrará encima del campo en el formulario "
+#~ "del widget."
+
+#~ msgid "Chave do site"
+#~ msgstr "Clave del sitio web"
+
+#~ msgid "Chave secreta"
+#~ msgstr "Clave secreta"
+
+#~ msgid "Precisa de ajuda para criar a chave?"
+#~ msgstr "¿Necesitas ayuda para crear la clave?"
+
+#~ msgid "Acesse o painel do Google e crie um reCaptcha v2"
+#~ msgstr "Ingresa al panel de Google y crea un reCaptcha v2"
 
 #~ msgid "Referrer"
 #~ msgstr "Referrer"

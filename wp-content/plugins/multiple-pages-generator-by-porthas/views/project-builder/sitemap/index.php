@@ -34,13 +34,20 @@
                         <div class="tooltip-circle" data-tippy-content="<?php _e('Tell search engine how frequently you expect to update the pages. This setting typically doesn’t carry a lot of wait unless the content is cornerstone.', 'mpg');?>"><i class="fa fa-question"></i></div>
                     </div>
 
+                    <div class="block-with-tooltip" style="margin-bottom:20px">
+                        <p><?php esc_html_e( 'Priority', 'mpg' ); ?></p>
+                        <input type="text" name="sitemap_priority" value="1" style="width: 100%;">
+
+                        <div class="tooltip-circle" data-tippy-content="<?php esc_attr_e( 'This allows you to set the priority attribute value.', 'mpg' );?>"><i class="fa fa-question"></i></div>
+                    </div>
 
                     <div class="block-with-tooltip" style="margin-bottom:20px">
-                        <p><?php _e('Add sitemap to robot.txt', 'mpg'); ?></p>
+                        <p><?php _e('Add sitemap to robots.txt', 'mpg'); ?></p>
                         <input type="checkbox" name="sitemap_robot" value="1" style="width: 15px; height: 16px; flex: 0 0 15px; margin-right: 400px">
 
                         <div class="tooltip-circle" data-tippy-content="<?php _e('MPG can automatically add the sitemap file location to your robots.txt to make it easier for search engines to find.', 'mpg');?>"><i class="fa fa-question"></i></div>
                     </div>
+
                 </div>
                 <div class="save-changes-block">
                     <input type="submit" class="generate-sitemap btn btn-primary"

@@ -42,9 +42,9 @@ class ES_Info {
 	}
 
 	public static function es_pricing_callback() {
-		// remove because of warning
-		// $url = 'https://www.icegram.com/email-subscribers-pricing/';
-		// header('Location: ' . $url );
+
+		Email_Subscribers_Pricing::sm_show_pricing();
+
 	}
 
 	public static function get_instance() {

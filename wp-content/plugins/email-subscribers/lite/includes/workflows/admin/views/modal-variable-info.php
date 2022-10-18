@@ -37,11 +37,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 					>
 
 						<td class="ig-es-table__col ig-es-table__col--label">
-							<strong><?php echo esc_html( $field->get_name() ); ?></strong>
+							<strong><?php echo esc_html( ucfirst( $field->get_name() ) ); ?></strong>
 							<?php
 							if ( $field->get_required() ) :
 								?>
-								<span class="ig-es-required-asterisk"></span><?php endif; ?>
+								<span class="required">*</span><?php endif; ?>
 						</td>
 						<td class="ig-es-table__col ig-es-table__col--field">
 							<?php $field->add_classes( 'ig-es-workflow-variable-parameter' ); ?>
@@ -70,9 +70,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 			</table>
 
 			<div class="ig-es-workflow-variable-clipboard-form">
-				<div id="ig_es_workflow_variable_preview_field" class="ig-es-workflow-variable-preview-field w-full p-3 text-center mt-2 mb-2 bg-gray-100 ig-es-workflow-variable-preview-field" data-variable="<?php echo esc_attr( $variable->get_name() ); ?>">
+				<div id="ig_es_workflow_variable_preview_field" class="ig-es-workflow-variable-preview-field w-full p-3 text-center mt-2 bg-gray-100 ig-es-workflow-variable-preview-field hidden" data-variable="<?php echo esc_attr( $variable->get_name() ); ?>">
 				</div>
-				<button type="button" class="ig-es-clipboard-btn w-full inline-flex justify-center rounded-md border border-transparent px-4 py-1 bg-white text-sm leading-5 font-medium text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:shadow-outline-blue transition ease-in-out duration-150"><?php echo esc_html__( 'Copy to clipboard', 'email-subscribers' ); ?></button>
+				<button type="button" class="mt-2 ig-es-clipboard-btn w-full inline-flex justify-center rounded-md border border-transparent px-4 py-1 bg-white text-sm leading-5 font-medium text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:shadow-outline-blue transition ease-in-out duration-150"><?php echo esc_html__( 'Copy to clipboard', 'email-subscribers' ); ?></button>
 			</div>
 
 		</div>

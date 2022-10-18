@@ -50,7 +50,7 @@ if ( ! class_exists( 'IG_ES_Onboarding' ) ) {
 				'set_settings',
 				'create_default_lists',
 				'create_contacts_and_add_to_list',
-				'add_workflow_for_user_registration',
+				'add_default_workflows',
 				'create_default_newsletter_broadcast',
 				'create_default_post_notification',
 				'create_default_subscription_form',
@@ -232,15 +232,6 @@ if ( ! class_exists( 'IG_ES_Onboarding' ) ) {
 		 *
 		 * @since 4.6.0
 		 */
-		public function ajax_checking_spam_score_delivery_metrics() {
-			return $this->perform_onboarding_tasks( 'email_delivery_check_tasks', 'checking_spam_score_delivery_metrics' );
-		}
-
-		/**
-		 * Method to perform email delivery tasks.
-		 *
-		 * @since 4.6.0
-		 */
 		public function ajax_evaluate_email_delivery() {
 			return $this->perform_onboarding_tasks( 'email_delivery_check_tasks', 'evaluate_email_delivery' );
 		}
@@ -250,7 +241,7 @@ if ( ! class_exists( 'IG_ES_Onboarding' ) ) {
 		 *
 		 * @since 4.6.0
 		 */
-		public function ajax_finishing_onboarding() {
+		public function ajax_complete_onboarding() {
 
 			$response = $this->perform_onboarding_tasks( 'completion_tasks' );
 
@@ -400,13 +391,7 @@ if ( ! class_exists( 'IG_ES_Onboarding' ) ) {
 			$from_email          = ig_es_get_request_data( 'es_from_email', '' );
 			$enable_double_optin = ig_es_get_request_data( 'enable_double_optin', 'yes' );
 			$optin_type          = 'yes' === $enable_double_optin ? 'double_opt_in' : 'single_opt_in';
-			$is_trial            = ig_es_get_request_data( 'is_trial', '' );
 			$allow_tracking      = ig_es_get_request_data( 'allow_tracking', '' );
-
-			if ( ! empty( $is_trial ) ) {
-				// Add trial preferences.
-				ES()->add_trial_data( $is_trial, time() );
-			}
 
 			update_option( 'ig_es_optin_type', $optin_type );
 
@@ -581,39 +566,54 @@ if ( ! class_exists( 'IG_ES_Onboarding' ) ) {
 		 *
 		 * @since 4.6.0
 		 */
-		public function add_workflow_for_user_registration() {
+		public function add_default_workflows() {
+
 
 			$response = array(
 				'status' => 'error',
 			);
 
-			$workflow_query_args = array(
-				'trigger_name' => 'ig_es_user_registered',
-			);
+			$admin_emails = ES()->mailer->get_admin_emails();
+			if ( ! empty( $admin_emails ) ) {
+				$admin_emails = implode( ',', $admin_emails );
+			}
+			
+			$default_workflows = array();
 
-			$workflows = ES()->workflows_db->get_workflows( $workflow_query_args );
+			$notification_workflows = ES()->workflows_db->get_notification_workflows();
+			if ( ! empty( $notification_workflows ) ) {
+				$default_workflows = $notification_workflows;
+			}
 
-			// Add workflow only if there is no workflow for user registration already present.
-			if ( empty( $workflows ) ) {
-				$main_list = ES()->lists_db->get_list_by_name( IG_MAIN_LIST );
-
-				// Check if Main list exists.
-				if ( ! empty( $main_list ) ) {
-					$workflow_title               = __( 'User Registered', 'email-subscribers' );
-					$workflow_name                = sanitize_title( $workflow_title );
-					$trigger_name                 = 'ig_es_user_registered';
-					$main_list_id                 = $main_list['id'];
-					$workflow_meta                = array();
-					$workflow_meta['when_to_run'] = 'immediately';
-					$workflow_status              = 0;
-
-					$workflow_actions = array(
+			$main_list = ES()->lists_db->get_list_by_name( IG_MAIN_LIST );
+			if ( ! empty( $main_list['id'] ) ) {
+				$main_list_id 		 = $main_list['id'];
+				$default_workflows[] = array(
+					'trigger_name' => 'ig_es_user_registered',
+					/* translators: Main list name */
+					'title' 	   => sprintf( __( 'Add to %s list when someone registers', 'email-subscribers' ), IG_MAIN_LIST ),
+					'actions'	   => array(
 						array(
 							'action_name' => 'ig_es_add_to_list',
 							'ig-es-list'  => ES_Clean::id( $main_list_id ),
-						),
-					);
+						)
+					),
+					'status' => 0
+				);
+			}
 
+			if ( ! empty( $default_workflows ) ) {
+				foreach ( $default_workflows as $workflow ) {
+					$workflow_title               = $workflow['title'];
+					$workflow_name                = sanitize_title( $workflow_title );
+					$trigger_name                 = $workflow['trigger_name'];
+					$workflow_meta                = array();
+					$workflow_meta['when_to_run'] = 'immediately';
+					$workflow_status              = $workflow['status'];
+					$workflow_type                = isset( $workflow['type'] ) ? $workflow['type'] : IG_ES_WORKFLOW_TYPE_USER;
+	
+					$workflow_actions = $workflow['actions'];
+	
 					$workflow_data = array(
 						'name'         => $workflow_name,
 						'title'        => $workflow_title,
@@ -622,15 +622,16 @@ if ( ! class_exists( 'IG_ES_Onboarding' ) ) {
 						'meta'         => maybe_serialize( $workflow_meta ),
 						'priority'     => 0,
 						'status'       => $workflow_status,
+						'type'		   => $workflow_type,
 					);
-
+	
 					$workflow_id = ES()->workflows_db->insert_workflow( $workflow_data );
 					if ( $workflow_id ) {
 						$response['status'] = 'success';
 					}
 				}
 			}
-
+			
 			return $response;
 		}
 
@@ -835,19 +836,6 @@ if ( ! class_exists( 'IG_ES_Onboarding' ) ) {
 			$title   = esc_html__( 'Welcome To Email Subscribers', 'email-subscribers' );
 			$subject = esc_html__( 'Welcome To Email Subscribers', 'email-subscribers' );
 
-			$es_post = array(
-				'post_title'   => $title,
-				'post_content' => $sample,
-				'post_status'  => 'publish',
-				'post_type'    => 'es_template',
-				'meta_input'   => array(
-					'es_template_type' => 'newsletter',
-				),
-			);
-
-			// Insert the post into the database
-			$post_id = wp_insert_post( $es_post );
-
 			// Create Broadcast Campaign
 
 			$default_list = ES()->lists_db->get_list_by_name( IG_DEFAULT_LIST );
@@ -855,29 +843,40 @@ if ( ! class_exists( 'IG_ES_Onboarding' ) ) {
 			if ( ! empty( $default_list ) ) {
 				$list_id = $default_list['id'];
 
-				if ( ! empty( $post_id ) ) {
+				$data['slug']             = sanitize_title( $title );
+				$data['name']             = $title;
+				$data['subject']          = $subject;
+				$data['type']             = IG_CAMPAIGN_TYPE_NEWSLETTER;
+				$data['from_email']       = $from_email;
+				$data['reply_to_email']   = $from_email;
+				$data['from_name']        = $from_name;
+				$data['reply_to_name']    = $from_name;
+				$data['body']             = $sample;
+				$data['status']           = 1;
 
-					$data['slug']             = sanitize_title( $title );
-					$data['name']             = $title;
-					$data['subject']          = $subject;
-					$data['type']             = 'newsletter';
-					$data['from_email']       = $from_email;
-					$data['reply_to_email']   = $from_email;
-					$data['from_name']        = $from_name;
-					$data['reply_to_name']    = $from_name;
-					$data['list_ids']         = $list_id;
-					$data['base_template_id'] = $post_id;
-					$data['body']             = $sample;
-					$data['status']           = 1;
+				$meta = array(
+					'enable_open_tracking' => ES()->mailer->can_track_open() ? 'yes' : 'no',
+					'enable_link_tracking' => ES()->mailer->can_track_clicks() ? 'yes' : 'no',
+					'list_conditions' => array(
+						array(
+							array(
+								'field'    => '_lists__in',
+								'operator' => 'is',
+								'value'    => $list_id,
+							)
+						),
+					),
+				);
 
-					$broadcast_id = ES()->campaigns_db->save_campaign( $data );
+				$data['meta'] = maybe_serialize( $meta );
 
-					if ( $broadcast_id ) {
-						$response['status']     = 'success';
-						$response['tasks_data'] = array(
-							'broadcast_id' => $broadcast_id,
-						);
-					}
+				$broadcast_id = ES()->campaigns_db->save_campaign( $data );
+
+				if ( $broadcast_id ) {
+					$response['status']     = 'success';
+					$response['tasks_data'] = array(
+						'broadcast_id' => $broadcast_id,
+					);
 				}
 			}
 
@@ -955,13 +954,6 @@ if ( ! class_exists( 'IG_ES_Onboarding' ) ) {
 				'status' => 'error',
 			);
 
-			// Send test email to Icegram API only if trial is valid or user is premium user.
-			if ( ES()->is_trial_valid() || ES()->is_premium() ) {
-
-				$service = new ES_Send_Test_Email();
-				$res     = $service->send_test_email();
-			}
-
 			$onboarding_tasks_data = get_option( self::$onboarding_tasks_data_option, array() );
 			$campaign_id           = ! empty( $onboarding_tasks_data['create_default_newsletter_broadcast']['broadcast_id'] ) ? $onboarding_tasks_data['create_default_newsletter_broadcast']['broadcast_id'] : 0;
 			$report_id             = ! empty( $onboarding_tasks_data['queue_default_broadcast_newsletter']['report_id'] ) ? $onboarding_tasks_data['queue_default_broadcast_newsletter']['report_id'] : 0;
@@ -992,7 +984,8 @@ if ( ! class_exists( 'IG_ES_Onboarding' ) ) {
 				}
 
 				ES_DB_Mailing_Queue::update_sent_status( $notification_guid, 'Sending' );
-
+				ES()->mailer->add_tracking_pixel   = true;
+				ES()->mailer->add_unsubscribe_link = true;
 				$res = ES()->mailer->send( $title, $email_template, $emails, $merge_tags );
 
 				ES_DB_Mailing_Queue::update_sent_status( $notification_guid, 'Sent' );
@@ -1010,11 +1003,17 @@ if ( ! class_exists( 'IG_ES_Onboarding' ) ) {
 				}
 			}
 
+			// Send a test email to our ETP service.
+			if ( 'success' === $response['status'] ) {
+				$service = new ES_Send_Test_Email();
+				$service->send_test_email();
+			}
+
 			return $response;
 		}
 
 		/**
-		 * Method to check test email on Icegram servers.
+		 * Method to check if test email is received on Icegram servers.
 		 *
 		 * @since 4.6.0
 		 */
@@ -1024,48 +1023,17 @@ if ( ! class_exists( 'IG_ES_Onboarding' ) ) {
 				'status' => 'error',
 			);
 
-			// Check test email only if user has valid trial or is a premium user.
-			if ( ES()->is_trial_valid() || ES()->is_premium() ) {
-				$onboarding_tasks_failed           = get_option( self::$onboarding_tasks_failed_option, array() );
-				$email_delivery_check_tasks_failed = ! empty( $onboarding_tasks_failed['email_delivery_check_tasks'] ) ? $onboarding_tasks_failed['email_delivery_check_tasks'] : array();
+			$onboarding_tasks_failed           = get_option( self::$onboarding_tasks_failed_option, array() );
+			$email_delivery_check_tasks_failed = ! empty( $onboarding_tasks_failed['email_delivery_check_tasks'] ) ? $onboarding_tasks_failed['email_delivery_check_tasks'] : array();
 
-				// Peform test email checking if dispatch_emails_from_server task hasn't failed.
-				if ( ! in_array( 'dispatch_emails_from_server', $email_delivery_check_tasks_failed, true ) ) {
-					$service = new ES_Email_Delivery_Check();
-					return $service->test_email_delivery();
-				} else {
-					$response['status'] = 'skipped';
-				}
-			}
+			$task_failed = in_array( 'dispatch_emails_from_server', $email_delivery_check_tasks_failed, true );
 
-			return $response;
-		}
-
-		/**
-		 * Method to check spam score of test email recieved on Icegram servers.
-		 *
-		 * @since 4.6.0
-		 */
-		public function checking_spam_score_delivery_metrics() {
-
-			$response = array(
-				'status' => 'error',
-			);
-
-			// Check spam score only if user has valid trial or is a premium user.
-			if ( ES()->is_trial_valid() || ES()->is_premium() ) {
-				$onboarding_tasks_failed           = get_option( self::$onboarding_tasks_failed_option, array() );
-				$email_delivery_check_tasks_failed = ! empty( $onboarding_tasks_failed['email_delivery_check_tasks'] ) ? $onboarding_tasks_failed['email_delivery_check_tasks'] : array();
-
-				$onboarding_tasks_skipped           = get_option( self::$onboarding_tasks_skipped_option, array() );
-				$email_delivery_check_tasks_skipped = ! empty( $onboarding_tasks_skipped['email_delivery_check_tasks'] ) ? $onboarding_tasks_skipped['email_delivery_check_tasks'] : array();
-
-				// Peform test email spam score only if check_test_email_on_server task hasn't failed or skipped.
-				if ( ! in_array( 'check_test_email_on_server', $email_delivery_check_tasks_failed, true ) && ! in_array( 'check_test_email_on_server', $email_delivery_check_tasks_skipped, true ) ) {
-					$response['status'] = 'success';
-				} else {
-					$response['status'] = 'skipped';
-				}
+			// Peform test email checking if dispatch_emails_from_server task hasn't failed.
+			if ( ! $task_failed ) {
+				$service  = new ES_Email_Delivery_Check();
+				$response = $service->test_email_delivery();
+			} else {
+				$response['status'] = 'failed';
 			}
 
 			return $response;
@@ -1081,22 +1049,24 @@ if ( ! class_exists( 'IG_ES_Onboarding' ) ) {
 			$response = array(
 				'status' => 'error',
 			);
+			
+			$onboarding_tasks_failed           = get_option( self::$onboarding_tasks_failed_option, array() );
+			$email_delivery_check_tasks_failed = ! empty( $onboarding_tasks_failed['email_delivery_check_tasks'] ) ? $onboarding_tasks_failed['email_delivery_check_tasks'] : array();
 
-			// Evaluate email delivery only if user has valid trial or is a premium user.
-			if ( ES()->is_trial_valid() || ES()->is_premium() ) {
-				$onboarding_tasks_failed           = get_option( self::$onboarding_tasks_failed_option, array() );
-				$email_delivery_check_tasks_failed = ! empty( $onboarding_tasks_failed['email_delivery_check_tasks'] ) ? $onboarding_tasks_failed['email_delivery_check_tasks'] : array();
+			$onboarding_tasks_skipped           = get_option( self::$onboarding_tasks_skipped_option, array() );
+			$email_delivery_check_tasks_skipped = ! empty( $onboarding_tasks_skipped['email_delivery_check_tasks'] ) ? $onboarding_tasks_skipped['email_delivery_check_tasks'] : array();
 
-				$onboarding_tasks_skipped           = get_option( self::$onboarding_tasks_skipped_option, array() );
-				$email_delivery_check_tasks_skipped = ! empty( $onboarding_tasks_skipped['email_delivery_check_tasks'] ) ? $onboarding_tasks_skipped['email_delivery_check_tasks'] : array();
+			$task_failed  = in_array( 'check_test_email_on_server', $email_delivery_check_tasks_failed, true );
+			$task_skipped = in_array( 'check_test_email_on_server', $email_delivery_check_tasks_skipped, true );
 
-				// Peform email delivery evaulation only if check_test_email_on_server task hasn't failed or skipped.
-				if ( ! in_array( 'check_test_email_on_server', $email_delivery_check_tasks_failed, true ) && ! in_array( 'check_test_email_on_server', $email_delivery_check_tasks_skipped, true ) ) {
-					$response['status'] = 'success';
-				} else {
-					$response['status'] = 'skipped';
-				}
+			if ( $task_failed ) {
+				$response['status'] = 'failed';
+			} elseif ( $task_skipped ) {
+				$response['status'] = 'skipped';
+			} else {
+				$response['status'] = 'success';
 			}
+				
 			return $response;
 		}
 
@@ -1131,68 +1101,68 @@ if ( ! class_exists( 'IG_ES_Onboarding' ) ) {
 			$content .= 'You received this email because in the past you have provided us your email address : {{EMAIL}} to receive notifications when new updates are posted.';
 
 			$title = esc_html__( 'New Post Published - {{POSTTITLE}}', 'email-subscribers' );
-			// Create Post Notification object
-			$post = array(
-				'post_title'   => $title,
-				'post_content' => $content,
-				'post_status'  => 'publish',
-				'post_type'    => 'es_template',
-				'meta_input'   => array(
-					'es_template_type' => 'post_notification',
-				),
-			);
-			// Insert the post into the database
-			$post_id = wp_insert_post( $post );
 
 			$default_list = ES()->lists_db->get_list_by_name( IG_DEFAULT_LIST );
 
-			if ( ! empty( $post_id ) ) {
-				$list_id = $default_list['id'];
+			$list_id = $default_list['id'];
 
-				$categories_objects = get_terms(
-					array(
-						'taxonomy'   => 'category',
-						'hide_empty' => false,
-					)
-				);
+			$categories_objects = get_terms(
+				array(
+					'taxonomy'   => 'category',
+					'hide_empty' => false,
+				)
+			);
 
-				$categories = array();
-				if ( count( $categories_objects ) > 0 ) {
-					foreach ( $categories_objects as $category ) {
-						if ( $category instanceof WP_Term ) {
-							$categories[] = $category->term_id;
-						}
+			$categories = array();
+			if ( count( $categories_objects ) > 0 ) {
+				foreach ( $categories_objects as $category ) {
+					if ( $category instanceof WP_Term ) {
+						$categories[] = $category->term_id;
 					}
 				}
+			}
 
-				$categories_str = ES_Common::convert_categories_array_to_string( $categories );
+			$meta = array(
+				'list_conditions' => array(
+					array(
+						array(
+							'field'    => '_lists__in',
+							'operator' => 'is',
+							'value'    => $list_id,
+						)
+					),
+				),
+			);
 
-				$data['slug']             = sanitize_title( $title );
-				$data['name']             = $title;
-				$data['type']             = 'post_notification';
-				$data['from_email']       = $from_name;
-				$data['reply_to_email']   = $from_name;
-				$data['from_name']        = $from_email;
-				$data['reply_to_name']    = $from_email;
-				$data['categories']       = $categories_str;
-				$data['list_ids']         = $list_id;
-				$data['base_template_id'] = $post_id;
-				$data['status']           = 0;
+			$categories_str = ES_Common::convert_categories_array_to_string( $categories );
 
-				$post_notification_id = ES()->campaigns_db->save_campaign( $data );
-				if ( $post_notification_id ) {
-					$response['status']     = 'success';
-					$response['tasks_data'] = array(
-						'post_notification_id' => $post_notification_id,
-					);
-				}
+			$data['slug']             = sanitize_title( $title );
+			$data['name']             = $title;
+			$data['subject']          = $title;
+			$data['body']             = $content;
+			$data['type']             = IG_CAMPAIGN_TYPE_POST_NOTIFICATION;
+			$data['from_email']       = $from_name;
+			$data['reply_to_email']   = $from_name;
+			$data['from_name']        = $from_email;
+			$data['reply_to_name']    = $from_email;
+			$data['categories']       = $categories_str;
+			$data['list_ids']         = $list_id;
+			$data['status']           = 0;
+			$data['meta']             = maybe_serialize( $meta );
+
+			$post_notification_id = ES()->campaigns_db->save_campaign( $data );
+			if ( $post_notification_id ) {
+				$response['status']     = 'success';
+				$response['tasks_data'] = array(
+					'post_notification_id' => $post_notification_id,
+				);
 			}
 
 			return $response;
 		}
 
 		/**
-		 * Method to subscribe to klawoo in the onboarding process.
+		 * Method to subscribe to ES list installed on the IG site
 		 *
 		 * @since 4.6.0
 		 */
@@ -1206,35 +1176,13 @@ if ( ! class_exists( 'IG_ES_Onboarding' ) ) {
 			$email = ig_es_get_request_data( 'email', '' );
 			$list  = ig_es_get_request_data( 'list', '' );
 
-			if ( ! empty( $list ) && is_email( $email ) ) {
+			$sign_up_data = array(
+				'name'  => $name,
+				'email' => $email,
+				'list'  => $list,
+			);
 
-				$url_params = array(
-					'ig_es_external_action' => 'subscribe',
-					'name'                  => $name,
-					'email'                 => $email,
-					'list'                  => $list,
-				);
-
-				$ip_address = ig_es_get_ip();
-				if ( ! empty( $ip_address ) && 'UNKNOWN' !== $ip_address ) {
-					$url_params['ip_address'] = $ip_address;
-				}
-
-				$ig_es_url = 'https://www.icegram.com/';
-				$ig_es_url = add_query_arg( $url_params, $ig_es_url );
-
-				// Make a get request.
-				$api_response = wp_remote_get( $ig_es_url );
-				if ( ! is_wp_error( $api_response ) ) {
-					$body = ! empty( $api_response['body'] ) && ES_Common::is_valid_json( $api_response['body'] ) ? json_decode( $api_response['body'], true ) : '';
-					if ( ! empty( $body ) ) {
-						// If we have received an id in response then email is successfully queued at mailgun server.
-						if ( ! empty( $body['status'] ) && 'SUCCESS' === $body['status'] ) {
-							$response['status'] = 'success';
-						}
-					}
-				}
-			}
+			$response = ES()->trial->send_ig_sign_up_request( $sign_up_data );
 
 			return $response;
 		}
@@ -1252,7 +1200,7 @@ if ( ! class_exists( 'IG_ES_Onboarding' ) ) {
 
 			if ( ! empty( $is_trial ) ) {
 				// Add trial preferences.
-				ES()->add_trial_data( $is_trial, time() );
+				ES()->trial->add_trial_data( $is_trial, time() );
 			}
 
 			// Set flag for onboarding completion.

@@ -30,9 +30,6 @@ class ES_Newsletters {
 
 		add_action( 'admin_init', array( $this, 'process_broadcast_submission' ) );
 
-		// Add tracking fields data
-		add_filter( 'ig_es_broadcast_data', array( $this, 'add_tracking_fields_data' ) );
-
 		if ( ! ES()->is_pro() ) {
 			// Add scheduler data
 			add_filter( 'ig_es_broadcast_data', array( &$this, 'es_add_broadcast_scheduler_data' ), 10, 2 );
@@ -40,6 +37,8 @@ class ES_Newsletters {
 
 		// Check campaign wise open tracking is enabled.
 		add_filter( 'ig_es_track_open', array( $this, 'is_open_tracking_enabled' ), 10, 4 );
+
+		add_action( 'ig_es_show_' . IG_CAMPAIGN_TYPE_NEWSLETTER . '_campaign_summary_action_buttons', array( $this, 'show_summary_actions_buttons' ) );
 	}
 
 	public static function set_screen( $status, $option, $value ) {
@@ -110,8 +109,6 @@ class ES_Newsletters {
 
 			// If form is submitted then broadcast id is sent in $broadcast_data array.
 			$broadcast_id = ! empty( $broadcast_data['id'] ) ? $broadcast_data['id'] : '';
-			$list_id      = ! empty( $broadcast_data['list_ids'] ) ? $broadcast_data['list_ids'] : '';
-			$template_id  = ! empty( $broadcast_data['template_id'] ) ? $broadcast_data['template_id'] : '';
 			$subject      = ! empty( $broadcast_data['subject'] ) ? $broadcast_data['subject'] : '';
 
 			if ( empty( $broadcast_data['subject'] ) ) {
@@ -167,12 +164,10 @@ class ES_Newsletters {
 	 * @since  4.4.2 Added $broadcast_data param
 	 */
 	public function prepare_newsletter_settings_form( $broadcast_data = array(), $message_data = array() ) {
-		$newsletter_data = array();
 
 		$template_id = ! empty( $broadcast_data['template_id'] ) ? $broadcast_data['template_id'] : '';
 		$list_ids    = ! empty( $broadcast_data['list_ids'] ) ? $broadcast_data['list_ids'] : '';
 		$templates   = ES_Common::prepare_templates_dropdown_options( 'newsletter', $template_id );
-		$lists       = ES_Common::prepare_list_dropdown_options( $list_ids );
 		$from_email  = ES_Common::get_ig_option( 'from_email' );
 
 		$broadcast_id        = ! empty( $broadcast_data['id'] ) ? $broadcast_data['id'] : 0;
@@ -381,6 +376,7 @@ class ES_Newsletters {
 											'editor_class' => 'wp-editor-boradcast',
 										);
 										add_filter( 'tiny_mce_before_init', array( 'ES_Common', 'override_tinymce_formatting_options' ), 10, 2 );
+										add_filter( 'mce_external_plugins', array( 'ES_Common', 'add_mce_external_plugins' ) );
 										wp_editor( $body, 'edit-es-broadcast-body', $editor_args );
 										?>
 									</div>
@@ -474,19 +470,7 @@ class ES_Newsletters {
 											<span class="text-sm font-bold text-gray-800 broadcast_preview_contact_name"><?php echo ! empty( $inline_preview_data['contact_name'] ) ? esc_html( $inline_preview_data['contact_name'] ) : ''; ?></span>
 											<span class="pl-1 text-sm font-medium text-gray-700 broadcast_preview_contact_email"><?php echo ! empty( $inline_preview_data['contact_email'] ) ? esc_html( '&lt;' . $inline_preview_data['contact_email'] . '&gt;' ) : ''; ?></span>
 										</div>
-										<div class="block mt-3 broadcast_preview_content">
-											<?php
-											if ( ! empty( $broadcast_data['body'] ) ) {
-												$template_data['content']     = ! empty( $broadcast_data['body'] ) ? $broadcast_data['body'] : '';
-												$template_data['template_id'] = ! empty( $broadcast_data['template_id'] ) ? $broadcast_data['template_id'] : '';
-												$tempate_html                 = '';
-												ob_start();
-												$this->es_broadcast_preview_callback( $template_data );
-												$tempate_html = ob_get_clean();
-												echo wp_kses( $tempate_html, $allowedtags );
-											}
-											?>
-										</div>
+										<div class="block mt-3 broadcast_preview_content"></div>
 									</div>
 
 								</div>
@@ -537,8 +521,6 @@ class ES_Newsletters {
 
 		$list_id = ! empty( $data['list_ids'] ) ? $data['list_ids'] : '';
 
-		$title = get_the_title( $data['base_template_id'] );
-
 		$data['type'] = 'newsletter';
 		$data['name'] = $data['subject'];
 		$data['slug'] = sanitize_title( sanitize_text_field( $data['name'] ) );
@@ -564,17 +546,19 @@ class ES_Newsletters {
 				$data['body'] = ES_Common::es_process_template_body( $data['body'], $data['base_template_id'], $campaign_id );
 
 				$guid = ES_Common::generate_guid( 6 );
+				$campaign_meta = maybe_unserialize( $data['meta'] );
+				$meta = apply_filters( 'ig_es_before_save_campaign_notification_meta', array( 'type' => 'newsletter' ), $campaign_meta );
 				$data = array(
 					'hash'        => $guid,
 					'campaign_id' => $campaign_id,
 					'subject'     => $data['subject'],
 					'body'        => $data['body'],
-					'status'      => 'In Queue',
+					'status'      => '',
 					'start_at'    => ! empty( $data['start_at'] ) ? $data['start_at'] : '',
 					'finish_at'   => '',
 					'created_at'  => ig_get_current_date_time(),
 					'updated_at'  => ig_get_current_date_time(),
-					'meta'        => maybe_serialize( array( 'type' => 'newsletter' ) ),
+					'meta'        => maybe_serialize( $meta ),
 				);
 
 				$should_queue_emails = false;
@@ -639,9 +623,6 @@ class ES_Newsletters {
 				}
 			}
 		}
-
-		return;
-
 	}
 
 	public static function refresh_newsletter_content( $content, $args ) {
@@ -689,45 +670,28 @@ class ES_Newsletters {
 					$last_name = $contact_details[1];
 				}
 			}
-			// $first_name   =
 
 			$es_template_body = $template_data['content'];
 
 			$es_template_body = ES_Common::es_process_template_body( $es_template_body, $template_id, $campaign_id );
-			$es_template_body = str_replace( '{{NAME}}', $username, $es_template_body );
-			$es_template_body = str_replace( '{{EMAIL}}', $useremail, $es_template_body );
-			$es_template_body = str_replace( '{{FIRSTNAME}}', $first_name, $es_template_body );
-			$es_template_body = str_replace( '{{LASTNAME}}', $last_name, $es_template_body );
-			$allowedtags      = ig_es_allowed_html_tags_in_esc();
-			add_filter( 'safe_style_css', 'ig_es_allowed_css_style' );
+			$es_template_body = ES_Common::replace_keywords_with_fallback( $es_template_body, array(
+				'FIRSTNAME' => $first_name,
+				'NAME'      => $username,
+				'LASTNAME'  => $last_name,
+				'EMAIL'     => $useremail
+			) );
 
-			if ( has_post_thumbnail( $template_id ) ) {
-				$image_array = wp_get_attachment_image_src( get_post_thumbnail_id( $template_id ), 'full' );
-				$image       = '<img src="' . $image_array[0] . '" class="img-responsive" alt="Image for Post ' . $template_id . '" />';
-			} else {
-				$image = '';
+			// If there are blocks in this content, we shouldn't run wpautop() on it.
+			$priority = has_filter( 'the_content', 'wpautop' );
+
+			if ( false !== $priority ) {
+				// Remove wpautop to avoid p tags.
+				remove_filter( 'the_content', 'wpautop', $priority );
 			}
 
-			$html  = '';
-			$html .= '<style type="text/css">
-			.es-main-preview-block{
-				display:flex;
-			}
-			.es-clear-preview{
-				clear: both;
-			}
-			
-		</style>
-		<div class="wrap">
-		<div class="tool-box">
-		<div class="es-main-preview-block">
-		<div class="es-preview broadcast-preview w-full">' . $es_template_body . '</div>
-		<div class="es-clear-preview"></div>
-		</div>
-		<div class="es-clear-preview"></div>
-		</div>
-		</div>';
-			echo wp_kses( apply_filters( 'the_content', $html ), $allowedtags );
+			$template_html = apply_filters( 'the_content', $es_template_body );
+
+			return $template_html;
 		}
 
 	}
@@ -755,7 +719,6 @@ class ES_Newsletters {
 		$is_updating  = ! empty( $broadcast_id ) ? true : false;
 		$list_id      = ! empty( $broadcast_data['list_ids'] ) ? $broadcast_data['list_ids'] : '';
 		$template_id  = ! empty( $broadcast_data['template_id'] ) ? $broadcast_data['template_id'] : '';
-		$subject      = ! empty( $broadcast_data['subject'] ) ? $broadcast_data['subject'] : '';
 
 		$broadcast_data['base_template_id'] = $template_id;
 		$broadcast_data['list_ids']         = $list_id;
@@ -812,10 +775,7 @@ class ES_Newsletters {
 		$template_data['template_id'] = ! empty( $broadcast_data['template_id'] ) ? $broadcast_data['template_id'] : '';
 		$template_data['campaign_id'] = ! empty( $broadcast_data['id'] ) ? $broadcast_data['id'] : 0;
 
-		$tempate_html = '';
-		ob_start();
-		$this->es_broadcast_preview_callback( $template_data );
-		$tempate_html              = ob_get_clean();
+		$tempate_html              = $this->es_broadcast_preview_callback( $template_data );
 		$response['template_html'] = $tempate_html;
 
 		if ( 'inline' === $preview_type ) {
@@ -876,28 +836,6 @@ class ES_Newsletters {
 	}
 
 	/**
-	 * Function to add values of checkbox fields incase they are not checked.
-	 *
-	 * @param array $broadcast_data
-	 *
-	 * @return array $broadcast_data
-	 *
-	 * @since 4.4.7
-	 */
-	public function add_tracking_fields_data( $broadcast_data = array() ) {
-
-		$broadcast_meta = ! empty( $broadcast_data['meta'] ) ? maybe_unserialize( $broadcast_data['meta'] ) : array();
-
-		if ( empty( $broadcast_meta['enable_open_tracking'] ) ) {
-			$broadcast_meta['enable_open_tracking'] = 'no';
-		}
-
-		$broadcast_data['meta'] = maybe_serialize( $broadcast_meta );
-
-		return $broadcast_data;
-	}
-
-	/**
 	 * Add required broadcast schedule date/time data
 	 *
 	 * @param array $data
@@ -914,7 +852,7 @@ class ES_Newsletters {
 
 		if ( 'schedule_now' === $scheduling_option ) {
 			// Get time without GMT offset, as we are adding later on.
-			$schedule_str = current_time( 'timestamp', false );
+			$schedule_str = time();
 		}
 
 		if ( ! empty( $schedule_str ) ) {
@@ -951,7 +889,7 @@ class ES_Newsletters {
 				$campaign = ES()->campaigns_db->get( $campaign_id );
 				if ( ! empty( $campaign ) ) {
 					$campaign_type = $campaign['type'];
-					if ( 'newsletter' === $campaign_type ) {
+					if ( in_array( $campaign_type, array( 'newsletter', 'workflow_email' ), true ) ) {
 						$campaign_meta        = maybe_unserialize( $campaign['meta'] );
 						$is_track_email_opens = ! empty( $campaign_meta['enable_open_tracking'] ) ? $campaign_meta['enable_open_tracking'] : $is_track_email_opens;
 					}
@@ -960,5 +898,48 @@ class ES_Newsletters {
 		}
 
 		return $is_track_email_opens;
+	}
+
+	public function show_summary_actions_buttons( $campaign_data ) {
+
+		$campaign_status = ! empty( $campaign_data['status'] ) ? (int) $campaign_data['status'] : IG_ES_CAMPAIGN_STATUS_IN_ACTIVE;
+
+		// Flag to check if broadcast is being send or already sent.
+		$is_broadcast_processing = false;
+
+		if ( ! empty( $campaign_status ) ) {
+
+			$processing_status = array(
+				IG_ES_CAMPAIGN_STATUS_QUEUED,
+				IG_ES_CAMPAIGN_STATUS_FINISHED,
+			);
+
+			$has_processing_status = in_array( $campaign_status, $processing_status, true );
+
+			if ( $has_processing_status ) {
+				$is_broadcast_processing = true;
+			}
+		}
+		
+		// If broadcast is sent or being sent then don't allow scheduling to avoid conflicts.
+		if ( ! $is_broadcast_processing ) {
+			?>
+			<button type="submit" id="ig_es_schedule_campaign_btn" name="ig_es_campaign_action" class="w-24 inline-flex justify-center py-1.5 text-sm font-medium leading-5 text-white transition duration-150 ease-in-out bg-indigo-600 border border-transparent rounded-md md:px-2 lg:px-3 xl:px-4 md:ml-2 hover:bg-indigo-500 hover:text-white"
+					value="schedule">
+			<?php
+			if ( ES()->is_pro() ) {
+				?>
+				<span class="ig_es_broadcast_send_option_text">
+					<?php echo esc_html__( 'Schedule', 'email-subscribers' ); ?>
+				</span>
+				<?php
+			} else {
+				echo esc_html__( 'Send', 'email-subscribers' );
+			}
+			?>
+
+			</button>
+			<?php
+		}
 	}
 }

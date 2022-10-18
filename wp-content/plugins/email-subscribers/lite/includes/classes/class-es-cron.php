@@ -131,6 +131,19 @@ class ES_Cron {
 
 		if ( ES()->is_pro() ) {
 
+			//-----------------------------> if not scheduled....schedule hook
+			if ( ! wp_next_scheduled('ig_es_calculate_engagement_score')) {
+				$local_time = 'midnight';
+				$timestamp  = strtotime( $local_time ) - ( get_option('gmt_offset') * HOUR_IN_SECONDS );
+				wp_schedule_event( $timestamp , 'daily', 'ig_es_calculate_engagement_score');
+			}
+			//Schedule hook only our bounce handling feature enabled
+			if ( 'yes' === get_option( 'ig_es_enable_bounce_handling_feature', 'yes' ) ) {
+				if ( ! wp_next_scheduled( 'ig_es_bounce_handler_cron_action' ) ) {
+					wp_schedule_event( time(), 'daily', 'ig_es_bounce_handler_cron_action', array() );
+				}
+			}
+			//-----------------------------<
 			$is_woocommerce_active = $ig_es_tracker::is_plugin_activated( 'woocommerce/woocommerce.php' );
 			if ( $is_woocommerce_active ) {
 
@@ -145,6 +158,11 @@ class ES_Cron {
 				if ( ! wp_next_scheduled( 'ig_es_wc_products_on_sale_worker' ) ) {
 					wp_schedule_event( floor( time() / 300 ) * 300, 'ig_es_fifteen_minutes', 'ig_es_wc_products_on_sale_worker' );
 				}
+			}
+
+			$list_cleanup_cron_scheduled = wp_next_scheduled( 'ig_es_list_cleanup_worker' );
+			if ( ! $list_cleanup_cron_scheduled ) {
+				wp_schedule_event( floor( time() / 300 ) * 300, 'ig_es_monthly_interval', 'ig_es_list_cleanup_worker' );
 			}
 		}
 
@@ -185,7 +203,12 @@ class ES_Cron {
 			return $process_id;
 		}
 
-		$process_id = @getmypid();
+		// On some hosts getmypid is disabled due to security reasons.
+		if ( function_exists( 'getmypid' ) ) {
+			$process_id = @getmypid();
+		} else {
+			$process_id = wp_rand();
+		}
 
 		update_option( 'ig_es_cron_lock_' . $key, $process_id, false );
 
@@ -269,6 +292,10 @@ class ES_Cron {
 				'interval' => 15 * MINUTE_IN_SECONDS,
 				'display'  => __( 'Fifteen minutes', 'email-subscribers' ),
 			),
+			'ig_es_monthly_interval' => array(
+				'interval' => 30 * DAY_IN_SECONDS,
+				'display'  => __( 'Monthly', 'email-subscribers' ),
+			),
 		);
 
 		$schedules = array_merge( $schedules, $es_schedules );
@@ -332,7 +359,10 @@ class ES_Cron {
 			parse_str( $cron_url, $result );
 		}
 
-		$cron_url = add_query_arg( 'es', 'cron', site_url() );
+		// Adding site url with a trailing slash
+		$site_url = trailingslashit( site_url() );
+
+		$cron_url = add_query_arg( 'es', 'cron', $site_url );
 		if ( empty( $result['guid'] ) ) {
 			$guid = ES_Common::generate_guid();
 		} else {
@@ -365,12 +395,17 @@ class ES_Cron {
 	 * @return bool
 	 *
 	 * @since 4.3.3
+	 *
+	 * @modify 5.4.5
 	 */
 	public function set_last_hit() {
 
-		$last_hit = array();
-
+		$last_hit = get_option( 'ig_es_cron_last_hit', array() );
 		$last_hit['timestamp'] = time();
+
+		if ( isset( $_SERVER['HTTP_X_ES_EMAIL_SENDING_LIMIT'] ) ) {
+			$last_hit['icegram_timestamp'] = time();
+		}
 
 		return update_option( 'ig_es_cron_last_hit', $last_hit );
 	}
@@ -424,7 +459,7 @@ class ES_Cron {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @modify 4.3.1
+	 * @modify 5.4.5.
 	 */
 	public function handle_cron_request() {
 
@@ -567,7 +602,7 @@ class ES_Cron {
 		$es_request = ig_es_get_request_data( 'es' );
 
 		// It's not a cron request . Say Goodbye!
-		if ( 'get_info' !== $es_request ) {
+		if ('get_info' !== $es_request ) {
 			return;
 		}
 

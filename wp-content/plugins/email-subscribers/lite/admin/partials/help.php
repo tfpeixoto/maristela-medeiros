@@ -93,12 +93,12 @@ $articles = array(
 	),
 	array(
 		'title' => 'Keywords in the Broadcast',
-		'link'  => 'https://www.icegram.com/documentation/es-what-are-the-available-keywords-in-the-newsletters/?utm_source=es&utm_medium=in_app&utm_campaign=view_docs_help_page',
+		'link'  => 'https://www.icegram.com/documentation/what-keywords-can-be-used-while-designing-the-campaign/?utm_source=es&utm_medium=in_app&utm_campaign=view_docs_help_page',
 		'class' => 'font-medium text-blue-500 hover:text-blue-700',
 	),
 	array(
 		'title' => 'Keywords in the Post Notifications',
-		'link'  => 'https://www.icegram.com/documentation/es-what-are-the-available-keywords-in-the-post-notifications/?utm_source=es&utm_medium=in_app&utm_campaign=view_docs_help_page',
+		'link'  => 'https://www.icegram.com/documentation/what-keywords-can-be-used-while-designing-the-campaign/?utm_source=es&utm_medium=in_app&utm_campaign=view_docs_help_page',
 		'class' => 'font-medium text-blue-500 hover:text-blue-700',
 	),
 );

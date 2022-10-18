@@ -41,7 +41,7 @@ import {
             statusCode: {
                 500: function (xhr) {
                     toastr.error(
-                        translate['Looks like you attempt to use large source file, that reached memory allocated to PHP or reached max_post_size. Please, increase memory limit according to documentation for your web server. For additional information, check .log files of web server or'] + `<a target="_blank" style="text-decoration: underline" href="https://docs.mpgwp.com/article/30-500-internal-server-error"> ${translate['read our article']}</a>.`,
+                        translate['Looks like you attempt to use large source file, that reached memory allocated to PHP or reached max_post_size. Please, increase memory limit according to documentation for your web server. For additional information, check .log files of web server or'] + `<a target="_blank" style="text-decoration: underline" href="https://docs.themeisle.com/article/1443-500-internal-server-error"> ${translate['read our article']}</a>.`,
                         translate['Server settings limitation'], { timeOut: 30000 });
                 }
             }
@@ -64,7 +64,7 @@ import {
 
         // checkbox
         jQuery('#mpg_exclude_template_in_robots').prop('checked', parseInt(projectData.data.exclude_in_robots));
-        // jQuery('#mpg_participate_in_search').prop('checked', parseInt(projectData.data.participate_in_search));
+        jQuery('#mpg_participate_in_search').prop('checked', parseInt(projectData.data.participate_in_search));
 
         // Грузит список типов записей, и сами записи в них. (дропдауны сверху)
         fillCustomTypeDropdown(projectData);
@@ -94,10 +94,8 @@ import {
             jQuery(`select[name="notification_email"] option[value="${projectData.data.schedule_notification_email}"]`).attr('selected', 'selected');
         }
 
-        if (projectData.data.worksheet_id) {
-            jQuery(`input[name="worksheet_id"]`).val(projectData.data.worksheet_id)
-            jQuery('.worksheet-id').css({ opacity: 1, height: 'initial' });
-        }
+        jQuery(`input[name="worksheet_id"]`).val(projectData.data.worksheet_id)
+        jQuery('.worksheet-id').css({ opacity: 1, height: 'initial' });
 
 
         // ====================  Ставим заголовки в стейт ====================
@@ -121,9 +119,8 @@ import {
         if (projectData.data.name && projectData.data.entity_type && projectData.data.template_id) {
 
             if (projectData.data.source_path) {
-                let path = projectData.data.source_path.split('wp-content');
                 jQuery('#mpg_in_use_dataset_link')
-                    .attr('href', `${backendData.baseUrl}/wp-content${path[1]}`)
+                    .attr('href', `${backendData.mpgUploadDir}${projectData.data.source_path}`)
                     .removeClass('disabled')
                     .text(translate['Download'])
             }
@@ -213,6 +210,7 @@ function fillSitemapData(projectData) {
     mpgUpdateState('sitemapMaxUrlPerFile', projectData.data.sitemap_max_url);
     mpgUpdateState('sitemapFrequency', projectData.data.sitemap_update_frequency);
     mpgUpdateState('sitemapAddToRobotsTxt', projectData.data.sitemap_add_to_robots);
+    mpgUpdateState('sitemapPriority', projectData.data.sitemap_priority);
 }
 
 function fillCacheData(projectData) {
@@ -296,5 +294,22 @@ if (jQuery('.advanced-page').length) {
             }
         }
     });
+
+    jQuery.post(ajaxurl, {
+        action: 'mpg_get_branding_position'
+    }).then(brandingPositionRawData => {
+        let brandingPositionData = JSON.parse(brandingPositionRawData);
+
+        if (!brandingPositionData.success) {
+            toastr.error(brandingPositionData.error, translate['Failed']);
+            return;
+        } else {
+            if (brandingPositionData.data) {
+                jQuery('#mpg_change_branding_position').val(brandingPositionData.data);
+            }
+        }
+    }).catch(e => {
+        console.log(e);
+    })
 
 }

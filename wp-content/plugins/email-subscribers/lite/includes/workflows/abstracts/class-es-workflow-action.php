@@ -333,4 +333,12 @@ abstract class ES_Workflow_Action {
 		return false;
 	}
 
+	/**
+	 * Load preview for the action
+	 *
+	 * @return null
+	 */
+	public function load_preview() {
+		return null;
+	}
 }

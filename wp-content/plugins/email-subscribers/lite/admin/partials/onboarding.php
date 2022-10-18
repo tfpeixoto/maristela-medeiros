@@ -1,5 +1,9 @@
 <?php
 	$onboarding_step = IG_ES_Onboarding::get_onboarding_step();
+	$current_year    = gmdate( 'Y' );
+	$admin_email     = get_option( 'admin_email' );
+	$from_name       = get_option( 'ig_es_from_name' );
+	$from_email      = get_option( 'ig_es_from_email' );
 ?>
 <!-- Start-IG-Code -->
 <div class="mx-auto mt-6 sm:mt-5">
@@ -9,8 +13,6 @@
 <div id="slider-wrapper font-sans">
 	<div id="slider">
 		<div class="sp es-send-email-screen<?php echo esc_attr( 1 === $onboarding_step ? ' active' : '' ); ?>" style="<?php echo esc_attr( 1 === $onboarding_step ? '' : 'display:none' ); ?>">
-			<?php $from_name = get_option( 'ig_es_from_name' ); ?>
-			<?php $from_email = get_option( 'ig_es_from_email' ); ?>
 
 			<section class="mx-auto my-6 sm:my-7">
 			  <div
@@ -52,7 +54,7 @@
 						);
 						?>
 					  </p>
-				   
+
 					  <div class="space-y-1">
 						<h3 class="text-base font-medium text-gray-900"><?php echo esc_html__( 'Essentials:', 'email-subscribers' ); ?></h3>
 
@@ -97,8 +99,8 @@
 						  class="my-2 space-y-2 sm:my-0 sm:space-y-0 sm:space-x-4 sm:flex sm:items-center"
 						>
 						  <div class="w-full sm:w-1/2">
-							<input type="email" 
-							  name="es_test_email[]" 
+							<input type="email"
+							  name="es_test_email[]"
 							  required
 							  class="es_email es_onboard_email block w-full text-sm transition duration-150 ease-in-out rounded-md shadow-sm form-input sm:leading-5"
 							  placeholder="name@domain.com"
@@ -113,49 +115,29 @@
 						  </div>
 						</div>
 					  </div>
-				  
+
 					  <div class="space-y-1 leading-5">
 						<h3 class="text-base font-medium text-gray-900 -mb-0.5"><?php echo esc_html__( 'Your preferences:', 'email-subscribers' ); ?></h3>
 						<!-- Start-IG-Code -->
 						<?php if ( ! ES()->is_premium() ) { ?>
-						<div class="flex pt-1">
-						  <div class="pt-1">
-							<input
-							  id="es_free_trial_preference"
-							  type="checkbox"
-							  checked="checked"
-							  class="w-4 h-4 transition duration-150 ease-in-out form-checkbox"
-							/>
-						  </div>
-						  <div class="pl-3">
-							<label for="es_free_trial_preference" class="text-sm">
-							 <?php
-								/* translators: 1: Trial period in days. */
-								echo esc_html__( sprintf( 'Enable %s days free trial of premium features - email delivery testing, automatic background sending, spam protection and more', ES()->trial->get_trial_period( 'in_days' ) ), 'email-subscribers' );
-								?>
-							</label>
-						  </div>
-						</div>
-						
-						<div class="flex pt-1">
-						  <div class="pt-1">
-							<input
-							  id="es_allow_tracking"
-							  type="checkbox"
-							  checked="checked"
-							  class="w-4 h-4 transition duration-150 ease-in-out form-checkbox"
-							/>
-						  </div>
-						  <div class="pl-3">
-							<label for="es_allow_tracking" class="text-sm">
-							<?php
-								/* translators: %s. Plugin name. */
-								echo sprintf( esc_html__( 'Help us to improve %s by opting in to share non-sensitive plugin usage data. No personal data is tracked or stored.', 'email-subscribers' ), '<strong>Email Subscribers</strong>' );
-							?>
-							</label>
-						  </div>
-						</div>
-
+							<div class="flex pt-1">
+								<div class="pt-1">
+									<input
+									id="es_allow_tracking"
+									type="checkbox"
+									checked="checked"
+									class="w-4 h-4 transition duration-150 ease-in-out form-checkbox"
+									/>
+								</div>
+								<div class="pl-3">
+									<label for="es_allow_tracking" class="text-sm">
+									<?php
+										/* translators: %s. Plugin name. */
+										echo sprintf( esc_html__( 'Help us to improve %s by opting in to share non-sensitive plugin usage data. No personal data is tracked or stored.', 'email-subscribers' ), '<strong>Email Subscribers</strong>' );
+									?>
+									</label>
+								</div>
+							</div>
 						<?php } ?>
 
 						<div class="flex">
@@ -283,7 +265,7 @@
 							?>
 						  </p>
 						</li>
-						
+
 						<li id="ig-es-onboard-create_contacts_and_add_to_list" class="flex items-start space-x-3 group">
 						  <div
 							class="relative pt-1 flex items-center justify-center flex-shrink-0 w-5 h-5"
@@ -294,7 +276,7 @@
 						  </div>
 						  <p class="text-sm">
 							<?php echo esc_html__( 'Subscribing you and ', 'email-subscribers' ); ?>
-							<span id="es_onboarding_emails_list"></span> 
+							<span id="es_onboarding_emails_list"></span>
 							<?php echo esc_html__( ' to these lists', 'email-subscribers' ); ?>
 						  </p>
 						</li>
@@ -460,35 +442,77 @@
 							>
 								<?php echo esc_html__( 'Done! Now speed up your success!', 'email-subscribers' ); ?>
 							</h3>
-							<input type="hidden"  id="sign-up-list" name="list" value="bc4f8995201a"/>
-							  <input type="hidden" id="sign-up-form-source" name="form-source" value=""/>
+							<input type="hidden"  id="sign-up-list" name="list[]" value="<?php echo esc_attr( ES()->get_es_optin_list_hash() ); ?>"/>
+							<?php
+							if ( ! ES()->is_premium() ) {
+								?>
+								<input type="hidden" id="es-trial-list" name="list[]" value="<?php echo esc_attr( ES()->trial->get_es_trial_list_hash() ); ?>" />
+								<?php
+							}
+							?>
+							  <input type="hidden" id="sign-up-form-source" name="form-source" value="es-onboarding"/>
 							<div class="space-y-3 text-gray-800">
-							  
 								<div class="space-y-5 text-gray-800">
 							  <p class="text-base -mb-1"><?php echo esc_html__( 'Setup is complete. Couple of things to support you...', 'email-subscribers' ); ?>
 							  </p>
 							  <!-- Start-IG-Code -->
 							  <div class="">
-								<h3 class="text-base font-medium text-gray-900">
-									<?php echo esc_html__( 'Free course: WordPress Email Marketing Masterclass 2021', 'email-subscribers' ); ?>
-								</h3>
-								<p class="pt-2 text-sm leading-6">
-									<?php
-									echo esc_html__(
-										'How to build your list, make sure your email reach your
-				                  audience and influence your audience.',
-										'email-subscribers'
-									);
+								<?php
+								if ( ! ES()->is_premium() ) {
+									$trial_period_in_days = ES()->trial->get_trial_period( 'in_days' );
 									?>
-								</p>
-								<div
-								  class="pt-1 space-y-2 text-sm sm:space-y-0 sm:space-x-4 sm:flex sm:items-center"
-								>
+									<h3 class="text-base font-medium text-gray-900">
+										<?php
+											/* translators: %d. Trial period in days */
+											echo sprintf( esc_html__( 'Sign up for free trial of premium features', 'email-subscribers' ), esc_html( $trial_period_in_days ) );
+										?>
+									</h3>
+									<p class="pt-2 text-xm leading-6">
+										<?php
+											/* translators: %d. Trial period in days */
+											echo sprintf( esc_html__(
+												'Get %d days free trial of managed email sending, advance spam
+										protection, security, email deliverability checks and more. Premium features will be disabled
+										automatically after the trial if you don\'t continue.',
+												'email-subscribers'
+											), esc_html( $trial_period_in_days ) );
+										?>
+									</p>
+									<p class="pt-2 text-sm leading-6">
+										<?php
+											/* translators: %d. Current year */
+											echo sprintf( esc_html__( 'Also, get free WordPress Email Marketing Masterclass %d Course and grow your audience.', 'email-subscribers' ), esc_html( $current_year ) );
+										?>
+									</p>
+									<?php
+								} else {
+									?>
+									<h3 class="text-base font-medium text-gray-900">
+										<?php
+											/* translators: %d. Current year */
+											echo sprintf( esc_html__( 'Free course: WordPress Email Marketing Masterclass %d', 'email-subscribers' ), esc_html( $current_year ) );
+										?>
+									</h3>
+									<p class="pt-2 text-sm leading-6">
+										<?php
+										echo esc_html__(
+											'How to build your list, make sure your email reach your
+									audience and influence your audience.',
+											'email-subscribers'
+										);
+										?>
+									</p>
+									<?php
+								}
+								?>
+									<div
+									class="pt-1 space-y-2 text-sm sm:space-y-0 sm:space-x-4 sm:flex sm:items-center"
+									>
 								  <div class="w-full sm:w-1/2">
 									<input
 									  id="ig-es-sign-up-name"
 									  class="block w-full mt-1 text-sm transition duration-150 ease-in-out rounded-md shadow-sm form-input sm:leading-5"
-									  placeholder="Your name"
+									  placeholder="<?php echo esc_html__('Your name', 'email-subscribers' ); ?>"
 									/>
 								  </div>
 
@@ -497,52 +521,16 @@
 									type="email"
 									  id="ig-es-sign-up-email"
 									  class="es_onboard_email block w-full mt-1 text-sm transition duration-150 ease-in-out rounded-md shadow-sm form-input sm:leading-5"
-									  placeholder="Your email"
+									  placeholder="<?php echo esc_html__('Your email', 'email-subscribers' ); ?>"
+									  value="<?php echo esc_attr( $admin_email ); ?>"
 									/>
 								  </div>
 								</div>
 							  </div>
 
-								<?php if ( ! ES()->is_premium() ) { ?>
-							  <div id="es_free_trial_option">
-								<h3 class="text-base font-medium text-gray-900 pt-2">
-									<?php echo esc_html__( 'Premium features for free:', 'email-subscribers' ); ?>
-								</h3>
 
-								<p class="text-sm leading-6 pt-1">
-									<?php
-									/* translators: 1: Trial period in days. */
-									echo esc_html__(
-										sprintf(
-											'Get %s days free trial of managed email sending, advance spam
-				                  protection, security, email deliverability checks and more. No
-				                  credit card required. Premium features will be disabled
-				                  automatically after the trial if you don\'t continue.',
-											ES()->trial->get_trial_period( 'in_days' )
-										),
-										'email-subscribers'
-									);
-									?>
-								</p>
-								<div class="flex my-2 sm:my-0 pt-1">
-								  <div class="pt-1">
-									<input
-									  id="es_free_pro_trial"
-									  type="checkbox"
-									  checked="checked"
-									  class="w-4 h-4 transition duration-150 ease-in-out form-checkbox"
-									/>
-								  </div>
-								  <div class="pl-3">
-									<label for="es_free_pro_trial" class="text-sm">
-									  <?php echo esc_html__( 'Yes, start the trial', 'email-subscribers' ); ?>
-									</label>
-								  </div>
-								</div>
-							  </div>
-								<?php } ?>
 							  <!-- End-IG-Code -->
-							  
+
 							  <div class="space-y-1">
 								<h3 class="text-base font-medium text-gray-900 pt-2">
 									<?php echo esc_html__( 'Recommended next steps:', 'email-subscribers' ); ?>
@@ -559,7 +547,7 @@
 									  target="_blank"
 									  ><?php echo esc_html__( 'documentation', 'email-subscribers' ); ?></a
 									>
-									<?php echo esc_html__( 'if you need any help', 'email-subscribers' ); ?>	
+									<?php echo esc_html__( 'if you need any help', 'email-subscribers' ); ?>
 								  </li>
 								  <!-- End-IG-Code -->
 								</ul>
@@ -570,7 +558,7 @@
 					</form>
 				  <div class="px-4 py-3 text-right bg-gray-50 md:px-8">
 					<button
-					  type="button" id="ig-es-finish-onboarding-process"
+					  type="button" id="ig-es-complete-onboarding"
 					  class="relative inline-flex items-center px-4 py-2 text-base font-medium leading-5 text-white bg-indigo-800 border border-transparent rounded-md hover:bg-indigo-600 focus:outline-none focus:shadow-outline">
 						<span class="mr-1"><?php echo esc_html__( 'Complete setup &amp; take me to "Dashboard" ', 'email-subscribers' ); ?></span>
 						<span class="es-btn-arrow"> → </span>
@@ -584,8 +572,8 @@
 			   </div>
 			</section>
 		  </div>
-	
-		<div class="sp es-receive-error" style="display:none">
+
+		<div class="sp es-popup-message" style="display:none">
 			<div class="fixed flex inset-0 overflow-x-hidden overflow-y-auto z-50 flex justify-center w-full h-full" style="background-color: rgba(0,0,0,.5);">
 				<section class="absolute flex justify-center mx-auto md:mx-auto lg:mx-auto my-12 sm:my-12 lg:my-24">
 				  <div
@@ -620,14 +608,14 @@
 									  <p class="font-medium text-sm text-gray-900">
 										<?php echo esc_html__( 'Here\'s the error we encountered:', 'email-subscribers' ); ?>
 									  </p>
-									  <div class="bg-red-50 px-1 py-0.5 text-sm font-mono ig-es-onboarding-error">
+									  <div class="px-1 py-0.5 text-sm font-mono message">
 										[error-message]
 									  </div>
 									</div>
-									<p id="ig-es-email-delivery-error-message" class="text-sm">
-									 
+									<p class="additional-message text-sm">
+
 									</p>
-									<p class="font-medium text-sm">
+									<p class="error-message font-medium text-sm">
 										<?php
 										echo esc_html__(
 											'We recommend you solve this problem quickly after completing
@@ -655,6 +643,6 @@
 					</div>
 				</section>
 			</div>
-		</div>			
+		</div>
 	</div>
 </div>

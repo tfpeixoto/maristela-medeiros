@@ -639,12 +639,13 @@ abstract class ES_DB {
 	 *
 	 * @param array $values
 	 * @param int   $length
+	 * @param bool  $return_insert_ids
 	 *
 	 * @since 4.2.1
 	 *
 	 * @since 4.3.5 Fixed issues and started using it.
 	 */
-	public function bulk_insert( $values = array(), $length = 100 ) {
+	public function bulk_insert( $values = array(), $length = 100, $return_insert_ids = false ) {
 		global $wpbd;
 
 		if ( ! is_array( $values ) ) {
@@ -683,10 +684,14 @@ abstract class ES_DB {
 
 		$error_flag = false;
 
+		// Holds first and last row ids of each batch insert
+		$bulk_rows_start_end_ids = [];
+
 		foreach ( $batches as $key => $batch ) {
 
 			$place_holders = array();
 			$final_values  = array();
+			$fields_str    = '';
 
 			foreach ( $batch as $value ) {
 
@@ -706,7 +711,16 @@ abstract class ES_DB {
 
 			if ( ! $wpbd->query( $sql ) ) {
 				$error_flag = true;
+			} else {
+				$start_id = $wpbd->insert_id;
+				$end_id   = ( $start_id - 1 ) + count( $batch );
+				array_push( $bulk_rows_start_end_ids, $start_id );
+				array_push( $bulk_rows_start_end_ids, $end_id );
 			}
+		}
+
+		if ( $return_insert_ids && count( $bulk_rows_start_end_ids ) > 0 ) {
+			return array( min( $bulk_rows_start_end_ids ), max( $bulk_rows_start_end_ids ) );
 		}
 
 		// Check if error occured during executing the query.

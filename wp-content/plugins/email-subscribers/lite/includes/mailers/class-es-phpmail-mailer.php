@@ -9,6 +9,23 @@ if ( ! class_exists( 'ES_Phpmail_Mailer' ) ) {
 	 * @since 4.3.2
 	 */
 	class ES_Phpmail_Mailer extends ES_Base_Mailer {
+
+		/**
+		 * Mailer name
+		 *
+		 * @since 4.8.5
+		 * @var
+		 */
+		public $name = 'PHP mail';
+
+		/**
+		 * Mailer Slug
+		 *
+		 * @since 4.8.5
+		 * @var
+		 */
+		public $slug = 'php_mail';
+
 		/**
 		 * ES_Phpmail_Mailer constructor.
 		 *
@@ -70,6 +87,8 @@ if ( ! class_exists( 'ES_Phpmail_Mailer' ) ) {
 				$phpmailer->addCustomHeader( 'List-Unsubscribe', $list_unsubscribe_header );
 				$phpmailer->addCustomHeader( 'List-Unsubscribe-Post', 'List-Unsubscribe=One-Click' );
 			}
+
+			apply_filters( 'ig_es_php_mailer_email_headers', $phpmailer );
 
 			$phpmailer->Subject = $message->subject;
 			$phpmailer->Body    = $message->body;

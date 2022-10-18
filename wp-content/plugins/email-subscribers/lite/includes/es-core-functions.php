@@ -735,6 +735,7 @@ if ( ! function_exists( 'ig_es_allowed_html_tags_in_esc' ) ) {
 				'multiple' => true,
 				'aria-*'   => true,
 				'disabled' => true,
+				'required' => 'required',
 			),
 			'optgroup' => array(
 				'label' => true,
@@ -790,6 +791,7 @@ if ( ! function_exists( 'ig_es_allowed_html_tags_in_esc' ) ) {
 				'style'  => true,
 				'action' => true,
 				'method' => true,
+				'data-*' => true,
 			),
 			'svg'      => array(
 				'width'    => true,
@@ -828,6 +830,8 @@ if ( ! function_exists( 'ig_es_allowed_html_tags_in_esc' ) ) {
 			),
 			'textarea' => array(
 				'autocomplete' => true,
+				'required'	   => 'required',
+				'placeholder'  => true,
 			),
 			'style'    => array(),
 			'link'     => array(
@@ -848,6 +852,20 @@ if ( ! function_exists( 'ig_es_allowed_html_tags_in_esc' ) ) {
 		$allowedtags = array_merge_recursive( $context_allowed_tags, $custom_allowed_tags );
 
 		return $allowedtags;
+	}
+}
+
+add_filter( 'ig_es_escape_allowed_tags', 'ig_es_allowed_html_tags_in_esc' );
+
+if ( ! function_exists( 'ig_es_get_strip_excluded_tags' ) ) {
+	/**
+	 * Get HTML tags which should be excleded from stripping when calling strip_tags function.
+	 *
+	 * @since 5.3.8
+	 */
+	function ig_es_get_strip_excluded_tags() {
+		$excluded_tags = array( '<style>', '<p>', '<em>', '<span>', '<b>', '<strong>', '<i>', '<a>', '<ul>', '<ol>', '<li>', '<br>', '<br/>', '<blockquote>', '<header>', '<footer>' );
+		return apply_filters( 'ig_es_strip_excluded_tags', $excluded_tags ) ;
 	}
 }
 
@@ -994,3 +1012,65 @@ if ( ! function_exists( 'ig_es_insert_widget_in_sidebar' ) ) {
 	}
 }
 
+
+if ( ! function_exists( 'ig_es_get_values_in_range' ) ) {
+
+	/**
+	 * Get the values in range
+	 *
+	 * @param $values
+	 * @param $start
+	 * @param $end
+	 *
+	 * @return array
+	 */
+	function ig_es_get_values_in_range( $values, $start, $end ) {
+		$in_range = array();
+		foreach ( $values as $val ) {
+			if ( in_array( $val, range( $start, $end ) ) ) {
+				array_push( $in_range, $val );
+			}
+		}
+		return $in_range;
+	}
+}
+
+
+if ( ! function_exists( 'ig_es_is_arrays_are_equal' ) ) {
+
+	/**
+	 * Check the given two arrays are equal
+	 *
+	 * @param $array1
+	 * @param $array2
+	 *
+	 * @return bool
+	 */
+	function ig_es_is_arrays_are_equal( $array1, $array2) {
+		// If the objects are not arrays or differ in their size, they cannot be equal
+		if ( !is_array($array1) || !is_array($array2) || count($array1) !== count($array2)) {
+			return false;
+		}
+		// If the arrays of keys are not strictly equal (after sorting),
+		// the original arrays are not strictly equal either
+		$array1_keys = array_keys($array1);
+		$array2_keys = array_keys($array2);
+		array_multisort($array1_keys);
+		array_multisort($array2_keys);
+		if ($array1_keys !== $array2_keys) {
+			return false;
+		}
+		// Comparing values
+		foreach ($array1_keys as $key) {
+			$array1_value = $array1[$key];
+			$array2_value = $array2[$key];
+			// Either the objects are strictly equal or they are arrays
+			// which are equal according to our definition. Otherwise they
+			// are different.
+			if ($array1_value !== $array2_value) {
+				return false;
+			}
+		}
+		return true;
+	}
+}

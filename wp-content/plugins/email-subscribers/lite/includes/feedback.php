@@ -146,7 +146,7 @@ if ( ! function_exists( 'ig_es_review_message_data' ) ) {
 
 		$review_url = 'https://wordpress.org/support/plugin/email-subscribers/reviews/';
 		$icon_url   = ES_PLUGIN_URL . 'lite/admin/images/icon-64.png';
-		$message    = __( "<span><p>We hope you're enjoying <b>Email Subscribers</b> plugin! Could you please do us a BIG favor and give us a 5-star rating on WordPress to help us spread the word and boost our motivation?</p>", 'temporary-login-without-password' );
+		$message    = __( "<span><p>We hope you're enjoying <b>Email Subscribers</b> plugin! Could you please do us a BIG favor and give us a 5-star rating on WordPress to help us spread the word and boost our motivation?</p>", 'email-subscribers' );
 
 		$review_data['review_url'] = $review_url;
 		$review_data['icon_url']   = $icon_url;
@@ -226,20 +226,31 @@ function ig_es_render_iges_merge_feedback() {
 				'title'             => __( 'Subscription forms and CTAs??', 'email-subscribers' ),
 				'event'             => $event,
 				'desc'              => '<div><p class="mt-4">You use <a href="https://wordpress.org/plugins/email-subscribers" target="_blank"><b class="text-blue-700 font-semibold underline">Email Subscribers</b></a> to send email campaigns.</p><p class="mt-3">Would you like us to include onsite popups and action bars in the plugin as well? This way you can <b class="font-semibold">convert visitors to subscribers, drive traffic and run email marketing from a single plugin</b>.</p> <p class="mt-3">Why do we ask?</p> <p class="mt-3">Our <a class="text-blue-700 font-semibold underline" href="https://wordpress.org/plugins/icegram" target="_blank"><b>Icegram</b></a> plugin already does onsite campaigns. We are thinking of merging Icegram & Email Subscribers into a single plugin.</p> <p class="mt-3"><b class="font-semibold">Will a comprehensive ConvertKit / MailChimp like email + onsite campaign plugin be useful to you?</b></p> </div><p class="mt-3">',
-				'poll_options'      => array(
-					'yes' => array(
-						'text'  => '<b>' . __( 'Yes', 'email-subscribers' ) . '</b>',
-						'color' => 'green',
+				'fields' => array(
+					array(
+						'type' => 'radio',
+						'name' => 'poll_options',
+						'label'	   => __( 'Yes', 'email-subscribers' ),
+						'value'	=> 'yes',
+						'required' => true,
 					),
-					'no'  => array(
-						'text'  => '<b>' . __( 'No', 'email-subscribers' ) . '</b>',
-						'color' => 'red',
+					array(
+						'type' => 'radio',
+						'name' => 'poll_options',
+						'label'	   => __( 'No', 'email-subscribers' ),
+						'value'	=> 'no',
+					),
+					array(
+						'type' => 'textarea',
+						'name' => 'details',
+						'placeholder' => __( 'Additional feedback', 'email-subscribers' ),
 					),
 				),
 				'allow_multiple'    => false,
 				'position'          => 'bottom-center',
 				'width'             => 400,
 				'delay'             => 2, // seconds
+				'display_as'		=> 'popup',
 				'confirmButtonText' => __( 'Send my feedback to <b>Icegram team</b>', 'email-subscribers' ),
 				'show_once'         => true,
 			);
@@ -341,3 +352,47 @@ if ( ! function_exists( 'ig_es_show_plugin_usage_tracking_notice' ) ) {
 }
 
 add_filter( 'ig_es_show_plugin_usage_tracking_notice', 'ig_es_show_plugin_usage_tracking_notice' );
+
+if ( ! function_exists('ig_es_can_load_sweetalert_js') ) {
+	/**
+	 * Can load sweetalert js
+	 *
+	 * @param bool $load
+	 *
+	 * @return bool
+	 *
+	 * @since 5.4.12
+	 */
+	function ig_es_can_load_sweetalert_js( $load = false ) {
+
+		if ( ES()->is_es_admin_screen() ) {
+			return true;
+		}
+
+		return $load;
+	}
+}
+
+add_filter( 'ig_es_can_load_sweetalert_js', 'ig_es_can_load_sweetalert_js' );
+
+if ( ! function_exists('ig_es_can_load_sweetalert_css') ) {
+	/**
+	 * Can load sweetalert css
+	 *
+	 * @param bool $load
+	 *
+	 * @return bool
+	 *
+	 * @since 5.4.12
+	 */
+	function ig_es_can_load_sweetalert_css( $load = false ) {
+
+		if ( ES()->is_es_admin_screen() ) {
+			return true;
+		}
+
+		return $load;
+	}
+}
+
+add_filter( 'ig_es_can_load_sweetalert_css', 'ig_es_can_load_sweetalert_css' );

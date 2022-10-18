@@ -3,20 +3,20 @@
  * Plugin Name: Email Subscribers & Newsletters
  * Plugin URI: https://www.icegram.com/
  * Description: Add subscription forms on website, send HTML newsletters & automatically notify subscribers about new blog posts once it is published.
- * Version: 4.8.2
+ * Version: 5.4.16
  * Author: Icegram
  * Author URI: https://www.icegram.com/
  * Requires at least: 3.9
- * Tested up to: 5.8
+ * Tested up to: 6.0.2
  * WC requires at least: 3.6.0
  * WC tested up to: 5.5.1
- * ES WOO: 7120515:9f4c7f8bb491260ef19edf9699db73e6
+ * ES Woo: 7120515:9f4c7f8bb491260ef19edf9699db73e6
  * Requires PHP: 5.6
  * Text Domain: email-subscribers
  * Domain Path: /lite/languages/
  * License: GPLv3
  * License URI: http://www.gnu.org/licenses/gpl-3.0.html
- * Copyright (c) 2016-2021 Icegram
+ * Copyright (c) 2016-2022 Icegram
  */
 
 // If this file is called directly, abort.
@@ -67,7 +67,7 @@ if ( ! version_compare( PHP_VERSION, IG_ES_MIN_PHP_VER, '>=' ) ) {
  * @since 4.3.0
  */
 if ( ! defined( 'IG_ES_FEEDBACK_TRACKER_VERSION' ) ) {
-	define( 'IG_ES_FEEDBACK_TRACKER_VERSION', '1.2.5' );
+	define( 'IG_ES_FEEDBACK_TRACKER_VERSION', '1.2.7' );
 }
 
 if ( ! defined( 'IG_ES_TRACKER_VERSION' ) ) {
@@ -187,7 +187,7 @@ if ( 'premium' === $ig_es_plan ) {
 /* ***************************** Initial Compatibility Work (End) ******************* */
 
 if ( ! defined( 'ES_PLUGIN_VERSION' ) ) {
-	define( 'ES_PLUGIN_VERSION', '4.8.2' );
+	define( 'ES_PLUGIN_VERSION', '5.4.16' );
 }
 
 // Plugin Folder Path.
@@ -205,6 +205,10 @@ if ( ! defined( 'ES_PLUGIN_FILE' ) ) {
 
 if ( ! defined( 'ES_PLUGIN_URL' ) ) {
 	define( 'ES_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+}
+
+if ( ! defined( 'ES_IMG_URL' ) ) {
+	define( 'ES_IMG_URL', ES_PLUGIN_URL . 'lite/admin/images/' );
 }
 
 // Start-IG-Code.

@@ -11,6 +11,15 @@
 class JoinChatWooPublic {
 
 	/**
+	 * Product Button Show
+	 *
+	 * @since    4.4.0
+	 * @access   private
+	 * @var      bool     $btn_show    Product Button is showed.
+	 */
+	private $btn_show = false;
+
+	/**
 	 * Initialize all hooks
 	 *
 	 * @since    3.0.0
@@ -30,6 +39,8 @@ class JoinChatWooPublic {
 
 		$loader->add_filter( 'storefront_handheld_footer_bar_links', $this, 'storefront_footer_bar' );
 
+		$loader->add_action( 'wp_footer', $this, 'enqueue_styles' );
+
 	}
 
 	/**
@@ -45,6 +56,8 @@ class JoinChatWooPublic {
 			'message_text_product' => '',
 			'message_text_on_sale' => '',
 			'message_send_product' => '',
+			'woo_btn_position'     => 'none',
+			'woo_btn_text'         => '',
 		);
 
 		return array_merge( $settings, $woo_settings );
@@ -62,6 +75,7 @@ class JoinChatWooPublic {
 		$settings['message_text_product'] = 'Call to Action for Products';
 		$settings['message_text_on_sale'] = 'Call to Action for Products on sale';
 		$settings['message_send_product'] = 'Message for Products';
+		$settings['woo_btn_text']         = 'Product Button Text';
 
 		return $settings;
 	}
@@ -76,68 +90,73 @@ class JoinChatWooPublic {
 	 */
 	public function shop_settings( $settings ) {
 
-		// Applies to product pages
+		// Applies to product pages.
 		if ( is_product() ) {
 			$product = wc_get_product();
 
 			if ( $product->is_on_sale() && $settings['message_text_on_sale'] ) {
 				$settings['message_text'] = $settings['message_text_on_sale'];
-			} else {
-				$settings['message_text'] = $settings['message_text_product'] ?: $settings['message_text'];
+			} elseif ( $settings['message_text_product'] ) {
+				$settings['message_text'] = $settings['message_text_product'];
 			}
-			$settings['message_send'] = $settings['message_send_product'] ?: $settings['message_send'];
-		}
-		// Applies to shop catalog pages
-		elseif ( is_woocommerce() ) {
+			if ( $settings['message_send_product'] ) {
+				$settings['message_send'] = $settings['message_send_product'];
+			}
+
+			// Applies to shop catalog pages.
+		} elseif ( is_woocommerce() ) {
 			$shop_settings = get_post_meta( wc_get_page_id( 'shop' ), '_joinchat', true );
 
 			if ( is_array( $shop_settings ) ) {
 				$settings = array_merge( $settings, $shop_settings );
-
-				// Allow override general settings with empty string with "{}"
-				$settings['message_text'] = preg_replace( '/^\{\s*\}$/', '', $settings['message_text'] );
-				$settings['message_send'] = preg_replace( '/^\{\s*\}$/', '', $settings['message_send'] );
 			}
 		}
 
+		// Add Product Button.
+		if ( is_product() && 'none' !== $settings['woo_btn_position'] ) {
+			add_action( $settings['woo_btn_position'], array( $this, 'product_button' ), apply_filters( 'joinchat_woo_btn_priority', 10 ) );
+		}
+
 		return $settings;
+
 	}
 
 	/**
 	 * Return visibility for Woocommerce pages
 	 *
 	 * @since    3.0.0
-	 * @param    null $visibility       by default $visibility is null.
+	 * @param    null|bool $visibility  by default $visibility is null.
+	 * @param    array     $options array of visibility settings.
 	 * @return   mixed    true or false if WooCommerce page apply else return $visibility.
 	 */
 	public function visibility( $visibility, $options ) {
 
-		$global = isset( $options['all'] ) ? 'yes' == $options['all'] : true;
-		$woo    = isset( $options['woocommerce'] ) ? 'yes' == $options['woocommerce'] : $global;
+		$global = isset( $options['all'] ) ? 'yes' === $options['all'] : true;
+		$woo    = isset( $options['woocommerce'] ) ? 'yes' === $options['woocommerce'] : $global;
 
-		// Product page
+		// Product page.
 		if ( is_product() ) {
-			return isset( $options['product'] ) ? 'yes' == $options['product'] : $woo;
+			return isset( $options['product'] ) ? 'yes' === $options['product'] : $woo;
 		}
 
-		// Cart page
+		// Cart page.
 		if ( is_cart() ) {
-			return isset( $options['cart'] ) ? 'yes' == $options['cart'] : $woo;
+			return isset( $options['cart'] ) ? 'yes' === $options['cart'] : $woo;
 		}
 
-		// Checkout page
+		// Checkout page.
 		if ( is_checkout() && ! is_wc_endpoint_url() ) {
-			return isset( $options['checkout'] ) ? 'yes' == $options['checkout'] : $woo;
+			return isset( $options['checkout'] ) ? 'yes' === $options['checkout'] : $woo;
 		}
 
-		// Thankyou page
+		// Thankyou page.
 		if ( is_wc_endpoint_url( 'order-received' ) ) {
-			return isset( $options['thankyou'] ) ? 'yes' == $options['thankyou'] : $woo;
+			return isset( $options['thankyou'] ) ? 'yes' === $options['thankyou'] : $woo;
 		}
 
-		// Customer account pages
+		// Customer account pages.
 		if ( is_account_page() ) {
-			return isset( $options['account_page'] ) ? 'yes' == $options['account_page'] : $woo;
+			return isset( $options['account_page'] ) ? 'yes' === $options['account_page'] : $woo;
 		}
 
 		if ( is_woocommerce() ) {
@@ -145,6 +164,7 @@ class JoinChatWooPublic {
 		}
 
 		return $visibility;
+
 	}
 
 	/**
@@ -156,7 +176,7 @@ class JoinChatWooPublic {
 	 */
 	public function replacements( $replacements ) {
 
-		// Only applies to product pages
+		// Only applies to product pages.
 		if ( is_product() ) {
 			$product = wc_get_product();
 
@@ -187,6 +207,8 @@ class JoinChatWooPublic {
 			'message_text_product',
 			'message_text_on_sale',
 			'message_send_product',
+			'woo_btn_position',
+			'woo_btn_text',
 		);
 
 		return array_merge( $fields, $excluded );
@@ -203,9 +225,9 @@ class JoinChatWooPublic {
 	 */
 	public function format_price( $product, $price ) {
 
-		$string = strip_tags( wc_price( wc_get_price_to_display( $product, array( 'price' => $price ) ) ) );
+		$string = wp_strip_all_tags( wc_price( wc_get_price_to_display( $product, array( 'price' => $price ) ) ) );
 
-		// Escape $ for regex replacement
+		// Escape $ for regex replacement.
 		return str_replace( '$', '\$', $string );
 
 	}
@@ -275,11 +297,51 @@ class JoinChatWooPublic {
 		add_filter(
 			'joinchat_classes',
 			function( $classes ) {
-				return $classes . ' joinchat--footer-bar';
+				return array_merge( $classes, array( 'joinchat--footer-bar' ) );
 			}
 		);
 
 		return $links;
+
+	}
+
+	/**
+	 * Product Button output
+	 *
+	 * @since    4.4.0
+	 * @return   void
+	 */
+	public function product_button() {
+
+		// Only for main single product.
+		if ( '' !== wc_get_loop_prop( 'name' ) ) {
+			return;
+		}
+
+		$this->btn_show = true;
+
+		printf(
+			'<div class="joinchat__woo-btn__wrapper"><div class="joinchat__woo-btn joinchat_app">%s</div></div>',
+			esc_html( JoinChatCommon::instance()->settings['woo_btn_text'] )
+		);
+
+	}
+
+	/**
+	 * Enqueue Styles
+	 *
+	 * @since    4.4.0
+	 * @return void
+	 */
+	public function enqueue_styles() {
+
+		if ( $this->btn_show && ! wp_style_is( 'joinchat', 'done' ) ) {
+
+			$min = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
+
+			wp_enqueue_style( 'joinchat-woo', plugins_url( "css/joinchat-woo{$min}.css", __FILE__ ), array(), JOINCHAT_VERSION, 'all' );
+
+		}
 
 	}
 

@@ -95,8 +95,8 @@
                             <div class="block-with-tooltip ">
                                 <p><?php _e('Unique rows', 'mpg'); ?></p>
                                 <select id="mpg_unique_rows">
-                                    <option selected value=""><?php _e('No', 'mpg'); ?></option>
-                                    <option value=""><?php _e('Yes', 'mpg'); ?></option>
+                                    <option selected value="no"><?php _e('No', 'mpg'); ?></option>
+                                    <option value="yes"><?php _e('Yes', 'mpg'); ?></option>
                                 </select>
                                 <div class="tooltip-circle" data-tippy-content="<?php _e('Use this to make shortcode responses without duplicating rows', 'mpg'); ?>"><i class="fa fa-question"></i></div>
                             </div>

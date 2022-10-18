@@ -133,7 +133,7 @@
                         <span
                             :class="{ 'whitespace-normal': expanded }"
                             class="block -mx-2 rounded bg-white shadow">
-                            <slideshow-meta :slideshow="currentSlideshow" :include-images="false"/>
+                            <slideshow-meta :slideshow="currentSlideshow" :include-images="true"/>
                         </span>
                     </li>
                     <li
@@ -143,11 +143,11 @@
                         }"
                         class="w-full px-4 my-2 max-w-md"
                         style="min-width:400px"
-                        v-for="slideshow in slideshowsFiltered">
+                        v-for="(slideshow) in slideshowsFiltered">
                         <span
                             :class="{ 'whitespace-normal': expanded }"
                             class="block -mx-2 rounded bg-white shadow">
-                            <slideshow-meta :slideshow="slideshow" :include-images="false"/>
+                            <slideshow-meta :slideshow="slideshow" :include-images="slideshow.slides.length > 0 ? true : false"/>
                         </span>
                     </li>
                     <li v-if="!expanded" style="min-width:4rem;"></li>
@@ -155,7 +155,7 @@
             </div>
 		</template>
 		<template v-else>
-			<span class="flex items-center font-normal block container text-xl my-4 h-24">
+			<span class="flex items-center font-normal container text-xl my-4 h-24">
 				{{ searchTerm.length ? __('No slideshows found', 'ml-slider') : __('Loading slideshows...', 'ml-slider') }}
 			</span>
 		</template>
@@ -302,6 +302,7 @@ export default {
 
 		}, 3000),
 		sort() {
+
 			// If there is a search term then use that first before sorting
 			let s = this.searchTerm.trim().length ? this.searcher.search(this.searchTerm.replace(/\s/g,'')) : [...this.slideshows]
 

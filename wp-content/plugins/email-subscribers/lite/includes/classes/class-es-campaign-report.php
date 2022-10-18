@@ -20,13 +20,260 @@ class ES_Campaign_Report extends ES_List_Table {
 			)
 		);
 
+		add_action( 'ig_es_view_report_data_lite', array( $this, 'view_report_data_lite' ) );
+		add_action( 'ig_es_view_report_description_lite', array( $this, 'view_report_description_lite' ), 10, 2 );
 		add_action( 'ig_es_view_activity_table_html', array( $this, 'view_activity_report_table' ), 10, 3 );
 		add_action( 'admin_footer', array( $this, 'es_view_activity_report_sort_and_filter' ) );
 	}
 
+
+	/**
+	 * Get individual reports data
+	 *
+	 * @version 5.4.2
+	 */
+	public static function view_report_data_lite( $id ) {
+		global $wpdb;
+
+		$notification             = ES_DB_Mailing_Queue::get_notification_by_hash( $id );
+		$report_id                = $notification['id'];
+		$notification_campaign_id = $notification['campaign_id'];
+		$total_email_sent         = ES()->actions_db->get_count_based_on_id_type( $notification_campaign_id, $report_id, IG_MESSAGE_SENT );
+		$email_viewed_count       = ES()->actions_db->get_count_based_on_id_type( $notification_campaign_id, $report_id, IG_MESSAGE_OPEN );
+		//--->
+		$email_unsubscribed_count = ES()->actions_db->get_count_based_on_id_type( $notification_campaign_id, $report_id, IG_CONTACT_UNSUBSCRIBE );
+		$avg_unsubscribed_rate    =	!empty($total_email_sent) ? number_format_i18n(( ( $email_unsubscribed_count/$total_email_sent ) * 100 ), 2) : 0;
+		//--->
+		$avg_open_rate            = ! empty( $total_email_sent) ? number_format_i18n( ( ( $email_viewed_count * 100 ) / $total_email_sent ), 2 ) : 0;
+		$email_click_count        = ! empty( $notification_campaign_id ) ? ES()->actions_db->get_count_based_on_id_type( $notification_campaign_id, $report_id, IG_LINK_CLICK ) : 0;
+		$avg_click_rate           = ! empty( $total_email_sent ) ? number_format_i18n( ( ( $email_click_count * 100 ) / $total_email_sent ), 2 ) : 0;
+
+		if ( empty( $notification['campaign_id'] ) ) {
+			$notification_type = __( 'Post Notification', 'email-subscribers' );
+		} else {
+			$notification_type = ES()->campaigns_db->get_campaign_type_by_id( $notification['campaign_id'] );
+			$notification_type = strtolower( $notification_type );
+			$notification_type = ( 'newsletter' === $notification_type ) ? __( 'Broadcast', 'email-subscribers' ) : $notification_type;
+		}
+
+			$report_kpi_statistics = array(
+				'total_email_sent'			=> number_format_i18n( $total_email_sent ),
+				'email_viewed_count'		=> number_format_i18n( $email_viewed_count ),
+				'email_unsubscribed_count'	=> number_format_i18n( $email_unsubscribed_count ),
+				'email_click_count'			=> number_format_i18n( $email_click_count ),
+				'avg_open_rate'				=> $avg_open_rate,
+				'avg_click_rate'			=> $avg_click_rate,
+				'avg_unsubscribed_rate'		=> $avg_unsubscribed_rate,
+			);
+
+			$notification['type']    		 = ucwords( str_replace( '_', ' ', $notification_type ) );
+			$notification_subject    		 = $notification['subject'];
+			$notification_campaign   	 	 = ES()->campaigns_db->get_campaign_by_id( $notification_campaign_id, - 1 );
+			$notification['from_email'] 	 = ! empty( $notification_campaign['from_email'] ) ? $notification_campaign['from_email'] : '';
+			$notification_lists_ids 	 	 = ! empty( $notification_campaign['list_ids'] ) ? explode( ',', $notification_campaign['list_ids'] ) : array();
+			$notification['list_name'] 		 = ES_Common::prepare_list_name_by_ids( $notification_lists_ids );
+			$total_contacts          		 = $notification['count'];
+			$notification_status     		 = $notification['status'];
+			$campaign_meta					 = ! empty( $notification_campaign['meta'] ) ? unserialize( $notification_campaign['meta']) : '';
+			$notification['list_conditions'] = ! empty( $campaign_meta['list_conditions'] ) ? $campaign_meta['list_conditions'] : '';
+
+			$where                = $wpdb->prepare( 'message_id = %d ORDER BY updated_at DESC', $report_id );
+			$notification_actions = ES()->actions_db->get_by_conditions( $where );
+
+			$links_where        = $wpdb->prepare( 'message_id = %d', $report_id );
+			$notification_links = ES()->links_db->get_by_conditions( $links_where );
+
+			$activity_data = array();
+			$time_offset   = get_option( 'gmt_offset' ) * HOUR_IN_SECONDS;
+			$date_format   = get_option( 'date_format' );
+
+			if ( ! empty( $notification_actions ) ) {
+				foreach ( $notification_actions as $notification_action ) {
+					$action_type = (int) $notification_action['type'];
+					if ( in_array( $action_type, array( IG_MESSAGE_OPEN, IG_LINK_CLICK ), true ) ) {
+						$created_timestamp = $notification_action['created_at'];
+						//$created_date      = date_i18n( $date_format, $created_timestamp + $time_offset );
+						$created_date = gmdate( 'Y-m-d', $created_timestamp + $time_offset );
+						if ( ! isset( $activity_data[ $created_date ] ) ) {
+							$activity_data[ $created_date ] = array(
+								'opened'  => 0,
+								'clicked' => 0,
+							);
+						}
+						if ( IG_MESSAGE_OPEN === $action_type ) {
+							$activity_data[ $created_date ]['opened'] ++;
+						} elseif ( IG_LINK_CLICK === $action_type ) {
+							$activity_data[ $created_date ]['clicked'] ++;
+						}
+					}
+				}
+			}
+			if ( ! empty( $activity_data ) ) {
+				ksort( $activity_data );
+			}
+
+			// To display report header information and KPI values
+			do_action( 'ig_es_view_report_description_lite', $notification, $report_kpi_statistics );
+
+
+	}
+
+
+	/**
+	 * Display Report header information and KPI values
+	 *
+	 * @version 5.4.2
+	 */
+	public function view_report_description_lite( $notification, $report_kpi_statistics ) {
+		?>
+		<div class="wrap max-w-7xl">
+			<div class="wp-heading-inline flex items-center justify-between">
+				<div class="flex-shrink-0 break-words">
+					<h2 class="text-2xl font-medium leading-7 tracking-wide text-gray-900 pt-1">
+						<?php echo esc_html__( 'Report', 'email-subscribers' ); ?>
+					</h2>
+				</div>
+			</div>
+			<div class="mt-3 pb-2 w-full bg-white rounded-md shadow flex">
+				<div class="w-3/4">
+					<div class="flex pl-6 pt-4">
+						<div class="w-auto inline-block text-xl text-gray-600 font-medium leading-7 truncate">
+							<?php echo esc_html( $notification['subject'] ); ?>
+						</div>
+						<div class="inline-block ml-2 font-semibold leading-5 tracking-wide text-xs">
+							<?php
+							switch ( $notification['status'] ) {
+								case 'Sent':
+									?>
+									<svg class="inline-block mt-1.5 ml-1 h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+										<title><?php echo esc_attr__( 'Sent', 'email-subscribers' ); ?></title>
+										<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+									</svg>
+								<?php
+									break;
+								case 'In Queue':
+									?>
+								<svg class="inline-block mt-1.5 ml-1 h-5 w-5 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
+									<title><?php echo esc_attr__( 'In Queue', 'email-subscribers' ); ?></title>
+									<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+								</svg>
+								<?php
+									break;
+								case 'Sending':
+									?>
+								<svg class="inline-block mt-1.5 ml-1 h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+									<title><?php echo esc_attr__( 'Sending', 'email-subscribers' ); ?></title>
+									<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd"/>
+								</svg>
+							<?php
+									break;
+								case '1':
+									?>
+								<span class="inline-flex px-2 text-green-800 bg-green-100 rounded-full"><?php echo esc_html__('Active', 'email-subscribers'); ?></span>
+							<?php
+									break;
+								case '':
+									?>
+									 <span class="inline-flex px-2 text-red-800 bg-red-100 rounded-full"><?php echo esc_html__('Inactive', 'email-subscribers'); ?></span>
+						<?php } ?>
+						</div>
+					</div>
+					<div class="w-full text-gray-600 italic font-medium pt-4 text-sm leading-5 overflow-hidden">
+						<p class="pl-6 truncate"><?php echo esc_html__( 'Type: ', 'email-subscribers' ); ?>
+							<span class="pl-1 font-normal not-italic text-gray-900"><?php echo esc_html( $notification['type'] ); ?></span>
+						</p>
+						<p class="pl-6 pt-2 truncate"><?php echo esc_html__( 'From: ', 'email-subscribers' ); ?>
+							<span class="pl-1 font-normal not-italic text-gray-900"><?php echo esc_html( $notification['from_email'] ); ?></span>
+						</p>
+						<div class="pl-6 pt-2 inline-block truncate relative w-full">
+						<span class="recipient-text"><?php echo esc_html__( 'Recipient(s): ', 'email-subscribers' ); ?></span>
+							<div class="pl-1 font-normal not-italic text-gray-900 inline-block truncate w-11/12" style="padding-left: 80px;">
+								<?php
+								if ( ! empty( $notification['list_name'] ) ) {
+									echo esc_html( $notification['list_name'] );
+								} else {
+									if ( ! empty( $notification['list_conditions'] ) ) {
+										do_action( 'ig_es_campaign_show_conditions', $notification['list_conditions'] );
+									}
+								}
+								?>
+							</div>
+						</div>
+						<?php if ( ! in_array( $notification['type'], array( 'Sequence Message', 'Workflow Email' ), true ) ) { ?>
+						<p class="pl-6 pt-2 text-gray-600 "><?php echo esc_html__( 'Date: ', 'email-subscribers' ); ?>
+							<span class="pl-1 font-normal not-italic text-gray-900"><?php echo wp_kses_post( ig_es_format_date_time( $notification['start_at'] ) ); ?></span>
+						</p>
+					<?php } ?>
+					</div>
+				</div>
+				<div class="w-1/2">
+					<div class="flex-1 min-w-0">
+						<p class="pt-4 pl-8 text-lg font-medium leading-6 text-gray-400">
+							<?php echo esc_html__( 'Statistics', 'email-subscribers' ); ?>
+						</p>
+						<div class="sm:grid sm:grid-cols-2 ml-6 mr-8">
+
+							<div class="p-2">
+								<span class = "text-2xl font-bold leading-none text-indigo-600">
+									<?php	echo esc_html( $report_kpi_statistics['email_viewed_count']); ?>
+								</span>
+
+								<span class = "text-xl font-bold leading-none text-indigo-600">
+									<?php	echo esc_html( ' (' . $report_kpi_statistics['avg_open_rate'] . '%)'); ?>
+								</span>
+
+								<p class="mt-1 font-medium leading-6 text-gray-500">
+									<?php echo esc_html__( 'Opened', 'email-subscribers' ); ?>
+								</p>
+							</div>
+
+							<div class="p-2">
+								<span class = "text-2xl font-bold leading-none text-indigo-600">
+									<?php	echo esc_html( '0' ); ?>
+								</span>
+
+								<span class = "text-xl font-bold leading-none text-indigo-600">
+									<?php	echo esc_html( '(0.00%)'); ?>
+								</span>
+
+								<p class="mt-1 font-medium leading-6 text-gray-500">
+									<?php echo esc_html__( 'Clicked', 'email-subscribers' ); ?><span class="premium-icon ml-2 mb-1"></span>
+								</p>
+							</div>
+
+							<div class="p-2">
+								<span class="text-2xl font-bold leading-none text-indigo-600">
+									<?php echo esc_html( $report_kpi_statistics['total_email_sent'] ); ?>
+								</span>
+								<p class="mt-1 font-medium leading-6 text-gray-500">
+									<?php echo esc_html__( 'Sent', 'email-subscribers' ); ?>
+								</p>
+							</div>
+
+							<div class="p-2">
+								<span class = "text-2xl font-bold leading-none text-indigo-600">
+									<?php	echo esc_html( '0' ); ?>
+								</span>
+								<span class = "text-xl font-bold leading-none text-indigo-600">
+									<?php	echo esc_html( '(0.00%)' ); ?>
+								</span>
+
+								<p class="mt-1 font-medium leading-6 text-gray-500">
+									<?php echo esc_html__( 'Unsubscribed', 'email-subscribers' ); ?><span class="premium-icon ml-2 mb-1"></span>
+								</p>
+							</div>
+
+						</div>
+					</div>
+				</div>
+			</div>
+	<?php
+	}
+
+
 	public function es_campaign_report_callback() {
 		?>
-		
+
 		<?php
 		$this->ajax_response();
 		$paged          = ig_es_get_request_data( 'paged', 1 );
@@ -249,6 +496,14 @@ class ES_Campaign_Report extends ES_List_Table {
 				</svg>
 				<?php
 				break;
+			case 'Failed':
+				?>
+				<svg xmlns="http://www.w3.org/2000/svg" class="text-red-500" width="28" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+					<title><?php echo esc_html__( 'Failed', 'email-subscribers' ); ?></title>
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+				</svg>
+				<?php
+				break;
 			case '':
 				?>
 				<i class="dashicons dashicons-es dashicons-minus"/>
@@ -313,7 +568,7 @@ class ES_Campaign_Report extends ES_List_Table {
 			$selects[] = $wpbd->prepare( $queue_query, $message_id, $campaign_id, $message_id );
 		}
 
-		$action_query = "SELECT 
+		$action_query = "SELECT
 		MAX(contacts.id) AS `contact_id`,
 		contacts.email AS `email`,
 		MAX(actions.type) AS `type`,
@@ -373,6 +628,8 @@ class ES_Campaign_Report extends ES_List_Table {
 		}
 
 		$order_by_query = '';
+		$offset         = 0;
+
 		if ( ! $return_count ) {
 
 			if ( empty( $orderby ) ) {
@@ -381,12 +638,14 @@ class ES_Campaign_Report extends ES_List_Table {
 			} else {
 				$orderby = "{$orderby} {$order}";
 			}
-			$orderby = esc_sql( $orderby );
+			$orderby = sanitize_sql_orderby( $orderby );
+			if ( $orderby ) {
+				$per_page = 100;
+				$offset   = $page_number > 1 ? ( $page_number - 1 ) * $per_page : 0;
 
-			$per_page = 100;
-			$offset   = $page_number > 1 ? ( $page_number - 1 ) * $per_page : 0;
+				$order_by_query = " ORDER BY {$orderby} LIMIT {$offset}, {$per_page}";
+			}
 
-			$order_by_query = " ORDER BY {$orderby} LIMIT {$offset}, {$per_page}";
 		}
 
 		$notification_query .= $search_query . $status_query . $country_query . $order_by_query;
@@ -421,16 +680,30 @@ class ES_Campaign_Report extends ES_List_Table {
 			if ( ! empty( $results ) ) {
 				$date_format = get_option( 'date_format' );
 				$time_format = get_option( 'time_format' );
+				$gmt_offset  = ig_es_get_gmt_offset( true );
 				$format      = $date_format . ' ' . $time_format;
 				foreach ( $results as $notification_action ) {
 
 					$contact_id = $notification_action['contact_id'];
+					$sent_at 	= '';
+					if ( ! empty( $notification_action['sent_at'] ) ) {
+						$sent_timestamp  = (int) $notification_action['sent_at'];
+						$sent_timestamp += $gmt_offset;
+						$sent_at         = ES_Common::convert_timestamp_to_date( $sent_timestamp, $format );
+					}
+
+					$opened_at = '';
+					if ( ! empty( $notification_action['opened_at'] ) ) {
+						$opened_timestamp  = (int) $notification_action['opened_at'];
+						$opened_timestamp += $gmt_offset;
+						$opened_at         = ES_Common::convert_timestamp_to_date( $opened_timestamp, $format );
+					}
 
 					$view_activity_data[ $contact_id ] = array(
 						'sr_no'        => $sr_no++,
 						'email'        => $notification_action['email'],
-						'opened_at'    => ! empty( $notification_action['opened_at'] ) ? ES_Common::convert_timestamp_to_date( $notification_action['opened_at'], $format ) : '',
-						'sent_at'      => ! empty( $notification_action['sent_at'] ) ? ES_Common::convert_timestamp_to_date( $notification_action['sent_at'], $format ) : '',
+						'opened_at'    => $opened_at,
+						'sent_at'      => $sent_at,
 						'status'       => $notification_action['status'],
 						'country_flag' => '',
 						'device'       => '',
@@ -454,6 +727,7 @@ class ES_Campaign_Report extends ES_List_Table {
 
 			<div class="wrap">
 				<?php if ( ! ES()->is_pro() && ! $insight ) { ?>
+					<?php do_action( 'ig_es_view_report_data_lite', $hash ); ?>
 					<a href="?page=es_reports&action=view&list=<?php echo esc_attr( $hash ); ?>&_wpnonce=<?php echo esc_attr( $_wpnonce ); ?>&insight=true" class="float-right top-10 relative ig-es-title-button px-2 py-2 mx-2 -mt-2 ig-es-imp-button cursor-pointer"><?php esc_html_e( 'Campaign Analytics', 'email-subscribers' ); ?></a>
 				<?php } ?>
 			</div>
@@ -483,7 +757,7 @@ class ES_Campaign_Report extends ES_List_Table {
 			$(document).ready(
 
 				function () {
-							
+
 					$('#es_campaign_report').on('click', '.tablenav-pages a, .manage-column.sortable a, .manage-column.sorted a', function (e) {
 						e.preventDefault();
 						var query = this.search.substring(1);
@@ -494,7 +768,7 @@ class ES_Campaign_Report extends ES_List_Table {
 						$("input[name='orderby']").val(orderby);
 						$("input[name='paged']").val(paged);
 						check_filter_value();
-						
+
 					});
 
 					$('#campaign-report-search-submit').on('click', function (e) {
@@ -504,7 +778,7 @@ class ES_Campaign_Report extends ES_List_Table {
 					});
 				});
 
-		
+
 				list = {
 
 					/** AJAX call
@@ -521,6 +795,7 @@ class ES_Campaign_Report extends ES_List_Table {
 							data: $.extend(
 								{
 									action: 'ajax_fetch_report_list',
+									security: ig_es_js_data.security
 								},
 								data
 							),
@@ -539,7 +814,7 @@ class ES_Campaign_Report extends ES_List_Table {
 									$('.tablenav.top .tablenav-pages').html($(response.pagination.top).html());
 								},
 								error: function (err) {
-	
+
 							}
 						}).always(function(){
 							$('#es_campaign_report table.wp-list-table.widefat.fixed.striped.table-view-list.reports tbody').removeClass('pulse-animation').css({'filter': 'blur(0px)', '-webkit-filter' : 'blur(0px)'});
@@ -576,8 +851,8 @@ class ES_Campaign_Report extends ES_List_Table {
 						var order 	= $("input[name='order']").val();
 						var orderby = $("input[name='orderby']").val();
 						var paged 	= $("input[name='paged']").val();
-						
-						data = 
+
+						data =
 						{
 							list : "<?php echo esc_html( $hash ); ?>",
 							campaign_id 	: <?php echo ( ! empty( $campaign_id ) ? esc_html( $campaign_id ) : 0 ); ?>,
@@ -589,7 +864,7 @@ class ES_Campaign_Report extends ES_List_Table {
 							status 			: report_activity_status
 
 						};
-						
+
 						list.update(data);
 				}
 			})(jQuery);

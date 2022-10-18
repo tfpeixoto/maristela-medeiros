@@ -3,28 +3,28 @@ msgstr ""
 "Project-Id-Version: Rock Convert\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-03-08 18:14+0000\n"
-"PO-Revision-Date: 2021-08-06 23:27+0000\n"
+"PO-Revision-Date: 2022-09-19 13:55-0300\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese (Brazil)\n"
 "Language: pt_BR\n"
-"Plural-Forms: nplurals=2; plural=n != 1;\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Loco https://localise.biz/\n"
-"X-Loco-Version: 2.5.3; wp-5.7.2"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Poedit 3.1.1\n"
+"X-Loco-Version: 2.5.3; wp-5.7.2\n"
 
 #: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/class-admin.php:124
 msgid ""
 "<strong>Atenção!</strong> Para utilizar o reCaptcha do Google corretamente "
-"com o <b>Tema Bennington</b>, você deve atualizá-lo para a <b>versão 1.4."
-"0</b>. Caso o tema não esteja atualizado, a caixa de reCaptcha do Google não "
+"com o <b>Tema Bennington</b>, você deve atualizá-lo para a <b>versão 1.4.0</"
+"b>. Caso o tema não esteja atualizado, a caixa de reCaptcha do Google não "
 "irá aparecer e os emails não serão salvos."
 msgstr ""
 "<strong>Atenção!</strong> Para utilizar o reCaptcha do Google corretamente "
-"com o <b>Tema Bennington</b>, você deve atualizá-lo para a <b>versão 1.4."
-"0</b>. Caso o tema não esteja atualizado, a caixa de reCaptcha do Google não "
+"com o <b>Tema Bennington</b>, você deve atualizá-lo para a <b>versão 1.4.0</"
+"b>. Caso o tema não esteja atualizado, a caixa de reCaptcha do Google não "
 "irá aparecer e os emails não serão salvos."
 
 #: ../../../../../../../Rock
@@ -152,9 +152,7 @@ msgstr "Banners de CTA"
 
 #: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/announcements/class-announcement.php:46
-#: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/announcements/class-announcement.php:47
-#: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/announcements/views/announcements-settings-page.php:48
 msgid "Barra de anúncios"
 msgstr "Barra de anúncios"
@@ -215,14 +213,12 @@ msgstr "Chave secreta"
 
 #: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/cta/class-custom-meta-box.php:150
-#: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/cta/class-custom-post-type.php:97
 msgid "Clicks"
 msgstr "Clicks"
 
 #: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/class-admin.php:88
-#: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/class-admin.php:127
 msgid "Clique aqui"
 msgstr "Clique aqui"
@@ -244,9 +240,7 @@ msgstr "Como usar os parâmetros de UTM"
 
 #: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/class-page-settings.php:28
-#: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/class-page-settings.php:739
-#: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/announcements/views/announcements-form-description.php:3
 msgid "Configurações"
 msgstr "Configurações"
@@ -271,12 +265,12 @@ msgstr "Configurações para a barra de anúncios"
 #, php-format
 msgid ""
 "Confira se a chave de API está correta e se esta conta já possui uma lista "
-"criada. Caso ainda não tenha nenhuma lista, saiba como criar <a href=\"%s\">"
-"clicando aqui</a>."
+"criada. Caso ainda não tenha nenhuma lista, saiba como criar <a href=\"%s"
+"\">clicando aqui</a>."
 msgstr ""
 "Confira se a chave de API está correta e se esta conta já possui uma lista "
-"criada. Caso ainda não tenha nenhuma lista, saiba como criar <a href=\"%s\">"
-"clicando aqui</a>."
+"criada. Caso ainda não tenha nenhuma lista, saiba como criar <a href=\"%s"
+"\">clicando aqui</a>."
 
 #: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/frontend/widget/class-banner.php:43
@@ -314,25 +308,20 @@ msgstr "Copie e cole o código acima em qualquer lugar do texto"
 
 #: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/frontend/widget/class-subscribe.php:197
-#: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/announcements/views/announcements-form-style.php:23
 msgid "Cor do botão"
 msgstr "Cor do botão"
 
 #: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/frontend/widget/class-subscribe.php:188
-#: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/frontend/widget/class-banner.php:72
-#: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/announcements/views/announcements-form-style.php:9
 msgid "Cor do fundo"
 msgstr "Cor do fundo"
 
 #: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/frontend/widget/class-subscribe.php:205
-#: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/frontend/widget/class-banner.php:80
-#: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/announcements/views/announcements-form-style.php:16
 msgid "Cor do texto"
 msgstr "Cor do texto"
@@ -409,13 +398,9 @@ msgstr "Ex: google, newsletter"
 
 #: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/cta/class-custom-meta-box.php:238
-#: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/cta/class-custom-meta-box.php:250
-#: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/announcements/views/announcements-form-visibility.php:66
-#: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/announcements/views/announcements-form-visibility.php:78
-#: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/announcements/views/announcements-form-visibility.php:92
 msgid "Exemplo"
 msgstr "Exemplo"
@@ -461,7 +446,6 @@ msgstr "Faça o download deste post inserindo seu e-mail abaixo"
 
 #: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/class-page-settings.php:359
-#: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/class-page-settings.php:632
 msgid "Ferramentas de automação"
 msgstr "Ferramentas de automação"
@@ -506,7 +490,6 @@ msgstr "Informe seu e-mail aqui"
 
 #: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/class-page-settings.php:184
-#: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/class-page-settings.php:741
 msgid "Integrações"
 msgstr "Integrações"
@@ -548,7 +531,6 @@ msgstr "No meio do conteúdo"
 
 #: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/cta/class-custom-post-type.php:43
-#: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/cta/class-custom-post-type.php:44
 msgid "Novo banner"
 msgstr "Novo banner"
@@ -620,18 +602,18 @@ msgstr "O que é CTA: Tudo que você precisa saber"
 #: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/class-page-settings.php:618
 msgid ""
-"Onde: <strong>PORTAL_ID</strong> é o id da conta e <strong>FORM_GUID</strong>"
-" é o ID do\n"
+"Onde: <strong>PORTAL_ID</strong> é o id da conta e <strong>FORM_GUID</"
+"strong> é o ID do\n"
 "                        formulário."
 msgstr ""
-"Onde: <strong>PORTAL_ID</strong> é o id da conta e <strong>FORM_GUID</strong>"
-" é o ID do\n"
+"Onde: <strong>PORTAL_ID</strong> é o id da conta e <strong>FORM_GUID</"
+"strong> é o ID do\n"
 "                        formulário."
 
 #: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/class-admin.php:128
 msgid "para acessar o tema e <strong>atualiza-lo</strong>."
-msgstr ""
+msgstr "para acessar o tema e <strong>atualiza-lo</strong>."
 
 #: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/announcements/views/announcements-form-description.php:30
@@ -703,9 +685,7 @@ msgstr "Precisa de ajuda para criar a chave?"
 
 #: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/class-page-settings.php:244
-#: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/class-page-settings.php:470
-#: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/class-page-settings.php:609
 msgid "Precisa de ajuda?"
 msgstr "Precisa de ajuda?"
@@ -765,16 +745,13 @@ msgstr "Salvar configurações"
 
 #: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/class-page-settings.php:386
-#: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/class-page-settings.php:658
 msgid "Salvar integrações"
 msgstr "Salvar integrações"
 
 #: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/announcements/views/announcements-form-visibility.php:98
-#: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/announcements/views/announcements-form-description.php:66
-#: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/announcements/views/announcements-form-style.php:55
 msgid "Salvar todas as configurações"
 msgstr "Salvar todas as configurações"
@@ -791,7 +768,6 @@ msgstr "Selecione a imagem do banner"
 
 #: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/class-page-settings.php:362
-#: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/class-page-settings.php:635
 msgid ""
 "Selecione abaixo uma ferramenta de automação e envie os leads gerados pelos "
@@ -807,7 +783,6 @@ msgstr "Selecione para onde o usuário será redirecionado ao cadastrar o email.
 
 #: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/class-page-settings.php:501
-#: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/class-page-settings.php:506
 msgid "Selecione uma lista"
 msgstr "Selecione uma lista"
@@ -854,7 +829,6 @@ msgstr "Texto do anúncio"
 
 #: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/frontend/widget/class-subscribe.php:180
-#: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/announcements/views/announcements-form-description.php:24
 msgid "Texto do botão"
 msgstr "Texto do botão"
@@ -882,11 +856,10 @@ msgstr "Token público da RD Station"
 #: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/class-page-settings.php:273
 msgid "Tudo o que você precisa saber sobre o Rock Convert"
-msgstr ""
+msgstr "Tudo o que você precisa saber sobre o Rock Convert"
 
 #: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/frontend/widget/class-subscribe.php:166
-#: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/frontend/widget/class-banner.php:56
 msgid "Título"
 msgstr "Título"
@@ -918,7 +891,6 @@ msgstr "Veja como criar uma chave de API para o MailChimp"
 
 #: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/cta/class-custom-meta-box.php:62
-#: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/announcements/views/announcements-form-visibility.php:3
 msgid "Visibilidade"
 msgstr "Visibilidade"
@@ -935,7 +907,6 @@ msgstr "Visualizar banner"
 
 #: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/cta/class-custom-meta-box.php:140
-#: ../../../../../../../Rock
 #: Content/wp-labs/rock-convert/code/inc/admin/cta/class-custom-post-type.php:96
 msgid "Visualizações"
 msgstr "Visualizações"

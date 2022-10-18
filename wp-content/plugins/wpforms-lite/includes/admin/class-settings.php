@@ -125,20 +125,28 @@ class WPForms_Settings {
 
 				switch ( $field['type'] ) {
 					case 'checkbox':
+					case 'toggle':
 						$value = (bool) $value;
 						break;
+
 					case 'image':
 						$value = esc_url_raw( $value );
 						break;
+
 					case 'color':
 						$value = wpforms_sanitize_hex_color( $value );
 						break;
+
 					case 'number':
 						$value = (float) $value;
 						break;
-					case 'text':
+
 					case 'radio':
 					case 'select':
+						$value = $this->validate_field_with_options( $field, $value, $value_prev );
+						break;
+
+					case 'text':
 					default:
 						$value = sanitize_text_field( $value );
 						break;
@@ -268,7 +276,7 @@ class WPForms_Settings {
 					'name'      => esc_html__( 'Include Form Styling', 'wpforms-lite' ),
 					'desc'      => sprintf(
 						wp_kses( /* translators: %s - WPForms.com form styling setting URL. */
-							__( 'Determines which CSS files to load and use for the site (<a href="%s" target="_blank" rel="noopener noreferrer">please see our tutorial for full details</a>). "Base and Form Theme Styling" is recommended, unless you are experienced with CSS or instructed by support to change settings. ', 'wpforms-lite' ),
+							__( 'Determines which CSS files to load and use for the site (<a href="%s" target="_blank" rel="noopener noreferrer">please see our tutorial for full details</a>). "Base and Form Theme Styling" is recommended, unless you are experienced with CSS or instructed by support to change settings.', 'wpforms-lite' ),
 							[
 								'a' => [
 									'href'   => [],
@@ -332,7 +340,19 @@ class WPForms_Settings {
 				'email-async'            => [
 					'id'   => 'email-async',
 					'name' => esc_html__( 'Optimize Email Sending', 'wpforms-lite' ),
-					'desc' => esc_html__( 'Check this option to enable sending emails asynchronously, which can make submission processing faster.', 'wpforms-lite' ),
+					'desc' => sprintf(
+						wp_kses( /* translators: %s - WPForms.com Email settings documentation URL. */
+							__( 'Check this option to enable sending emails asynchronously, which can make submission processing faster but may delay email delivery by a minute or two. Learn more <a href="%s" target="_blank" rel="noopener noreferrer">in our documentation</a>.', 'wpforms-lite' ),
+							[
+								'a' => [
+									'href'   => [],
+									'target' => [],
+									'rel'    => [],
+								],
+							]
+						),
+						'https://wpforms.com/docs/a-complete-guide-to-wpforms-settings/#email'
+					),
 					'type' => 'checkbox',
 				],
 				'email-template'         => [
@@ -387,12 +407,6 @@ class WPForms_Settings {
 					'type'    => 'text',
 					'default' => esc_html__( 'This field is required.', 'wpforms-lite' ),
 				],
-				'validation-url'                   => [
-					'id'      => 'validation-url',
-					'name'    => esc_html__( 'Website URL', 'wpforms-lite' ),
-					'type'    => 'text',
-					'default' => esc_html__( 'Please enter a valid URL.', 'wpforms-lite' ),
-				],
 				'validation-email'                 => [
 					'id'      => 'validation-email',
 					'name'    => esc_html__( 'Email', 'wpforms-lite' ),
@@ -403,7 +417,10 @@ class WPForms_Settings {
 					'id'      => 'validation-email-suggestion',
 					'name'    => esc_html__( 'Email Suggestion', 'wpforms-lite' ),
 					'type'    => 'text',
-					'default' => esc_html__( 'Did you mean {suggestion}?', 'wpforms-lite' ),
+					'default' => sprintf( /* translators: %s - suggested email address. */
+						esc_html__( 'Did you mean %s?', 'wpforms-lite' ),
+						'{suggestion}'
+					),
 				],
 				'validation-email-restricted'      => [
 					'id'      => 'validation-email-restricted',
@@ -429,11 +446,11 @@ class WPForms_Settings {
 					'type'    => 'text',
 					'default' => esc_html__( 'Field values do not match.', 'wpforms-lite' ),
 				],
-				'validation-input-mask-incomplete' => [
-					'id'      => 'validation-input-mask-incomplete',
+				'validation-inputmask-incomplete'  => [
+					'id'      => 'validation-inputmask-incomplete',
 					'name'    => esc_html__( 'Input Mask Incomplete', 'wpforms-lite' ),
 					'type'    => 'text',
-					'default' => esc_html__( 'Please fill out all blanks.', 'wpforms-lite' ),
+					'default' => esc_html__( 'Please fill out the field in required format.', 'wpforms-lite' ),
 				],
 				'validation-check-limit'           => [
 					'id'      => 'validation-check-limit',
@@ -445,13 +462,21 @@ class WPForms_Settings {
 					'id'      => 'validation-character-limit',
 					'name'    => esc_html__( 'Character Limit', 'wpforms-lite' ),
 					'type'    => 'text',
-					'default' => esc_html__( 'Limit is {limit} characters. Characters remaining: {remaining}.', 'wpforms-lite' ),
+					'default' => sprintf( /* translators: %1$s - characters limit, %2$s - number of characters left. */
+						esc_html__( 'Limit is %1$s characters. Characters remaining: %2$s.', 'wpforms-lite' ),
+						'{limit}',
+						'{remaining}'
+					),
 				],
 				'validation-word-limit'            => [
 					'id'      => 'validation-word-limit',
 					'name'    => esc_html__( 'Word Limit', 'wpforms-lite' ),
 					'type'    => 'text',
-					'default' => esc_html__( 'Limit is {limit} words. Words remaining: {remaining}.', 'wpforms-lite' ),
+					'default' => sprintf( /* translators: %1$s - words limit, %2$s - number of words left. */
+						esc_html__( 'Limit is %1$s words. Words remaining: %2$s.', 'wpforms-lite' ),
+						'{limit}',
+						'{remaining}'
+					),
 				],
 			],
 			// Provider integrations settings tab.
@@ -501,7 +526,7 @@ class WPForms_Settings {
 		];
 
 		// TODO: move this to Pro.
-		if ( wpforms()->pro ) {
+		if ( wpforms()->is_pro() ) {
 			$defaults['misc']['uninstall-data']['desc'] = esc_html__( 'Check this option to remove ALL WPForms data upon plugin deletion. All forms, entries, and uploaded files will be unrecoverable.', 'wpforms-lite' );
 		}
 
@@ -557,7 +582,7 @@ class WPForms_Settings {
 			<h1 class="wpforms-h1-placeholder"></h1>
 
 			<?php
-			if ( wpforms()->pro && class_exists( 'WPForms_License', false ) ) {
+			if ( wpforms()->is_pro() && class_exists( 'WPForms_License', false ) ) {
 				wpforms()->license->notices( true );
 			}
 			?>
@@ -629,6 +654,28 @@ class WPForms_Settings {
 		}
 
 		$meta->create_table();
+	}
+
+	/**
+	 * Validate radio and select fields.
+	 *
+	 * @since 1.7.5.5
+	 *
+	 * @param array $field      Field.
+	 * @param mixed $value      Value.
+	 * @param mixed $value_prev Previous value.
+	 *
+	 * @return mixed
+	 */
+	private function validate_field_with_options( $field, $value, $value_prev ) {
+
+		$value = sanitize_text_field( $value );
+
+		if ( isset( $field['options'] ) && array_key_exists( $value, $field['options'] ) ) {
+			return $value;
+		}
+
+		return isset( $field['default'] ) ? $field['default'] : $value_prev;
 	}
 }
 

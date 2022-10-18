@@ -177,6 +177,9 @@ abstract class IG_ES_Workflow_Variable {
 		$field->set_required( $required );
 		$field->set_placeholder( $placeholder );
 		$field->meta = $extra;
+		if ( $required ) {
+			$field->add_extra_attr( 'data-required', 'yes' );
+		}
 
 		$this->add_parameter_field( $field );
 	}
@@ -197,6 +200,34 @@ abstract class IG_ES_Workflow_Variable {
 		$field->set_required( $required );
 		$field->set_options( $options );
 		$field->meta = $extra;
+		if ( $required ) {
+			$field->add_extra_attr( 'data-required', 'yes' );
+		}
+
+		$this->add_parameter_field( $field );
+	}
+
+	/**
+	 * Add a number parameter field to the variable.
+	 *
+	 * @param string $name
+	 * @param string $description
+	 * @param bool   $required
+	 * @param string $placeholder
+	 * @param array  $extra
+	 *
+	 * @since 5.3.4
+	 */
+	public function add_parameter_number_field( $name, $description, $required = false, $placeholder = '', $extra = array()) {
+		$field = new ES_Number();
+		$field->set_name( $name );
+		$field->set_description( $description );
+		$field->set_required( $required );
+		$field->set_placeholder( $placeholder );
+		$field->meta = $extra;
+		if ( $required ) {
+			$field->add_extra_attr( 'data-required', 'yes' );
+		}
 
 		$this->add_parameter_field( $field );
 	}

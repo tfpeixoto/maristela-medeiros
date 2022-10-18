@@ -24,6 +24,7 @@ class IG_ES_Trial {
 	 */
 	public function __construct() {
 		add_action( 'admin_init', array( $this, 'show_trial_notices' ) );
+		add_action( 'wp_ajax_ig_es_trial_optin', array( $this, 'handle_trial_optin' ) );
 	}
 
 	/**
@@ -38,6 +39,77 @@ class IG_ES_Trial {
 		}
 
 		return self::$instance;
+	}
+
+	/**
+	 * Method to get if user has opted for trial or not.
+	 *
+	 * @return bool
+	 *
+	 * @since 4.6.0
+	 */
+	public function is_trial() {
+		$is_trial = get_option( 'ig_es_is_trial', '' );
+		if ( 'yes' === $is_trial ) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Get trial start date
+	 *
+	 * @return false|mixed|void
+	 *
+	 * @since 4.6.6
+	 */
+	public function get_trial_start_date() {
+		return get_option( 'ig_es_trial_started_at', '' );
+	}
+
+	/**
+	 * Method to get if trial has expired or not.
+	 *
+	 * @return bool
+	 *
+	 * @since 4.6.1
+	 */
+	public function is_trial_expired() {
+		$is_trial_expired = false;
+		$is_trial         = get_option( 'ig_es_is_trial', '' );
+
+		if ( 'yes' === $is_trial ) {
+			$trial_started_at = get_option( 'ig_es_trial_started_at' );
+			if ( ! empty( $trial_started_at ) ) {
+
+				// Get current timestamp.
+				$current_time = time();
+
+				// Get the timestamp when trial will expire.
+				$trial_expires_at = $trial_started_at + ES()->trial->get_trial_period();
+
+				// Check if current time is greater than expiry time.
+				if ( $current_time > $trial_expires_at ) {
+					$is_trial_expired = true;
+				}
+			}
+		}
+
+		return $is_trial_expired;
+	}
+
+	/**
+	 * Method to check if trial is valid.
+	 *
+	 * @return bool $is_trial_valid Is trial valid
+	 *
+	 * @since 4.6.1
+	 */
+	public function is_trial_valid() {
+
+		// Check if user has opted for trial and it has not yet expired.
+		return $this->is_trial() && ! $this->is_trial_expired();
 	}
 
 	/**
@@ -63,6 +135,26 @@ class IG_ES_Trial {
 		}
 
 		return $trial_period;
+	}
+
+	/**
+	 * Method to add trial related data.
+	 *
+	 * @param string $is_trial.
+	 *
+	 * @return int $trial_started_at
+	 *
+	 * @since 4.6.1
+	 */
+	public function add_trial_data( $is_trial = '', $trial_started_at = 0 ) {
+
+		$is_trial = ! empty( $is_trial ) ? $is_trial : 'yes';
+		update_option( 'ig_es_is_trial', $is_trial, false );
+
+		if ( 'yes' === $is_trial ) {
+			$trial_started_at = ! empty( $trial_started_at ) ? $trial_started_at : time();
+			update_option( 'ig_es_trial_started_at', $trial_started_at, false );
+		}
 	}
 
 	/**
@@ -148,27 +240,10 @@ class IG_ES_Trial {
 			return;
 		}
 
-		$is_trial             = ES()->is_trial();
+		$is_trial             = ES()->trial->is_trial();
 		$is_premium           = ES()->is_premium();
 		$is_premium_installed = ES()->is_premium_installed();
 		$current_page         = ig_es_get_request_data( 'page' );
-
-		$show_trial_consent_notice = false;
-
-		// Add opt to trial notice if user has not already opted for it and is not a premium user and is not dashboard page.
-		if ( ! $is_trial && ! $is_premium && 'es_dashboard' !== $current_page ) {
-			// Check whether user has performed any action(accept/reject) on consent notice for trial. 'yes' if performed.
-			$trial_consent_given = get_option( 'ig_es_trial_consent', 'no' );
-			if ( 'yes' !== $trial_consent_given ) {
-				$show_trial_consent_notice = true;
-			}
-		}
-
-		if ( $show_trial_consent_notice ) {
-			ES_Admin_Notices::add_notice( 'trial_consent' );
-		} else {
-			ES_Admin_Notices::remove_notice( 'trial_consent' );
-		}
 
 		$show_offer_notice = false;
 
@@ -228,5 +303,111 @@ class IG_ES_Trial {
 		} else {
 			ES_Admin_Notices::remove_notice( 'trial_to_premium' );
 		}
+	}
+
+	/**
+	 * Method to get ES trial list hash
+	 *
+	 * @return string $trial_list_hash Get hash for Trial list
+	 *
+	 * @since 5.3.12
+	 */
+	public function get_es_trial_list_hash() {
+		$trial_list_hash = 'f114244b3819';
+		return $trial_list_hash;
+	}
+
+	/**
+	 * Method to handle trial optin on dashboard page.
+	 */
+	public function handle_trial_optin() {
+		check_ajax_referer( 'ig-es-trial-optin-nonce', 'security' );
+		
+		$name            = ig_es_get_request_data( 'name', '' );
+		$email           = ig_es_get_request_data( 'email', '' );
+		$trial_list_hash = $this->get_es_trial_list_hash();
+
+		$sign_up_data = array(
+			'name'  => $name,
+			'email' => $email,
+			'list'  => $trial_list_hash,
+		);
+
+		$response              = $this->send_ig_sign_up_request( $sign_up_data );
+		$ig_signup_successfull = 'success' === $response['status'];
+		if ( $ig_signup_successfull ) {
+			$is_trial         = 'yes';
+			$trial_started_at = time();
+			$this->add_trial_data( $is_trial, $trial_started_at );
+			wp_send_json_success( $response );
+		} else {
+			wp_send_json_error( $response );
+		}
+	}
+
+	/**
+	 * Send a sign up request to ES installed on IG site.
+	 * 
+	 * @since 5.3.12
+	 * 
+	 * @param array $request_data
+	 */
+	public function send_ig_sign_up_request( $request_data = array() ) {
+
+		$response = array(
+			'status' => 'error',
+		);
+		
+		$name  = ! empty( $request_data['name'] ) ? $request_data['name']  : '';
+		$email = ! empty( $request_data['email'] ) ? $request_data['email']: '';
+		$lists = ! empty( $request_data['lists'] ) ? $request_data['lists']: array();
+		$list  = ! empty( $request_data['list'] ) ? $request_data['list']  : '';
+
+		if ( is_email( $email ) ) {
+
+			$url_params = array(
+				'ig_es_external_action' => 'subscribe',
+				'name'                  => $name,
+				'email'                 => $email,
+			);
+
+			if ( ! empty( $lists ) ) {
+				$url_params['lists'] = $lists;
+			}
+
+			if ( ! empty( $list ) ) {
+				$url_params['list'] = $list;
+			}
+
+			$ip_address = ig_es_get_ip();
+			if ( ! empty( $ip_address ) && 'UNKNOWN' !== $ip_address ) {
+				$url_params['ip_address'] = $ip_address;
+			}
+
+			$ig_es_url = 'https://www.icegram.com/';
+			$ig_es_url = add_query_arg( $url_params, $ig_es_url );
+
+			// Make a get request.
+			$api_response = wp_remote_get( $ig_es_url );
+			if ( ! is_wp_error( $api_response ) ) {
+				$body = ! empty( $api_response['body'] ) && ES_Common::is_valid_json( $api_response['body'] ) ? json_decode( $api_response['body'], true ) : '';
+				if ( ! empty( $body ) ) {
+					// If we have received an id in response then email is successfully queued at mailgun server.
+					if ( ! empty( $body['status'] ) && 'SUCCESS' === $body['status'] ) {
+						$response['status'] = 'success';
+					} elseif ( ! empty( $body['status'] ) && 'ERROR' === $body['status'] ) {
+						$response['status']       = 'error';
+						$response['message']      = $body['message'];
+						$response['message_text'] = $body['message_text'];
+					}
+				} else {
+					$response['status'] = 'success';
+				}
+			} else {
+				$response['status'] = 'error';
+			}
+		}
+
+		return $response;
 	}
 }

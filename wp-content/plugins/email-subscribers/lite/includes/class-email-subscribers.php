@@ -305,11 +305,16 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 		 * @since 4.0.0
 		 */
 		public function add_admin_notice() {
+
+			if ( ! current_user_can( 'manage_options' ) ) {
+				return;
+			}
+
 			// Halloween offer
 			$show_offer   = false;
 			$current_page = ig_es_get_request_data( 'page' );
 
-			if ( $this->can_upsell_features( array( 'lite', 'trial', 'starter' ) ) && IG_ES_Onboarding::is_onboarding_completed() ) {
+			if ( $this->can_upsell_features( array( 'lite', 'trial', 'starter', 'pro' ) ) && IG_ES_Onboarding::is_onboarding_completed() ) {
 				if ( 'es_reports' === $current_page ) {
 					$report_insight = ig_es_get_request_data( 'insight' );
 					if ( ! $report_insight ) {
@@ -320,13 +325,13 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 				}
 			}
 
-			if ( $show_offer ) {
-				$args['url']     = 'https://www.icegram.com/';
-				$args['include'] = ES_PLUGIN_DIR . 'lite/includes/notices/views/ig-es-bfcm-offer.php';
-				ES_Admin_Notices::add_custom_notice( 'bfcm_offer_2020', $args );
-			} else {
-				ES_Admin_Notices::remove_notice( 'bfcm_offer_2020' );
-			}
+			// if ( $show_offer ) {
+			// 	$args['url']     = 'https://www.icegram.com/';
+			// 	$args['include'] = ES_PLUGIN_DIR . 'lite/includes/notices/views/ig-es-bfcm-offer.php';
+			// 	ES_Admin_Notices::add_custom_notice( 'bfcm_offer_2021', $args );
+			// } else {
+			// 	ES_Admin_Notices::remove_notice( 'bfcm_offer_2021' );
+			// }
 
 			$screen_id = $this->get_current_screen_id();
 			// Don't show admin notices on Dashboard if onboarding is not yet completed.
@@ -355,9 +360,20 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 				$disable_wp_cron_notice = sprintf( __( 'WordPress Cron is disabled on your site. Email notifications from Email Subscribers plugin will not be sent automatically. <a href="%s" target="_blank" >Here\'s how you can enable it.</a>', 'email-subscribers' ), $es_cron_url );
 				/* translators: %s: Link to Cpanel URL */
 				$disable_wp_cron_notice .= '<br/>' . sprintf( __( 'Or schedule Cron in <a href="%s" target="_blank">cPanel</a>', 'email-subscribers' ), $cpanel_url );
+
+				$notice_dismiss_url = wp_nonce_url(
+					add_query_arg(
+						array(
+							'es_dismiss_admin_notice' => 1,
+							'option_name'             => 'wp_cron_notice',
+						)
+					),
+					'es_dismiss_admin_notice'
+				);
+
 				/* translators: %s: ES Pro URL */
 				$disable_wp_cron_notice .= '<br/>' . sprintf( __( 'Or use <strong><a href="%s" target="_blank">Email Subscribers Pro</a></strong> for automatic Cron support', 'email-subscribers' ), $es_pro_url );
-				$html                    = '<div class="notice notice-warning" style="background-color: #FFF;"><p style="letter-spacing: 0.6px;">' . $disable_wp_cron_notice . '<a style="float:right" class="es-admin-btn es-admin-btn-secondary " href="' . admin_url() . '?es_dismiss_admin_notice=1&option_name=wp_cron_notice">' . __(
+				$html                    = '<div class="notice notice-warning" style="background-color: #FFF;"><p style="letter-spacing: 0.6px;">' . $disable_wp_cron_notice . '<a style="float:right" class="es-admin-btn es-admin-btn-secondary " href="' . esc_url( $notice_dismiss_url ) . '">' . __(
 					'OK, I Got it!',
 					'email-subscribers'
 				) . '</a></p></div>';
@@ -472,6 +488,10 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 				define( 'IG_QUEUE_TABLE', $wpdb->prefix . 'ig_queue' );
 			}
 
+			if ( ! defined( 'IG_CUSTOM_FIELDS_TABLE' ) ) {
+				define( 'IG_CUSTOM_FIELDS_TABLE', $wpdb->prefix . 'ig_custom_fields' );
+			}
+
 			if ( ! defined( 'IG_EMAIL_STATUS_IN_QUEUE' ) ) {
 				define( 'IG_EMAIL_STATUS_IN_QUEUE', 'in_queue' );
 			}
@@ -502,6 +522,14 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 
 			if ( ! defined( 'IG_CAMPAIGN_TYPE_SEQUENCE_MESSAGE' ) ) {
 				define( 'IG_CAMPAIGN_TYPE_SEQUENCE_MESSAGE', 'sequence_message' );
+			}
+
+			if ( ! defined( 'IG_CAMPAIGN_TYPE_WORKFLOW' ) ) {
+				define( 'IG_CAMPAIGN_TYPE_WORKFLOW', 'workflow' );
+			}
+
+			if ( ! defined( 'IG_CAMPAIGN_TYPE_WORKFLOW_EMAIL' ) ) {
+				define( 'IG_CAMPAIGN_TYPE_WORKFLOW_EMAIL', 'workflow_email' );
 			}
 
 			if ( ! defined( 'IG_DEFAULT_BATCH_SIZE' ) ) {
@@ -549,7 +577,6 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 			if ( ! defined( 'IG_ES_MAX_EMAIL_SEND_AT_ONCE' ) ) {
 				define( 'IG_ES_MAX_EMAIL_SEND_AT_ONCE', 30 );
 			}
-
 			if ( ! defined( 'IG_ES_CAMPAIGN_STATUS_IN_ACTIVE' ) ) {
 				define( 'IG_ES_CAMPAIGN_STATUS_IN_ACTIVE', 0 );
 			}
@@ -590,6 +617,26 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 				define( 'IG_ES_MAILING_QUEUE_STATUS_SENT', 'Sent' );
 			}
 
+			if ( ! defined( 'IG_ES_MAILING_QUEUE_STATUS_FAILED' ) ) {
+				define( 'IG_ES_MAILING_QUEUE_STATUS_FAILED', 'Failed' );
+			}
+
+			if ( ! defined( 'IG_ES_SENDING_QUEUE_STATUS_QUEUED' ) ) {
+				define( 'IG_ES_SENDING_QUEUE_STATUS_QUEUED', 'In Queue' );
+			}
+			
+			if ( ! defined( 'IG_ES_SENDING_QUEUE_STATUS_SENDING' ) ) {
+				define( 'IG_ES_SENDING_QUEUE_STATUS_SENDING', 'Sending' );
+			}
+			
+			if ( ! defined( 'IG_ES_SENDING_QUEUE_STATUS_SENT' ) ) {
+				define( 'IG_ES_SENDING_QUEUE_STATUS_SENT', 'Sent' );
+			}
+
+			if ( ! defined( 'IG_ES_SENDING_QUEUE_STATUS_FAILED' ) ) {
+				define( 'IG_ES_SENDING_QUEUE_STATUS_FAILED', 'Failed' );
+			}
+
 			if ( ! defined( 'IG_ES_WORKFLOW_STATUS_IN_ACTIVE' ) ) {
 				define( 'IG_ES_WORKFLOW_STATUS_IN_ACTIVE', 0 );
 			}
@@ -598,12 +645,44 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 				define( 'IG_ES_WORKFLOW_STATUS_ACTIVE', 1 );
 			}
 
+			if ( ! defined( 'IG_ES_WORKFLOW_TYPE_USER' ) ) {
+				define( 'IG_ES_WORKFLOW_TYPE_USER', 0 );
+			}
+
+			if ( ! defined( 'IG_ES_WORKFLOW_TYPE_SYSTEM' ) ) {
+				define( 'IG_ES_WORKFLOW_TYPE_SYSTEM', 1 );
+			}
+
 			if ( ! defined( 'IG_ES_TRIAL_PERIOD_IN_DAYS' ) ) {
 				define( 'IG_ES_TRIAL_PERIOD_IN_DAYS', 14 );
 			}
 
 			if ( ! defined( 'IG_ES_PRODUCT_ID' ) ) {
 				define( 'IG_ES_PRODUCT_ID', 1002 );
+			}
+
+			if ( ! defined( 'IG_ES_SUBSCRIBE_SCORE' ) ) {
+				define( 'IG_ES_SUBSCRIBE_SCORE', 4 );
+			}
+
+			if ( ! defined( 'IG_ES_UNSUBSCRIBE_SCORE' ) ) {
+				define( 'IG_ES_UNSUBSCRIBE_SCORE', 0 );
+			}
+
+			if ( ! defined( 'IG_ES_OPEN_SCORE' ) ) {
+				define( 'IG_ES_OPEN_SCORE', 4 );
+			}
+
+			if ( ! defined( 'IG_ES_CLICK_SCORE' ) ) {
+				define( 'IG_ES_CLICK_SCORE', 1 );
+			}
+
+			if ( ! defined( 'IG_ES_CLASSIC_EDITOR' ) ) {
+				define( 'IG_ES_CLASSIC_EDITOR', 'classic' );
+			}
+
+			if ( ! defined( 'IG_ES_DRAG_AND_DROP_EDITOR' ) ) {
+				define( 'IG_ES_DRAG_AND_DROP_EDITOR', 'drag-and-drop' );
 			}
 		}
 
@@ -672,6 +751,7 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 				'lite/includes/db/class-ig-es-db-unsubscribe-feedback.php',
 				'lite/includes/db/class-ig-es-db-wc-cart.php',
 				'lite/includes/db/class-ig-es-db-wc-guest.php',
+				'lite/includes/db/class-es-db-custom-fields.php',
 
 				// Mailers
 				'lite/includes/mailers/class-es-base-mailer.php',
@@ -689,6 +769,7 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 				'lite/includes/services/class-es-service-spam-score-check.php',
 				'lite/includes/services/class-es-service-handle-cron-data.php',
 				'lite/includes/services/class-es-service-process-email-content.php',
+				'lite/includes/services/class-es-email-auth-header-verify.php',
 
 				// Classes
 				'lite/includes/classes/class-es-list-table.php',
@@ -698,8 +779,10 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 				'lite/includes/classes/class-es-lists-table.php',
 				'lite/includes/classes/class-es-contacts-table.php',
 				'lite/includes/classes/class-es-post-notifications.php',
+				'lite/includes/classes/class-es-campaign.php',
 				'lite/includes/classes/class-es-templates-table.php',
 				'lite/includes/classes/class-es-campaigns-table.php',
+				'lite/includes/classes/class-es-drag-and-drop-editor.php',
 				'lite/includes/classes/class-es-reports-table.php',
 				'lite/includes/classes/class-es-reports-data.php',
 				'lite/includes/classes/class-es-forms-table.php',
@@ -729,6 +812,9 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 				'lite/includes/classes/class-es-browser.php',
 				'lite/includes/classes/class-ig-es-trial.php',
 				'lite/includes/classes/class-es-mailchimp-api.php',
+
+				// pricing
+				'lite/includes/classes/class-email-subscribers-pricing.php',
 
 				// Core Functions
 				'lite/includes/es-core-functions.php',
@@ -772,9 +858,12 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 				'lite/includes/workflows/db/class-es-db-workflows.php',
 				'lite/includes/workflows/db/class-es-db-workflows-queue.php',
 				'lite/includes/workflows/class-es-workflows-table.php',
+				'lite/includes/workflows/class-es-workflow-gallery.php',
+
 				// Workflow Abstracts
 				'lite/includes/workflows/abstracts/class-es-workflow-registry.php',
 				'lite/includes/workflows/abstracts/class-es-workflow-trigger.php',
+				'lite/includes/workflows/abstracts/class-es-workflow-rule.php',
 				'lite/includes/workflows/abstracts/class-es-workflow-action.php',
 				'lite/includes/workflows/abstracts/class-es-workflow-data-type.php',
 				'lite/includes/workflows/abstracts/class-ig-es-workflow-variable.php',
@@ -798,6 +887,7 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 				'lite/includes/workflows/data-types/abstracts/class-es-data-type-form-data.php',
 				'lite/includes/workflows/data-types/class-es-data-type-user.php',
 				'lite/includes/workflows/data-types/class-es-data-type-subscriber.php',
+				'lite/includes/workflows/data-types/class-es-data-type-campaign.php',
 				'lite/includes/workflows/class-es-workflow-data-types.php',
 
 				'lite/includes/workflows/variables/class-es-workflow-data-types.php',
@@ -814,6 +904,7 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 				'lite/includes/workflows/fields/class-es-select.php',
 				'lite/includes/workflows/fields/class-es-checkbox.php',
 				'lite/includes/workflows/fields/class-es-wp-editor.php',
+				'lite/includes/workflows/fields/class-es-hidden-field.php',
 
 				// Workflow Admin
 				'lite/includes/workflows/admin/class-es-workflow-admin.php',
@@ -825,6 +916,11 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 				'lite/includes/workflows/triggers/class-es-trigger-user-registered.php',
 				'lite/includes/workflows/triggers/class-es-trigger-user-deleted.php',
 				'lite/includes/workflows/triggers/class-es-trigger-user-updated.php',
+				'lite/includes/workflows/triggers/class-es-trigger-user-subscribed.php',
+				'lite/includes/workflows/triggers/class-es-trigger-user-unconfirmed.php',
+				'lite/includes/workflows/triggers/class-es-trigger-user-unsubscribed.php',
+				'lite/includes/workflows/triggers/class-es-trigger-campaign-sent.php',
+				'lite/includes/workflows/triggers/class-es-trigger-campaign-failed.php',
 				'lite/includes/workflows/class-es-workflow-triggers.php',
 
 				// Abstracts workflow actions
@@ -836,7 +932,19 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 				'lite/includes/workflows/actions/class-es-action-remove-contact.php',
 				'lite/includes/workflows/actions/class-es-action-delete-contact.php',
 				'lite/includes/workflows/actions/class-es-action-update-contact.php',
+				'lite/includes/workflows/actions/class-es-action-send-email.php',
 				'lite/includes/workflows/class-es-workflow-actions.php',
+				'lite/includes/workflows/class-es-workflow-action-preview.php',
+
+				// Abstracts workflow rules
+				'lite/includes/workflows/rules/abstracts/class-es-rule-select-abstract.php',
+				'lite/includes/workflows/rules/abstracts/class-es-rule-searchable-select-abstract.php',
+				'lite/includes/workflows/rules/abstracts/class-es-rule-preloaded-select-abstract.php',
+				'lite/includes/workflows/rules/abstracts/class-es-rule-product-select-abstract.php',
+				'lite/includes/workflows/rules/abstracts/class-es-rule-number-abstract.php',
+
+				// Workflow Rules
+				'lite/includes/workflows/class-es-workflow-rules.php',
 
 				// Workflow Query
 				'lite/includes/workflows/class-es-workflow-query.php',
@@ -864,6 +972,12 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 
 				// Campaign Rules
 				'lite/admin/class-ig-es-campaign-rules.php',
+				'lite/admin/class-es-admin.php',
+				'lite/admin/class-es-campaign-admin.php',
+				'lite/admin/class-es-template-admin.php',
+				'lite/admin/class-es-gallery.php',
+
+				'lite/admin/class-es-form-admin.php',
 
 				'starter/starter-class-email-subscribers.php',
 				'pro/pro-class-email-subscribers.php',
@@ -936,7 +1050,7 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 			$this->loader->add_action( 'ig_es_add_contact', $plugin_public, 'add_contact', 10, 2 );
 			$this->loader->add_action( 'ig_es_confirm_unsubscription', $plugin_public, 'confirm_unsubscription', 10, 2 );
 
-			$this->loader->add_filter( 'es_template_type', $plugin_public, 'add_template_type' );
+			$this->loader->add_filter( 'es_template_type', $plugin_public, 'add_template_type', 9 );
 		}
 
 		/**
@@ -980,77 +1094,6 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 		}
 
 		/**
-		 * Method to get if user has opted for trial or not.
-		 *
-		 * @return bool
-		 *
-		 * @since 4.6.0
-		 */
-		public function is_trial() {
-			$is_trial = get_option( 'ig_es_is_trial', '' );
-			if ( 'yes' === $is_trial ) {
-				return true;
-			} else {
-				return false;
-			}
-		}
-
-		/**
-		 * Get trial start date
-		 *
-		 * @return false|mixed|void
-		 *
-		 * @since 4.6.6
-		 */
-		public function get_trial_start_date() {
-			return get_option( 'ig_es_trial_started_at', '' );
-		}
-
-		/**
-		 * Method to get if trial has expired or not.
-		 *
-		 * @return bool
-		 *
-		 * @since 4.6.1
-		 */
-		public function is_trial_expired() {
-			$is_trial_expired = false;
-			$is_trial         = get_option( 'ig_es_is_trial', '' );
-
-			if ( 'yes' === $is_trial ) {
-				$trial_started_at = get_option( 'ig_es_trial_started_at' );
-				if ( ! empty( $trial_started_at ) ) {
-
-					// Get current timestamp.
-					$current_time = time();
-
-					// Get the timestamp when trial will expire.
-					$trial_expires_at = $trial_started_at + ES()->trial->get_trial_period();
-
-					// Check if current time is greater than expiry time.
-					if ( $current_time > $trial_expires_at ) {
-						$is_trial_expired = true;
-					}
-				}
-			}
-
-			return $is_trial_expired;
-		}
-
-		/**
-		 * Method to check if trial is valid.
-		 *
-		 * @return bool $is_trial_valid Is trial valid
-		 *
-		 * @since 4.6.1
-		 */
-		public function is_trial_valid() {
-
-			// Check if user has opted for trial and it has not yet expired.
-			return $this->is_trial() && ! $this->is_trial_expired();
-		}
-
-		/**
 		 * Method to validate a premium service request
 		 *
 		 * @param array $service Request
@@ -1063,7 +1106,7 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 			$is_request_valid = false;
 
 			// Check if trial is still valid.
-			if ( $this->is_trial_valid() ) {
+			if ( ES()->trial->is_trial_valid() ) {
 				$is_request_valid = true;
 			} elseif ( $this->is_premium() ) {
 				$es_services = apply_filters( 'ig_es_services', array() );
@@ -1172,6 +1215,7 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 			$screens = array(
 				'es_template',
 				'edit-es_template',
+				'admin_page_es_template',
 				'toplevel_page_es_dashboard',
 				'admin_page_go_to_icegram',
 				"{$prefix}_page_es_subscribers",
@@ -1187,7 +1231,9 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 				"{$prefix}_page_es_general_information",
 				"{$prefix}_page_es_pricing",
 				"{$prefix}_page_es_sequence",
-
+				"{$prefix}_page_es_custom_fields",
+				"{$prefix}_page_es_templates",
+				"{$prefix}_page_es_gallery",
 			);
 
 			$screens = apply_filters( 'ig_es_admin_screens', $screens );
@@ -1337,6 +1383,7 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 				self::$instance->workflows_db      = new ES_DB_Workflows();
 				self::$instance->carts_db          = new IG_ES_DB_WC_Cart();
 				self::$instance->trial             = new IG_ES_Trial();
+				self::$instance->custom_fields_db  = new ES_DB_Custom_Fields();
 
 				// Start-IG-Code.
 				$name         = 'Email Subscribers';
@@ -1366,7 +1413,7 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 				}
 
 				$plugin_file_path   = ES_PLUGIN_DIR . 'email-subscribers.php';
-				$allowed_by_default = ES()->is_premium() || ES()->is_trial();
+				$allowed_by_default = ES()->is_premium() || ES()->trial->is_trial();
 
 				if ( strpos( ES_PLUGIN_DIR, 'email-subscribers-premium' ) ) {
 					$plugin_file_path = ES_PLUGIN_DIR . 'email-subscribers-premium.php';
@@ -1379,7 +1426,6 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 				// End-IG-Code.
 
 				add_action( 'admin_init', array( self::$instance, 'add_admin_notice' ) );
-				add_action( 'admin_init', array( self::$instance, 'check_trial_optin_consent' ) );
 				add_filter( 'ig_es_service_request_data', array( self::$instance, 'add_service_authentication_data' ) );
 				add_filter( 'ig_es_plan', array( self::$instance, 'add_trial_plan' ) );
 
@@ -1418,7 +1464,7 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 		 */
 		public function add_trial_plan( $plan = '' ) {
 
-			if ( $this->is_trial_valid() ) {
+			if ( ES()->trial->is_trial_valid() ) {
 				$plan = 'trial';
 			}
 
@@ -1459,7 +1505,7 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 				$request_data['plan'] = $es_plan;
 			}
 
-			if ( $this->is_trial() ) {
+			if ( ES()->trial->is_trial() ) {
 
 				$trial_started_at = get_option( 'ig_es_trial_started_at' );
 				$site_url         = site_url();
@@ -1469,47 +1515,6 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 			}
 
 			return $request_data;
-		}
-
-		/**
-		 * Method to check if user has given optin consent.
-		 *
-		 * @since 4.6.1
-		 */
-		public function check_trial_optin_consent() {
-
-			// Check optin consent only if not already trial or premium.
-			if ( ! ( $this->is_trial() || $this->is_premium() ) ) {
-				$trial_consent = ig_es_get_request_data( 'ig_es_trial_consent', '' );
-				if ( ! empty( $trial_consent ) ) {
-					check_admin_referer( 'ig_es_trial_consent' );
-					$this->add_trial_data( $trial_consent );
-					update_option( 'ig_es_trial_consent', $trial_consent, false );
-					ES_Admin_Notices::remove_notice( 'trial_consent' );
-					$referer = wp_get_referer();
-					wp_safe_redirect( $referer );
-				}
-			}
-		}
-
-		/**
-		 * Method to add trial related data.
-		 *
-		 * @param string $is_trial.
-		 *
-		 * @return int $trial_started_at
-		 *
-		 * @since 4.6.1
-		 */
-		public function add_trial_data( $is_trial = '', $trial_started_at = 0 ) {
-
-			$is_trial = ! empty( $is_trial ) ? $is_trial : 'yes';
-			update_option( 'ig_es_is_trial', $is_trial, false );
-
-			if ( 'yes' === $is_trial ) {
-				$trial_started_at = ! empty( $trial_started_at ) ? $trial_started_at : time();
-				update_option( 'ig_es_trial_started_at', $trial_started_at, false );
-			}
 		}
 
 		/**
@@ -1623,6 +1628,18 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 
 					break;
 
+				case 'gmail':
+					switch ( $key ) {
+						case 'client_id':
+							$return = defined( 'IG_ES_GMAIL_CLIENT_ID' ) && IG_ES_GMAIL_CLIENT_ID;
+							break;
+						case 'client_secret':
+							$return = defined( 'IG_ES_GMAIL_CLIENT_SECRET' ) && IG_ES_GMAIL_CLIENT_SECRET;
+							break;
+					}
+
+					break;
+
 				case 'Amazon_SES':
 					switch ( $key ) {
 						case 'access_key_id':
@@ -1678,6 +1695,27 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 					switch ( $key ) {
 						case 'api_token':
 							$return = defined( 'IG_ES_POSTMARK_API_TOKEN' ) && IG_ES_POSTMARK_API_TOKEN;
+							break;
+					}
+
+					break;
+
+				case 'sendinblue':
+					switch ( $key ) {
+						case 'api_token':
+							$return = defined( 'IG_ES_SENDINBLUE_API_TOKEN' ) && IG_ES_SENDINBLUE_API_TOKEN;
+							break;
+					}
+
+					break;
+
+				case 'mailjet':
+					switch ( $key ) {
+						case 'public_key':
+							$return = defined( 'IG_ES_MAILJET_PUBLIC_KEY' ) && IG_ES_MAILJET_PUBLIC_KEY;
+							break;
+						case 'private_key':
+							$return = defined( 'IG_ES_MAILJET_PRIVATE_KEY' ) && IG_ES_MAILJET_PRIVATE_KEY;
 							break;
 					}
 
@@ -1798,6 +1836,39 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 					switch ( $key ) {
 						case 'api_token':
 							$return = $this->is_const_defined( $group, $key ) ? IG_ES_POSTMARK_API_TOKEN : $value;
+							break;
+					}
+
+					break;
+
+				case 'sendinblue':
+					switch ( $key ) {
+						case 'api_token':
+							$return = $this->is_const_defined( $group, $key ) ? IG_ES_SENDINBLUE_API_TOKEN : $value;
+							break;
+					}
+
+					break;
+
+				case 'gmail':
+					switch ( $key ) {
+						case 'client_id':
+							$return = $this->is_const_defined( $group, $key ) ? IG_ES_GMAIL_CLIENT_ID : $value;
+							break;
+						case 'client_secret':
+							$return = $this->is_const_defined( $group, $key ) ? IG_ES_GMAIL_CLIENT_SECRET : $value;
+							break;
+					}
+
+					break;
+
+				case 'mailjet':
+					switch ( $key ) {
+						case 'public_key':
+							$return = $this->is_const_defined( $group, $key ) ? IG_ES_MAILJET_PUBLIC_KEY : $value;
+							break;
+						case 'private_key':
+							$return = $this->is_const_defined( $group, $key ) ? IG_ES_MAILJET_PRIVATE_KEY : $value;
 							break;
 					}
 
@@ -1953,6 +2024,45 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 			<?php
 			$message = ob_get_clean();
 			return $message;
+		}
+
+		/**
+		 * Check if offer period
+		 *
+		 * @return boolean
+		 *
+		 * @since 4.8.6
+		 */
+		public function is_offer_period( $offer_name = '' ) {
+
+			$is_offer_period = false;
+			if ( ! empty( $offer_name ) ) {
+				$current_utc_time = time();
+				$current_ist_time = $current_utc_time + ( 5.5 * HOUR_IN_SECONDS ); // Add IST offset to get IST time
+				$offer_start_time = 0;
+				$offer_end_time   = 0;
+
+				if ( 'bfcm' === $offer_name ) {
+					$offer_start_time = strtotime( '2021-11-24 12:00:00' ); // Offer start time in IST
+					$offer_end_time   = strtotime( '2021-12-01 12:00:00' ); // Offer end time in IST
+				}
+
+				$is_offer_period = $current_ist_time >= $offer_start_time && $current_ist_time <= $offer_end_time;
+			}
+
+			return $is_offer_period;
+		}
+
+		/**
+		 * Method to get ES trial list hash
+		 *
+		 * @return string $es_optin_list_hash Get hash for Trial list
+		 *
+		 * @since 5.3.12
+		 */
+		public function get_es_optin_list_hash() {
+			$es_optin_list_hash = 'bc4f8995201a';
+			return $es_optin_list_hash;
 		}
 	}
 }

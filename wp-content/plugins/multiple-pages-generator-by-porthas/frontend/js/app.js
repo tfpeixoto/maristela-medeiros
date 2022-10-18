@@ -18,13 +18,13 @@ import('./advanced-settings.js');
 
 // Сделать такую же обертку для других импортов
 if ((new URL(location.href).searchParams.get('page') === 'mpg-search-settings')) {
-    // import('./search-settings.js');
+    import('./search-settings.js');
 }
 
 jQuery(document).ready(function () {
 
     function getProjectIdFromUrl() {
-        if (location.href.includes('mpg-project-builder&id=')) {
+        if (location.href.includes('mpg-project-builder&action=edit_project&id=')) {
 
             const url = new URL(location.href);
             return url.searchParams.get('id');

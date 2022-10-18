@@ -14,6 +14,17 @@ class MPG_HookController
     public static function init_base()
     {
 
+        // Excluding template pages from search / loop
+        add_action('pre_get_posts', function ($query) {
+
+            if (!is_admin()) {
+                $templates_ids = MPG_ProjectModel::mpg_get_all_templates_id();
+                if ($templates_ids) {
+                    $query->query_vars['post__not_in'] = $templates_ids;
+                }
+            }
+        });
+        
         $mpg_index_file = plugin_dir_path(__DIR__) . 'porthas-multi-pages-generator.php';
 
         // Подключает .mo файл перевода из указанной папки. 
@@ -50,14 +61,7 @@ class MPG_HookController
 
         add_action('admin_head', ['MPG_Helper', 'mpg_header_code_container']);
 
-        add_action('admin_init', function () {
 
-            $user_id = wp_get_current_user()->ID;
-
-            if (time() -  MPG_Constant::MPG_WEEK_IN_SECONDS > (int) get_user_meta($user_id, 'mpg_next_schedule_review_notice_time')) {
-                add_action('admin_notices', ['MPG_Helper', 'mpg_ask_to_leave_review_handler']);
-            }
-        });
 
         // Ставим noindex для страницы шаблона
         add_filter('template_redirect', function () {
@@ -71,7 +75,23 @@ class MPG_HookController
             }
         }, 1, 1);
 
-        add_action('admin_init', ['MPG_Helper', 'mpg_review_later_handler']);
+        // Filter language URL.
+        add_filter(
+            'wpml_ls_language_url',
+            function( $url, $data ) {
+                $path           = MPG_Helper::mpg_get_request_uri();
+                $redirect_rules = MPG_CoreModel::mpg_get_redirect_rules( $path );
+                if ( ! empty( $redirect_rules['template_id'] ) && ! empty( $redirect_rules['project_id'] ) ) {
+                    $page_slug = get_query_var( 'name' );
+                    if ( ! empty( $page_slug ) ) {
+                        $url = sprintf( '%s%s/', $url, $page_slug );
+                    }
+                }
+                return $url;
+            },
+            10,
+            2
+        );
     }
 
     public static function init_ajax()
@@ -154,6 +174,11 @@ class MPG_HookController
         add_action('wp_ajax_mpg_set_cache_hook_name_and_priority', ['MPG_ProjectController', 'mpg_set_cache_hook_name_and_priority']);
         add_action('wp_ajax_mpg_get_cache_hook_name_and_priority', ['MPG_ProjectController', 'mpg_get_cache_hook_name_and_priority']);
 
+        // Hook position
+        add_action('wp_ajax_mpg_set_branding_position', ['MPG_AdvancedSettingsController', 'mpg_set_branding_position']);
+        add_action('wp_ajax_mpg_get_branding_position', ['MPG_AdvancedSettingsController', 'mpg_get_branding_position']);
+        
+
 
         // Search
         add_action('wp_ajax_mpg_get_search_results', ['MPG_SearchController', 'mpg_search_ajax']);
@@ -173,17 +198,15 @@ class MPG_HookController
         $hook_name = get_option('mpg_hook_name');
         $hook_priority = get_option('mpg_hook_priority');
 
-
         if ($hook_name && $hook_priority) {
-
             add_action($hook_name, ['MPG_CoreController', 'mpg_view_multipages_standard'], $hook_priority);
         } else {
 
             if (defined('ELEMENTOR_PRO_VERSION') && defined('MPG_EXPERIMENTAL_FEATURES') && MPG_EXPERIMENTAL_FEATURES === true) {
                 add_action('pre_handle_404', ['MPG_CoreController', 'mpg_view_multipages_elementor'], 1);
-            } elseif (defined('FUSION_BUILDER_VERSION')  && MPG_EXPERIMENTAL_FEATURES === true) {
+            } elseif ( defined( 'FUSION_BUILDER_VERSION' ) && ( defined( 'MPG_EXPERIMENTAL_FEATURES' ) && MPG_EXPERIMENTAL_FEATURES === true ) ) {
                 add_action('posts_selection', ['MPG_CoreController', 'mpg_view_multipages_standard'], 1);
-            } else if (defined('TVE_IN_ARCHITECT') && MPG_EXPERIMENTAL_FEATURES === true) {
+            } else if ( defined( 'TVE_IN_ARCHITECT' ) && ( defined( 'MPG_EXPERIMENTAL_FEATURES' ) && MPG_EXPERIMENTAL_FEATURES === true ) ) {
                 add_action('posts_selection', ['MPG_CoreController', 'mpg_view_multipages_standard'], 1);
             } else {
                 add_action('template_redirect', ['MPG_CoreController', 'mpg_view_multipages_standard'], 1);

@@ -86,13 +86,12 @@ class ES_Data_Type_User extends ES_Workflow_Data_Type {
 
 		if ( $item instanceof WP_User ) {
 
-			$user_first_name = $item->display_name;
-
+			$name  = $item->display_name;
 			$email = $item->user_email;
 
 			// prepare data.
 			$data = array(
-				'first_name' => $user_first_name,
+				'name' 		 => $name,
 				'email'      => $email,
 				'source'     => 'wp',
 				'status'     => 'verified',

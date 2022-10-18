@@ -7,7 +7,7 @@ require_once(realpath(__DIR__ . '/../models/ProjectModel.php'));
 require_once(realpath(__DIR__ . '/../models/SitemapModel.php'));
 
 require_once(realpath(__DIR__ . '/../helpers/Constant.php'));
-require_once(realpath(__DIR__ . '/../vendor/src/Spout/Autoloader/autoload.php'));
+require_once(realpath( __DIR__ . '/../lib/src/Spout/Autoloader/autoload.php' ));
 
 require_once(realpath(__DIR__ . '/../views/dataset-library/index.php'));
 
@@ -28,6 +28,9 @@ class MPG_DatasetController
 
             return MPG_DatasetLibraryView::render($datasets_list);
         } catch (Exception $e) {
+
+            do_action( 'themeisle_log_event', MPG_NAME, __('Error occured in process of getting datasets. More detail in logs.', 'mpg'), 'debug', __FILE__, __LINE__ );
+
             echo __('Error occured in process of getting datasets. More detail in logs.', 'mpg');
         }
     }
@@ -46,12 +49,8 @@ class MPG_DatasetController
             // 1. Надо получить "конфиг" выбранного датасета
             $datasets_list = MPG_DatasetModel::mpg_read_dataset_hub();
 
-            $dataset_config = null;
-            foreach ($datasets_list as $dataset) {
-                if ((int) $dataset[0] === $dataset_id) {
-                    $dataset_config = $dataset;
-                }
-            }
+            $_dataset_id = array_search( $dataset_id, array_column( $datasets_list, '0' ), true );
+            $dataset_config = isset( $datasets_list[ $_dataset_id ] ) ? $datasets_list[ $_dataset_id ] : null;
 
             if (!$dataset_config) {
                 throw new Exception(__('Needed dataset was not found', 'mpg'));
@@ -69,18 +68,28 @@ class MPG_DatasetController
             // 3. Надо создать каркас в БД: name, entity_type (post / page), entity_id
             $project_id = MPG_ProjectModel::mpg_create_base_carcass($dataset_config[1], $dataset_config[3], $entity_id, false);
 
+            if ( ! empty( $dataset_config[5] ) ) {
+                $post_content = preg_replace( '/project-id=".*?"/', 'project-id="' . $project_id . '"', $dataset_config[5] );
+                $post_content = preg_replace( '/href=".*?"/', 'href="/' . $dataset_config[7] . '"', $post_content );
+                wp_update_post(
+                    array(
+                        'ID' => $entity_id,
+                        'post_content' => $post_content,
+                    )
+                );
+            }
 
             // 4. Скачиваем и развертываем dataset
             $source_path = $dataset_config[6];
             $ext = MPG_Helper::mpg_get_extension_by_path($source_path);
 
 
-            $destination_path = realpath(__DIR__ . '/../../../mpg-uploads') . '/' . $project_id . '.' . $ext;
+            $destination_path = MPG_UPLOADS_DIR . $project_id . '.' . $ext;
 
             $blog_id = get_current_blog_id();
 
             if (is_multisite() && $blog_id > 1) {
-                $destination_path = realpath(__DIR__ . '/../../../mpg-uploads') . '/' . $blog_id . '/' . $project_id . '.' . $ext;
+                $destination_path = MPG_UPLOADS_DIR . $blog_id . '/' . $project_id . '.' . $ext;
             }
 
             // Начинаем собирать объект для записи в БД
@@ -93,6 +102,12 @@ class MPG_DatasetController
 
             if ($download_dataset !== true) {
                 throw new Exception($download_dataset, 'mpg');
+            }
+            if ( ! file_exists( $destination_path ) ) {
+                $download_dataset = MPG_DatasetModel::download_file($source_path, $destination_path);
+                if ($download_dataset !== true) {
+                    throw new Exception($download_dataset, 'mpg');
+                }
             }
 
             $headers = MPG_DatasetController::get_headers($destination_path);
@@ -138,6 +153,9 @@ class MPG_DatasetController
                 ]
             ]);
         } catch (Exception $e) {
+
+            do_action( 'themeisle_log_event', MPG_NAME, $e->getMessage(), 'debug', __FILE__, __LINE__ );
+
             echo json_encode([
                 'success' => false,
                 'error' => $e->getMessage()
@@ -155,6 +173,10 @@ class MPG_DatasetController
 
         if (!$headers) {
 
+            if ( false === strpos( $path_to_dataset, 'wp-content' ) ) {
+                $path_to_dataset = MPG_UPLOADS_DIR . $path_to_dataset;
+            }
+
             $ext = MPG_Helper::mpg_get_extension_by_path($path_to_dataset);
 
             $reader = MPG_Helper::mpg_get_spout_reader_by_extension($ext);
@@ -163,6 +185,7 @@ class MPG_DatasetController
             $headers = [];
             foreach ($reader->getSheetIterator() as $sheet) {
                 foreach ($sheet->getRowIterator() as $row) {
+                    $row = $row->toArray();
                     $headers = $row; // Берем первый ряд и выходим
                     break 2;
                 }
@@ -188,7 +211,9 @@ class MPG_DatasetController
     // возвращает массив самих данных.
     public static function get_rows($path_to_dataset, $limit)
     {
-
+        if ( false === strpos( $path_to_dataset, 'wp-content' ) ) {
+            $path_to_dataset = MPG_UPLOADS_DIR . $path_to_dataset;
+        }
         $ext = MPG_Helper::mpg_get_extension_by_path($path_to_dataset);
         $reader = MPG_Helper::mpg_get_spout_reader_by_extension($ext);
         $reader->open($path_to_dataset);
@@ -197,6 +222,7 @@ class MPG_DatasetController
 
         foreach ($reader->getSheetIterator() as $sheet) {
             foreach ($sheet->getRowIterator() as $row) {
+                $row = $row->toArray();
                 if ($row[0] !== NULL) {
                     $dataset_array[] = $row;
                 }
@@ -238,6 +264,7 @@ class MPG_DatasetController
             $dataset_array = [];
             foreach ($reader->getSheetIterator() as $sheet) {
                 foreach ($sheet->getRowIterator() as $row) {
+                    $row = $row->toArray();
                     if ($row[0] !== NULL) {
                         $dataset_array[] = $row;
                     }
@@ -276,6 +303,9 @@ class MPG_DatasetController
                 'headers' =>  MPG_DatasetController::get_headers($path_to_dataset, $dataset_array[0])
             ]);
         } catch (Exception $e) {
+
+            do_action( 'themeisle_log_event', MPG_NAME, $e->getMessage(), 'debug', __FILE__, __LINE__ );
+
             echo json_encode(['success' => false, 'error' => $e->getMessage()]);
         }
 
@@ -304,7 +334,8 @@ class MPG_DatasetController
 
             $data = [];
             $search_results_length = 0;
-            $site_url = get_site_url();
+            $site_url = function_exists( 'icl_get_home_url' ) ? icl_get_home_url() : home_url();
+            $site_url = rtrim( $site_url, '/' );
 
             if ($search_value) {
                 $search_string = trim(strtolower($search_value));
@@ -338,6 +369,9 @@ class MPG_DatasetController
                 'recordsFiltered' => $search_value ? $search_results_length : count($urls_array)
             ]);
         } catch (Exception $e) {
+
+            do_action( 'themeisle_log_event', MPG_NAME, $e->getMessage(), 'debug', __FILE__, __LINE__ );
+
             echo json_encode(['success' => false, 'error' => $e->getMessage()]);
         }
 
@@ -381,6 +415,9 @@ class MPG_DatasetController
                 throw new Exception(__('Link or project ID is missing', 'mpg'));
             }
         } catch (Exception $e) {
+
+            do_action( 'themeisle_log_event', MPG_NAME, sprintf( 'Can\'t download file by URL. Details: %s', $e->getMessage() ), 'debug', __FILE__, __LINE__ );
+
             echo json_encode([
                 'success' => false,
                 'error' => __('Can\'t download file by URL. Details:', 'mpg') . $e->getMessage()
@@ -401,6 +438,10 @@ class MPG_DatasetController
 
             $path_to_dataset = $project[0]->source_path;
 
+            if ( false === strpos( $path_to_dataset, 'wp-content' ) ) {
+                $path_to_dataset = MPG_UPLOADS_DIR . $path_to_dataset;
+            }
+
             if (!$path_to_dataset) {
                 throw new Exception(__('Dataset path was not defined', 'mpg'));
             }
@@ -414,6 +455,7 @@ class MPG_DatasetController
             $storage = [];
             foreach ($reader->getSheetIterator() as $sheet) {
                 foreach ($sheet->getRowIterator() as $row) {
+                    $row = $row->toArray();
                     if ($row[0] !== NULL) {
                         $storage[] = $row[$choosed_culumn_number];
                     }
@@ -429,6 +471,8 @@ class MPG_DatasetController
                 'data' => $storage
             ]);
         } catch (Exception $e) {
+
+            do_action( 'themeisle_log_event', MPG_NAME, sprintf( 'Details: %s', $e->getMessage() ), 'debug', __FILE__, __LINE__ );
 
             echo json_encode([
                 'success' => false,

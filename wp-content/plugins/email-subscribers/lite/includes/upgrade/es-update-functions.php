@@ -1047,7 +1047,7 @@ function ig_es_update_431_db_version() {
  * @sicne 4.3.2
  */
 function ig_es_update_432_import_bfcm_templates() {
-	ES_Install::load_templates();
+	// ES_Install::load_templates();
 }
 
 /**
@@ -1174,7 +1174,7 @@ function ig_es_update_449_db_version() {
  * @since 4.4.10
  */
 function ig_es_update_4410_load_templates() {
-	ES_Install::load_templates( true );
+	// ES_Install::load_templates( true );
 }
 
 /**
@@ -1558,3 +1558,424 @@ function ig_es_update_479_db_version() {
 }
 
 /* --------------------- ES 4.7.9(End)--------------------------- */
+
+/* --------------------- ES 4.8.3(Start)--------------------------- */
+
+/**
+ * Add engagement_score column to contacts table
+ *
+ * @since 4.8.3
+ */
+function ig_es_add_engagement_score_to_contacts_table() {
+	global $wpdb;
+
+	$cols = $wpdb->get_col( "SHOW COLUMNS FROM {$wpdb->prefix}ig_contacts" );
+
+	if ( ! in_array( 'engagement_score', $cols, true ) ) {
+		$wpdb->query(
+			"ALTER TABLE {$wpdb->prefix}ig_contacts
+			ADD COLUMN `engagement_score` FLOAT NULL AFTER `hash`"
+		);
+	}
+}
+
+/**
+ * Calculate engagement score of existing subscribers
+ *
+ * @since 4.8.3
+ */
+function ig_es_calculate_existing_subscribers_engagement_score() {
+
+	global $wpbd;
+
+	// First update existing unsubscribed contact score to 0.
+	$wpbd->query(
+		"UPDATE {$wpbd->prefix}ig_contacts SET `engagement_score` = 0 WHERE `unsubscribed` = 1"
+	);
+
+	IG_ES_Background_Process_Helper::add_action_scheduler_task( 'ig_es_calculate_existing_subscribers_engagement_score', array(), false );
+}
+
+/**
+ * Update DB version
+ *
+ * @since 4.8.3
+ */
+function ig_es_update_483_db_version() {
+	ES_Install::update_db_version( '4.8.3' );
+}
+
+/* --------------------- ES 4.8.3(End)--------------------------- */
+
+/* --------------------- ES 4.8.4(Start)--------------------------- */
+
+/**
+ * Create New custom field table
+ *
+ * @since 4.8.4
+ */
+function ig_es_update_484_create_custom_field_table() {
+	ES_Install::create_tables( '4.8.4' );
+}
+
+function ig_es_update_484_db_version() {
+	ES_Install::update_db_version( '4.8.4' );
+}
+
+/* --------------------- ES 4.8.4(End)--------------------------- */
+
+
+/* --------------------- ES 4.9.0(Start)--------------------------- */
+
+/**
+ * Add bounce_status column in contacts table
+ *
+ * @since 4.9.0
+ */
+function ig_es_update_490_alter_contacts_table() {
+	global $wpdb;
+
+	$cols = $wpdb->get_col( "SHOW COLUMNS FROM {$wpdb->prefix}ig_contacts" );
+
+	if ( ! in_array( 'bounce_status', $cols, true ) ) {
+		$wpdb->query(
+			"ALTER TABLE {$wpdb->prefix}ig_contacts ADD COLUMN `bounce_status` enum('0','1','2') NOT NULL DEFAULT '0' AFTER `ip_address`"
+		);
+
+	}
+}
+
+/**
+ * Update DB version
+ *
+ * @since 4.9.0
+ */
+function ig_es_update_490_db_version() {
+	ES_Install::update_db_version( '4.9.0' );
+}
+/* --------------------- ES 4.9.0(End)--------------------------- */
+
+
+/* --------------------- ES 5.0.1(Start)--------------------------- */
+
+/**
+ * Migrate notifications into workflows.
+ *
+ * @since 5.0.1
+ */
+function ig_es_update_501_migrate_notifications_into_workflows() {
+	ES()->workflows_db->migrate_notifications_to_workflows();
+}
+
+/**
+ * Update DB version
+ *
+ * @since 5.0.1
+ */
+function ig_es_update_501_db_version() {
+	ES_Install::update_db_version( '5.0.1' );
+}
+
+/* --------------------- ES 5.0.1(End)--------------------------- */
+
+/* --------------------- ES 5.0.3(Start)--------------------------- */
+
+/**
+ * Add send_at column in sending queue table
+ *
+ * @since 5.0.3
+ */
+function ig_es_update_503_alter_sending_queue_table() {
+	global $wpdb;
+
+	$cols = $wpdb->get_col( "SHOW COLUMNS FROM {$wpdb->prefix}ig_sending_queue" );
+
+	if ( ! in_array( 'send_at', $cols, true ) ) {
+		$wpdb->query(
+			"ALTER TABLE {$wpdb->prefix}ig_sending_queue ADD COLUMN `send_at` DATETIME NULL DEFAULT NULL AFTER `opened`"
+		);
+	}
+}
+
+/**
+ * Add timezone column in contacts table
+ *
+ * @since 5.0.3
+ */
+function ig_es_update_503_alter_contacts_table() {
+	global $wpdb;
+
+	$cols = $wpdb->get_col( "SHOW COLUMNS FROM {$wpdb->prefix}ig_contacts" );
+
+	if ( ! in_array( 'timezone', $cols, true ) ) {
+		$wpdb->query(
+			"ALTER TABLE {$wpdb->prefix}ig_contacts ADD COLUMN `timezone` VARCHAR(255) NULL DEFAULT NULL AFTER `bounce_status`"
+		);
+	}
+}
+
+/**
+ * Add timezone based on the contacts ip_address
+ *
+ * @since 5.0.3
+ */
+function ig_es_add_timezone_to_contacts_table() {
+	IG_ES_Background_Process_Helper::add_action_scheduler_task( 'ig_es_add_country_code_to_audience' );
+}
+
+/**
+ * Update DB version
+ *
+ * @since 5.0.3
+ */
+function ig_es_update_503_db_version() {
+	ES_Install::update_db_version( '5.0.3' );
+}
+/* --------------------- ES 5.0.3(End)--------------------------- */
+
+/* --------------------- ES (Start)--------------------------- */
+
+/**
+ * Add description column in Lists table
+ *
+ * @since 5.0.4
+ */
+function ig_es_update_504_alter_lists_table() {
+	global $wpdb;
+
+	$cols = $wpdb->get_col( "SHOW COLUMNS FROM {$wpdb->prefix}ig_lists" );
+	if ( ! in_array( 'description', $cols, true ) ) {
+		$wpdb->query(
+			"ALTER TABLE {$wpdb->prefix}ig_lists 
+			ADD COLUMN `description` varchar(255) DEFAULT NULL AFTER `name`"
+		);
+	}
+}
+
+/**
+ * Update DB version
+ *
+ * @since 5.0.4
+ */
+function ig_es_update_504_db_version() {
+	ES_Install::update_db_version( '5.0.4' );
+}
+
+/* --------------------- ES 5.0.4(End)--------------------------- */
+
+/* --------------------- ES 4.6.13(Start)--------------------------- */
+
+/**
+ * Migrate sequence list settings into campaign rules
+ *
+ * @since 4.6.13
+ */
+function ig_es_migrate_post_campaigns_list_settings_into_campaign_rules() {
+
+	$args = array(
+		'include_types' => array(
+			IG_CAMPAIGN_TYPE_POST_NOTIFICATION,
+			IG_CAMPAIGN_TYPE_POST_DIGEST
+		),
+	);
+
+	$post_campaigns = ES()->campaigns_db->get_all_campaigns( $args );
+	if ( ! empty( $post_campaigns ) ) {
+		foreach ( $post_campaigns as $campaign ) {
+			
+			$campaign_id = $campaign['id'];
+			
+			if ( ! empty( $campaign_id ) ) {
+
+				$data_to_update = array();
+				
+				if ( ! empty( $campaign['base_template_id'] ) ) {
+					$template_id = $campaign['base_template_id'];
+					$template    = get_post( $template_id );
+					if ( is_object( $template ) ) {
+						$campaign_name = $template->post_title;
+						$campaign_body = $template->post_content;
+
+						$data_to_update['name']    = $campaign_name;
+						$data_to_update['subject'] = $campaign_name;
+						$data_to_update['body']    = $campaign_body;
+					}
+				}
+
+				if ( ! empty( $campaign['list_ids'] ) ) {
+					$list_ids      = $campaign['list_ids'];
+					$list_ids      = explode( ',', $list_ids );
+					$campaign_meta = ! empty( $campaign['meta'] ) ? maybe_unserialize( $campaign['meta'] ) : array();
+					if ( empty( $campaign_meta['list_conditions'] ) ) {
+						$list_conditions      = array();
+						$list_conditions_data = array(
+							'field'    => '_lists__in',
+							'operator' => 'is',
+							'value'    => array(),
+						);
+						foreach ( $list_ids as $index => $list_id ) {
+							$list_conditions_data['value'][] = $list_id;
+						}
+						$list_conditions[][]              = $list_conditions_data;
+						$campaign_meta['list_conditions'] = $list_conditions;
+						$data_to_update['meta']           = maybe_serialize( $campaign_meta );
+					}
+				}
+
+				if ( ! empty( $data_to_update ) ) {
+					ES()->campaigns_db->update( $campaign_id, $data_to_update );
+				}
+			} 
+		}
+	}
+}
+
+/**
+ * Update DB version
+ *
+ * @since 5.1.0
+ */
+function ig_es_update_510_db_version() {
+	ES_Install::update_db_version( '5.1.0' );
+}
+
+/* --------------------- ES 5.1.0(End)--------------------------- */
+
+/* --------------------- ES 5.3.8(Start)--------------------------- */
+
+
+function ig_es_mark_system_workflows() {
+	$workflows = ES()->workflows_db->get_workflows();
+	if ( ! empty( $workflows ) ) {
+
+		$system_triggers = array(
+			'ig_es_user_subscribed',
+			'ig_es_user_unconfirmed',
+			'ig_es_campaign_sent',
+		);
+
+		foreach ( $workflows as $workflow ) {
+			$workflow_id       = $workflow['id'];
+			$trigger_name      = $workflow['trigger_name'];
+			$is_system_trigger = in_array( $trigger_name, $system_triggers, true );
+			if ( $is_system_trigger ) {
+				$data_to_update         = array();
+				$data_to_update['type'] = IG_ES_WORKFLOW_TYPE_SYSTEM;
+				ES()->workflows_db->update( $workflow_id, $data_to_update );
+			}
+		}
+	}
+}
+
+/**
+ * Update DB version
+ *
+ * @since 5.3.8
+ */
+function ig_es_update_538_db_version() {
+	ES_Install::update_db_version( '5.3.8' );
+}
+
+/* --------------------- ES 5.3.8(End)--------------------------- */
+
+/* --------------------- ES 5.4.0(Start)--------------------------- */
+
+/**
+ * Add reference_site column in contacts table
+ *
+ * @since 5.4.0
+ */
+function ig_es_update_540_alter_contacts_table() {
+	global $wpdb;
+
+	$cols = $wpdb->get_col( "SHOW COLUMNS FROM {$wpdb->prefix}ig_contacts" );
+
+	if ( ! in_array( 'reference_site', $cols, true ) ) {
+		$wpdb->query(
+			"ALTER TABLE {$wpdb->prefix}ig_contacts ADD `reference_site` VARCHAR(255) NULL DEFAULT NULL AFTER `ip_address`"
+		);
+
+	}
+}
+
+/**
+ * Update DB version
+ *
+ * @since 5.4.0
+ */
+function ig_es_update_540_db_version() {
+	ES_Install::update_db_version( '5.4.0' );
+}
+
+/* --------------------- ES 5.4.0(End)--------------------------- */
+
+/* --------------------- ES 5.5.0(Start)--------------------------- */
+
+/**
+ * Migrate Existing Workflow trigger conditions to rules section
+ *
+ * @since 5.5.0
+ */
+function ig_es_migrate_workflow_trigger_conditions_to_rules() {
+	$workflows = ES()->workflows_db->get_workflows();
+	if ( ! empty( $workflows ) ) {
+		foreach ( $workflows as $workflow ) {
+			$workflow_id     = $workflow['id'];
+			$trigger_name    = $workflow['trigger_name'];
+			$trigger_options = maybe_unserialize( $workflow['trigger_options'] );
+			$data_to_update  = array(
+				'rules'           => maybe_serialize( array() ),
+				'trigger_options' => maybe_serialize( array() ),
+			);
+			$do_migration    = true;
+			$new_rule        = array( array() );
+
+			switch ( $trigger_name ) {
+				case 'ig_es_user_registered':
+					$rule_value = ! empty( $trigger_options['ig-es-allowed-user-roles'] ) ? $trigger_options['ig-es-allowed-user-roles'] : array();
+					if ( ! empty( $rule_value ) ) {
+						$new_rule[0][] = array(
+							'name'    => 'ig_es_user_role',
+							'compare' => 'matches_any',
+							'value'   => $rule_value
+						);
+						$data_to_update['rules'] = maybe_serialize( $new_rule);
+					} else {
+						$do_migration = false;
+					}
+					break;
+				case 'ig_es_user_unconfirmed':
+				case 'ig_es_user_subscribed':
+					$rule_value = ! empty( $trigger_options['ig-es-list'] ) ? $trigger_options['ig-es-list'] : array();
+					if ( ! empty( $rule_value ) ) {
+						$new_rule[0][] = array(
+							'name'    => 'ig_es_subscriber_list',
+							'compare' => 'matches_any',
+							'value'   => $rule_value
+						);
+						$data_to_update['rules'] = maybe_serialize( $new_rule);
+					} else {
+						$do_migration = false;
+					}
+					break;
+				default:
+					$do_migration = false;
+					break;
+			}
+			if ( $do_migration ) {
+				ES()->workflows_db->update( $workflow_id, $data_to_update );
+			}
+		}
+	}
+}
+
+/**
+ * Update DB version
+ *
+ * @since 5.5.0
+ */
+function ig_es_update_550_db_version() {
+	ES_Install::update_db_version( '5.5.0' );
+}
+
+/* --------------------- ES 5.5.0(End)--------------------------- */

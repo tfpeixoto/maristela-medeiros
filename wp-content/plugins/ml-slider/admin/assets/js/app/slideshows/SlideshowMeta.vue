@@ -1,23 +1,22 @@
 <template>
 <a
+    :ref="'sl-meta' + slideshow.id"
 	:href="this.metasliderPage + '&amp;id=' + slideshow.id"
 	@click.prevent="loadSlideshow()"
-	class="shadow-none outline-none block flex items-start p-4 px-2 group hover:bg-blue-highlight">
-	<div
-		v-if="includeImages"
-		class="px-2">
+	class="shadow-none outline-none flex items-start p-4 px-2 group hover:bg-blue-highlight">
+	<div class="mx-2 w-16 h-16 bg-gray-light">
 		<div
-			v-if="visibleSlides.length"
+			v-if="visibleSlides.length && includeImages"
 			class="relative w-16 h-16">
 			<img
 				:src="slide.thumbnail"
 				:key="slide.id"
 				v-for="(slide, key) in visibleSlides"
 				:class="{ 'opacity-0': key !== currentSlideImage }"
-				class="absolute block inset-0 transition-all duration-2000 ease-in">
+				class="absolute block inset-0 transition-all duration-1000 ease-linear">
 		</div>
 		<div
-			v-else
+			v-else-if="includeImages"
 			class="border border-gray-dark flex w-16 h-16 items-center justify-center p-2 text-center text-red text-xs">
 			{{ __('No slides', 'ml-slider') }}
 		</div>
@@ -57,27 +56,43 @@ export default {
 	},
 	data() {
 		return {
-			currentSlideImage: 0
+			currentSlideImage: 0,
+            slideshowPaused: true,
+            slideshowTimer: 0
 		}
 	},
 	computed: {
 		visibleSlides() {
-			return this.slideshow.slides.filter(slide => slide.thumbnail)
+            if (!this.slideshow?.slides?.length) {
+                return []
+            }
+			return this.slideshow.slides.filter(slide => slide?.thumbnail)
 		},
 		...mapGetters({
 			current: 'slideshows/getCurrent'
 		})
 	},
-	created() {},
+	created() {
+        this.currentSlideImage = Math.floor(Math.random() * (this.visibleSlides.length))
+    },
 	mounted() {
-		if (this.slideshow.slides.length > 1) this.startSlideshow()
+        this.$refs['sl-meta' + this.slideshow.id].addEventListener('mouseenter', () => {
+            clearTimeout(this.slideshowTimer)
+            this.slideshowPaused && this.startSlideshow()
+            this.slideshowPaused = false
+        })
+        this.$refs['sl-meta' + this.slideshow.id].addEventListener('mouseleave', () => {
+            clearTimeout(this.slideshowTimer)
+            this.slideshowPaused = true
+        })
 	},
 	methods: {
 		startSlideshow() {
 			const slide = () => {
-				this.currentSlideImage = (this.currentSlideImage === (this.visibleSlides.length - 1)) ? 
+                if (this.slideshowPaused) return
+				this.currentSlideImage = (this.currentSlideImage === (this.visibleSlides.length - 1)) ?
 					0 : this.currentSlideImage + 1
-				setTimeout(() => { requestAnimationFrame(slide) }, Math.round(Math.random() * (6000 - 2500)) + 2500)
+				this.slideshowTimer = setTimeout(() => { requestAnimationFrame(slide) }, 1100)
 			}
 			requestAnimationFrame(slide)
 		},
@@ -88,11 +103,12 @@ export default {
 		modifiedAt() {
 			return DateTime
 				.fromSQL(this.slideshow.modified_at_gmt, {zone: 'utc'})
+				.setLocale(metaslider.locale)
 				.toRelative()
 		},
 		loadSlideshow() {
 			window.location.replace(this.metasliderPage + '&id=' + this.slideshow.id)
-		}
+		},
 	}
 }
 </script>

@@ -59,9 +59,15 @@ class MPG_DatasetLibraryView
                                                     $link = '#';
                                                 } else {
                                                     if ($index === 0) {
-                                                        $link = admin_url("admin.php?page=mpg-project-builder");
+                                                        $link = add_query_arg(
+                                                            array(
+                                                                'page' => 'mpg-project-builder',
+                                                                'action' => 'from_scratch',
+                                                            ),
+                                                            admin_url( 'admin.php' )
+                                                        );
                                                     } else {
-                                                        $link = admin_url("admin.php?page=mpg-deploy-dataset");
+                                                        $link = add_query_arg( 'page', 'mpg-deploy-dataset', admin_url( 'admin.php' ) );
                                                     }
                                                 } ?> <?php
                                                         if (isset($dataset[0])) {

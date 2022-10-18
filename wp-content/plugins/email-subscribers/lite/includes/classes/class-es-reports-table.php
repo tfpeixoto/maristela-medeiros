@@ -32,7 +32,7 @@ class ES_Reports_Table extends ES_List_Table {
 			$campaign_type = ES()->campaigns_db->get_campaign_type_by_id( $campaign_id );
 		}
 
-		$campaign_types = array( 'sequence', 'sequence_message' );
+		$campaign_types = array( 'sequence', 'sequence_message', 'workflow', 'workflow_email' );
 		// Only if it is sequence then control will transfer to Sequence Reports class.
 		if ( ! empty( $campaign_type ) && in_array( $campaign_type, $campaign_types, true ) ) {
 			if ( ES()->is_pro() ) {
@@ -73,6 +73,42 @@ class ES_Reports_Table extends ES_List_Table {
 							</div>
 						</div>
 					</header>
+					<?php
+					$show_campaign_notice = $emails_to_be_sent > 0 && ES()->is_starter();
+					if ( $show_campaign_notice ) {
+						?>
+						<style>
+							#ig-es-edit-campaign-notice p {
+								margin: 0.2em 0;
+							}
+						</style>
+						<div id="ig-es-edit-campaign-notice" class="px-5 py-2 notice notice-info">
+							<p>
+								<?php
+									/* translators: 1. Pause icon HTML 2. Resume icon HTML */
+									echo sprintf( esc_html__( 'While the campaign is still sending, you can pause %1$s it anytime and update the campaign. Once you are done, resume %2$s the campaign.', 'email-subscribers' ), '<svg fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" stroke="currentColor" viewBox="0 0 24 24" class="h-6 w-6 text-gray-500 ml-1 inline">
+									<path d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+								</svg>',
+									'<svg fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" stroke="currentColor" viewBox="0 0 24 24" class="h-6 w-6 text-blue-500 inline">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+								</svg>' );
+								?>
+							</p>
+							<p>
+								<strong>
+									<?php
+										echo esc_html__( 'Note: ', 'email-subscribers' );
+									?>
+								</strong>
+								<?php
+									echo esc_html__( 'Changes will reflect from the next sending batch.', 'email-subscribers' );
+								?>
+							</p>
+						</div>
+						<?php
+					}
+					?>
 					<div>
 						<hr class="wp-header-end">
 					</div>
@@ -215,9 +251,17 @@ class ES_Reports_Table extends ES_List_Table {
 			</svg>',
 					__( 'Scheduled', 'email-subscribers' )
 				);
+			} elseif ( IG_ES_MAILING_QUEUE_STATUS_FAILED === $report_status ) {
+				$status_html = sprintf(
+					'<svg class="flex-shrink-0 h-6 w-6 inline text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+					<title>%s</title>
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+					__( 'Failed', 'email-subscribers' )
+				);
 			}
+
 			$actions = array();
-			if ( in_array( $report_status, array( IG_ES_MAILING_QUEUE_STATUS_QUEUED, IG_ES_MAILING_QUEUE_STATUS_SENDING ), true ) ) {
+			if ( in_array( $report_status, array( IG_ES_MAILING_QUEUE_STATUS_QUEUED, IG_ES_MAILING_QUEUE_STATUS_SENDING, IG_ES_MAILING_QUEUE_STATUS_FAILED ), true ) ) {
 				$actions['send_now'] = $this->prepare_send_now_url( $item );
 			}
 
@@ -398,6 +442,7 @@ class ES_Reports_Table extends ES_List_Table {
 		$search                            = ig_es_get_request_data( 's' );
 		$filter_reports_by_campaign_status = ig_es_get_request_data( 'filter_reports_by_status' );
 		$filter_reports_by_campaign_type   = ig_es_get_request_data( 'filter_reports_by_campaign_type' );
+		$filter_reports_by_month_year	   = ig_es_get_request_data( 'filter_reports_by_date' );
 
 		$ig_mailing_queue_table = IG_MAILING_QUEUE_TABLE;
 
@@ -416,6 +461,24 @@ class ES_Reports_Table extends ES_List_Table {
 			$where_args[]    = $campaign_id;
 		}
 
+		if ( ! empty( $filter_reports_by_month_year ) ) {
+
+			if ( preg_match('/^[0-9]{6}$/', $filter_reports_by_month_year) ) {
+
+				$year_val 	= substr($filter_reports_by_month_year, 0, 4);
+				$month_val 	= substr($filter_reports_by_month_year, 4 );
+
+				$date_string = $year_val . '-' . $month_val;
+				$date = new DateTime($date_string);
+
+				$start_date = $date->format('Y-m-01 H:i:s') ;
+				$end_date = $date->format('Y-m-t H:i:s');
+
+				array_push( $where_columns, 'start_at >= %s', 'start_at <= %s' );
+				array_push($where_args, $start_date, $end_date);
+			}
+		}
+		
 		$where_query = '';
 		if ( ! empty( $where_columns ) ) {
 			$where_query = implode( ' AND ', $where_columns );
@@ -583,6 +646,15 @@ class ES_Reports_Table extends ES_List_Table {
 				echo wp_kses( $campaign_report_type, $allowedtags );
 				?>
 			</select>
+		</p>
+		<p class="search-box search-group-box box-ma10">
+			<?php $filter_by_date = ig_es_get_request_data( 'filter_reports_by_date' ); ?>
+			<select name = "filter_reports_by_date" id="ig_es_filter_report_by_date">
+				<?php 
+				$filter_by_monthyear = ES_COMMON::prepare_datefilter_dropdown_options( $filter_by_date , __('All Dates', 'email-subscribers'));
+				echo wp_kses( $filter_by_monthyear, $allowedtags);
+				?>
+			</select>	
 		</p>
 		<?php
 	}

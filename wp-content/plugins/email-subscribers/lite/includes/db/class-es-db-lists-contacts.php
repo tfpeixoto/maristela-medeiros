@@ -224,7 +224,7 @@ class ES_DB_Lists_Contacts extends ES_DB {
 			$this->remove_contacts_from_lists( $contact_ids );
 
 			$contact_data = $this->prepare_contact_data( $contact_ids, $list_id );
-
+			
 			return $this->bulk_insert( $contact_data );
 		}
 
@@ -523,6 +523,7 @@ class ES_DB_Lists_Contacts extends ES_DB {
 
 		return $this->get_contacts( $status, $list_id, 0, true, true );
 	}
+
 
 	/**
 	 * Get total distinct contacts by condition

@@ -7,19 +7,19 @@ class ActionScheduler_Action {
 	protected $hook = '';
 	protected $args = array();
 	/** @var ActionScheduler_Schedule */
-	protected $schedule = null;
-	protected $group    = '';
+	protected $schedule = NULL;
+	protected $group = '';
 
-	public function __construct( $hook, array $args = array(), ActionScheduler_Schedule $schedule = null, $group = '' ) {
+	public function __construct( $hook, array $args = array(), ActionScheduler_Schedule $schedule = NULL, $group = '' ) {
 		$schedule = empty( $schedule ) ? new ActionScheduler_NullSchedule() : $schedule;
-		$this->set_hook( $hook );
-		$this->set_schedule( $schedule );
-		$this->set_args( $args );
-		$this->set_group( $group );
+		$this->set_hook($hook);
+		$this->set_schedule($schedule);
+		$this->set_args($args);
+		$this->set_group($group);
 	}
 
 	public function execute() {
-		return do_action_ref_array( $this->get_hook(), $this->get_args() );
+		return do_action_ref_array( $this->get_hook(), array_values( $this->get_args() ) );
 	}
 
 	/**
@@ -70,6 +70,6 @@ class ActionScheduler_Action {
 	 * @return bool If the action has been finished
 	 */
 	public function is_finished() {
-		return false;
+		return FALSE;
 	}
 }

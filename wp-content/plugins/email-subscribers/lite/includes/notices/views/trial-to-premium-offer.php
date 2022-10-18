@@ -20,7 +20,7 @@ $optin_url = wp_nonce_url(
 		),
 		$referer
 	),
-	$notice_optin_action
+	'es_dismiss_admin_notice'
 );
 
 $notice_optout_action = 'ig_es_trial_to_premium_dismiss';
@@ -34,7 +34,7 @@ $optout_url = wp_nonce_url(
 		),
 		$referer
 	),
-	$notice_optout_action
+	'es_dismiss_admin_notice'
 );
 
 $remaining_trial_days = ES()->trial->get_remaining_trial_days();
@@ -42,10 +42,7 @@ $day_or_days          = _n( 'day', 'days', $remaining_trial_days, 'email-subscri
 
 $discount_messages = array(
 	'halloween' => array(
-		'message' => __( 'Get flat <strong>20%</strong> discount on annual plan and <strong>35%</strong> discount on lifetime plan if you upgrade now!<br/><strong>No coupon code</strong> required. Discount will be applied automatically.', 'email-subscribers' ),
-	),
-	'bfcm'      => array(
-		'message' => __( 'Get flat <strong>20%</strong> discount on annual plan and <strong>35%</strong> discount on lifetime plan if you upgrade now!<br/><strong>No coupon code</strong> required. Discount will be applied automatically.', 'email-subscribers' ),
+		'message' => __( 'Get flat <strong>30%</strong> discount on annual plan if you upgrade now!<br/><strong>No coupon code</strong> required. Discount will be applied automatically.', 'email-subscribers' ),
 	),
 );
 
@@ -53,12 +50,8 @@ $offer_type_to_show = 'trial';
 
 $offers_date_ranges = array(
 	'halloween' => array(
-		'start_date' => '2020-10-30',
-		'end_date'   => '2020-11-02',
-	),
-	'bfcm'      => array(
-		'start_date' => '2020-11-25',
-		'end_date'   => '2020-12-02',
+		'start_date' => '2021-10-27',
+		'end_date'   => '2021-11-02',
 	),
 );
 

@@ -57,13 +57,14 @@ class ES_DB_Lists extends ES_DB {
 	 */
 	public function get_columns() {
 		return array(
-			'id'         => '%d',
-			'slug'       => '%s',
-			'name'       => '%s',
-			'hash'       => '%s',
-			'created_at' => '%s',
-			'updated_at' => '%s',
-			'deleted_at' => '%s',
+			'id'         	=> '%d',
+			'slug'       	=> '%s',
+			'name'       	=> '%s',
+			'description'   => '%s',
+			'hash'       	=> '%s',
+			'created_at' 	=> '%s',
+			'updated_at' 	=> '%s',
+			'deleted_at' 	=> '%s',
 		);
 	}
 
@@ -74,12 +75,13 @@ class ES_DB_Lists extends ES_DB {
 	 */
 	public function get_column_defaults() {
 		return array(
-			'slug'       => null,
-			'name'       => null,
-			'hash'       => null,
-			'created_at' => ig_get_current_date_time(),
-			'updated_at' => null,
-			'deleted_at' => null,
+			'slug'       	=> null,
+			'name'       	=> null,
+			'description'   => null,
+			'hash'       	=> null,
+			'created_at' 	=> ig_get_current_date_time(),
+			'updated_at' 	=> null,
+			'deleted_at' 	=> null,
 		);
 	}
 
@@ -293,14 +295,25 @@ class ES_DB_Lists extends ES_DB {
 	 * @since 4.0.0
 	 *
 	 * @modified 4.4.3 Added $slug parameter.
+	 *
+	 * @modified 5.0.4 Updated $list parameter from string to array
 	 */
-	public function add_list( $list = '', $slug = '' ) {
+	public function add_list( $list = array(), $slug = '' ) {
 
-		if ( empty( $list ) || ! is_scalar( $list ) ) {
+		if ( empty( $list ) ) {
 			return 0;
 		}
 
-		$lower_list = strtolower( $list );
+		$list_data = $list;
+
+		//To handle case where only list name is passed as a string
+		if ( ! is_array( $list ) ) {
+			$list_data = array( 
+				'name' => $list, 
+			);
+		}
+
+		$lower_list = strtolower( $list_data['name'] );
 
 		$is_list_exists = $this->is_list_exists( $lower_list );
 
@@ -309,9 +322,10 @@ class ES_DB_Lists extends ES_DB {
 		}
 
 		$data = array(
-			'slug' => ! empty( $slug ) ? $slug : sanitize_title( $list ),
-			'name' => $list,
-			'hash' => ES_Common::generate_hash( 12 ),
+			'slug' 		  => ! empty( $slug ) ? $slug : sanitize_title( $list_data['name'] ),
+			'name' 		  => $list_data['name'],
+			'description' => isset( $list_data['desc'] ) ? $list_data['desc'] : '',
+			'hash' 		  => ES_Common::generate_hash( 12 ),
 		);
 
 		return $this->insert( $data );
@@ -353,15 +367,16 @@ class ES_DB_Lists extends ES_DB {
 	 *
 	 * @since 4.2.1
 	 */
-	public function update_list( $row_id, $name ) {
+	public function update_list( $row_id, $list_data ) {
 
 		if ( empty( $row_id ) ) {
 			return;
 		}
 
 		$data = array(
-			'name'       => $name,
-			'updated_at' => ig_get_current_date_time(),
+			'name'       	=> $list_data['name'],
+			'description'   => $list_data['desc'],
+			'updated_at' 	=> ig_get_current_date_time(),
 		);
 
 		return $this->update( $row_id, $data );

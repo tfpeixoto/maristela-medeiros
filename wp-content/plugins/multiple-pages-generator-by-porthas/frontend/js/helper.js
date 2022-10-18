@@ -80,7 +80,7 @@ function generateUrlPreview(urlBuilderString, headers, spaceReplacer, inputRow) 
         // Удалим слеши в начале и в конце строки.
         let trimedHeader = neededHeaderValue.replace(/^\/+|\/+$/g, '');
 
-        const replacerRegEpx = new RegExp(`${shortcode}`, 'g');
+        const replacerRegEpx = new RegExp(`${shortcode}`, 'i');
 
         urlBuilderString = urlBuilderString.replace(replacerRegEpx, trimedHeader);
     });
@@ -110,14 +110,18 @@ function generateUrlPreview(urlBuilderString, headers, spaceReplacer, inputRow) 
     .replace(/mpgequalholder/gm, '=')
 
     if (finalPath) {
-        return `${backendData.baseUrl}/${finalPath.toLowerCase()}/`;
+        finalPath = backendData.baseUrl + '/' + finalPath.toLowerCase();
+        if ( backendData.lang_code != '' ) {
+            finalPath = finalPath.replace( backendData.lang_code, '/' );
+        }
+        return `${finalPath}/`;
     } else {
         return `${backendData.baseUrl}`;
     }
 }
 
 function getProjectIdFromUrl() {
-    if (location.href.includes('mpg-project-builder&id=')) {
+    if (location.href.includes('mpg-project-builder&action=edit_project&id=')) {
 
         const url = new URL(location.href);
         return url.searchParams.get('id');

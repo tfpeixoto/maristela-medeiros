@@ -13,9 +13,12 @@ if (!defined('ABSPATH')) {
 function metaslider_plugin_is_installed($name = 'ml-slider')
 {
     if (!function_exists('get_plugins')) {
-        include_once(ABSPATH.'wp-admin/includes/plugin.php');
+        include_once(ABSPATH . 'wp-admin/includes/plugin.php');
     }
-    foreach (get_plugins() as $plugin => $data) {
+    $plugins = get_plugins();
+    // Don't cache plugins this early
+    wp_cache_delete('plugins', 'plugins');
+    foreach ($plugins as $plugin => $data) {
         if ($data['TextDomain'] == $name) {
             return $plugin;
         }
@@ -126,6 +129,16 @@ function metaslider_get_upgrade_link()
 }
 
 /**
+ * Returns the privacy policy link
+ *
+ * @return string
+ */
+function metaslider_get_privacy_link()
+{
+    return esc_url('https://www.metaslider.com/privacy-policy/');
+}
+
+/**
  * Returns an array of the trashed slides
  *
  * @param int $slider_id Slider ID
@@ -221,7 +234,6 @@ function metaslider_optimize_url($url, $text, $html = null, $class = '')
 
     // Check if the URL is metaslider.
     if (false !== strpos($url, 'metaslider.com')) {
-
         // Set URL with Affiliate ID.
         $url = metaslider_get_upgrade_link();
     }

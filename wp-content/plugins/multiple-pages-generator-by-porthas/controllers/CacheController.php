@@ -34,6 +34,9 @@ class MPG_CacheController
                 'data' =>  ucwords($type) . ' ' . __('cache was successfully enabled', 'mpg')
             ]);
         } catch (Exception $e) {
+
+            do_action( 'themeisle_log_event', MPG_NAME, $e->getMessage(), 'debug', __FILE__, __LINE__ );
+
             echo json_encode([
                 'success' => false,
                 'error' => $e->getMessage()
@@ -75,6 +78,9 @@ class MPG_CacheController
                 'data' =>  __('Caching was successfully disabled', 'mpg')
             ]);
         } catch (Exception $e) {
+
+            do_action( 'themeisle_log_event', MPG_NAME, $e->getMessage(), 'debug', __FILE__, __LINE__ );
+
             echo json_encode([
                 'success' => false,
                 'error' => $e->getMessage()
@@ -89,7 +95,7 @@ class MPG_CacheController
 
         if ($type === 'disk') {
 
-            $cache_path = WP_CONTENT_DIR . '/mpg-cache/' . $project_id;
+            $cache_path = MPG_CACHE_DIR . $project_id;
 
             MPG_CacheModel::mpg_flush_disk_cache($cache_path);
         } elseif ($type === 'database') {
@@ -120,6 +126,9 @@ class MPG_CacheController
                 'data' =>  __('Cache was successfully flushed', 'mpg')
             ]);
         } catch (Exception $e) {
+
+            do_action( 'themeisle_log_event', MPG_NAME, $e->getMessage(), 'debug', __FILE__, __LINE__ );
+
             echo json_encode([
                 'success' => false,
                 'error' => $e->getMessage()
@@ -164,7 +173,7 @@ class MPG_CacheController
 
             $stats = [];
             if ($type === 'disk') {
-                $cache_folder = WP_CONTENT_DIR . '/mpg-cache/' . $project_id;
+                $cache_folder = MPG_CACHE_DIR . $project_id;
 
                 $fi = null;
                 $bytestotal = 0;
@@ -198,6 +207,9 @@ class MPG_CacheController
                 'data' => $stats
             ]);
         } catch (Exception $e) {
+
+            do_action( 'themeisle_log_event', MPG_NAME, $e->getMessage(), 'debug', __FILE__, __LINE__ );
+
             echo json_encode([
                 'success' => false,
                 'error' => $e->getMessage()

@@ -316,5 +316,17 @@ if ( ! class_exists( 'ES_Base_Mailer' ) ) {
 		public function clear_email_data() {
 			// Clear mailer specific data
 		}
+
+		/**
+		 * Handle throttling 
+		 *
+		 * @return void
+		 * 
+		 * @since 5.0.5
+		 */
+		public function handle_throttling() {
+			// Add ESP specific throttling logic here
+			// Should be ovverriden in the ESP mailer class
+		}
 	}
 }

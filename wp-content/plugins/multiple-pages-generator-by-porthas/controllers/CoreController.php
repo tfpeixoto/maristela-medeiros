@@ -29,8 +29,21 @@ class MPG_CoreController
         remove_action('wp_head', 'rel_canonical');
         remove_action('template_redirect', 'redirect_canonical');
 
-        $project = MPG_ProjectModel::mpg_get_project_by_id($project_id);
+        // Решает проблему с соц. плагинами. (правильные ссылки на страницы без шорткодов)
+        $post->post_title = MPG_CoreModel::mpg_shortcode_replacer($post->post_title, $project_id);
+        $post->post_content = MPG_CoreModel::mpg_shortcode_replacer($post->post_content, $project_id);
 
+        $project = MPG_ProjectModel::mpg_get_project_by_id($project_id);
+        $urls_array = ! empty( $project[0] ) ? $project[0]->urls_array : array();
+        $urls_array = json_decode( $urls_array );
+        $path       = MPG_Helper::mpg_get_request_uri();
+
+        $http_code = 404;
+        $is_404    = true;
+        if ( in_array( $path, $urls_array, true ) ) {
+            $http_code = 200;
+            $is_404    = false;
+        }
         add_action('wp_head', function () use ($project) {
             global $wp;
 
@@ -38,9 +51,6 @@ class MPG_CoreController
 
             printf('<link rel="canonical" href="%1$s' . $trail_slash . '">' . "\n",  esc_url_raw(home_url($wp->request)));
 
-            if (defined('AMPFORWP_VERSION')) {
-                printf('<link rel="amphtml" href="%1$s' . '/amp' . $trail_slash . '">' . "\n",  esc_url_raw(home_url($wp->request)));
-            }
         }, 1, 1);
 
         MPG_SEOModel::mpg_all_in_one_seo_pack($project_id);
@@ -58,7 +68,16 @@ class MPG_CoreController
 
         add_action('wp_footer', function () {
             if (!mpg_app()->is_premium()) {
-                printf('<s' . 'pa' . 'n st' . 'yle="p' . 'osit' . 'ion:f' . 'ixe' . 'd; le' . 'ft: 2' . '0px; bo' . 'tto' . 'm: 1' . '0px; z-i' . 'ndex:1' . '000; fo' . 'nt-si' . 'ze: 1' . '6px">G' . 'en' . 'er' . 'at' . 'ed b' . 'y <a h' . 're' . 'f="ht' . 'tp' . 's:/' . '/mp' . 'gwp' . '.co' . 'm" t' . 'arg' . 'et="' . '_blan' . 'k">' . 'M' . 'PG</' . 'a></' . 'spa' . 'n>');
+
+                $position =  get_option('mpg_branding_position');
+
+                if($position === 'left'){
+                    $float = 'le' . 'ft: 2' . '0px;';
+                }else{
+                    $float = 'ri' . 'ght: 2' . '0px;';
+                }
+
+	            printf( '<s' . 'pa' . 'n st' . 'yle="p' . 'osit' . 'ion:f' . 'ixe' . 'd; ' . $float . ' bo' . 'tto' . 'm: 1' . '0px; z-i' . 'ndex:1' . '000; fo' . 'nt-si' . 'ze: 1' . '6px">G' . 'en' . 'er' . 'at' . 'ed b' . 'y <a h' . 're' . 'f="ht' . 'tp' . 's:/' . '/mp' . 'gwp' . '.co' . 'm" t' . 'arg' . 'et="' . '_blan' . 'k" re' . 'l=' . '"no' . 'fol' . 'l' . 'ow"' . '>' . 'M' . 'PG</' . 'a></' . 'spa' . 'n>' );
             }
         });
 
@@ -69,14 +88,10 @@ class MPG_CoreController
             MPG_CoreModel::mpg_footer_handler($project_id, $path);
         }, $hook_priority, 0);
 
-        // Решает проблему с соц. плагинами. (правильные ссылки на страницы без шорткодов)
-        $post->post_title = MPG_CoreModel::mpg_shortcode_replacer($post->post_title, $project_id);
-        $post->post_content = MPG_CoreModel::mpg_shortcode_replacer($post->post_content, $project_id);
-
         // setup template post as global, this is needed for the_title(), the_permalink()
         setup_postdata($GLOBALS['post'] = &$post);
         // set the post as cached, it is necessary for the get_post () function, it will return the replaced data when this function is called
-        wp_cache_set($post->ID, $post, 'posts');
+        set_transient($post->ID, $post);
         // set status code 200, because on default this page not exist and return 404 code
 
         // Перезаписывает URL (основной) для поста\кастом поста\страницы. Это решать проблему с заменой шорткодов в УРЛах
@@ -100,10 +115,10 @@ class MPG_CoreController
             }
         }, 1, 4);
 
-        status_header(200);
+        status_header( $http_code );
         // set important settings for page query
         $wp_query->queried_object = $post;
-        $wp_query->is_404 = false;
+        $wp_query->is_404 = $is_404;
         $wp_query->queried_object_id = $post->ID;
         $wp_query->post_count = 1;
         $wp_query->current_post = -1;
@@ -144,7 +159,7 @@ class MPG_CoreController
     // Create the virtual page with content from template and set settings for view this page like normal WP page
     public static function mpg_view_multipages_standard()
     {
-
+        global $mpg_dataset;
         $path = MPG_Helper::mpg_get_request_uri(); // это та часть что идет после папки установки WP. тпиа wp.com/xxx
         $redirect_rules = MPG_CoreModel::mpg_get_redirect_rules($path);
 
@@ -201,6 +216,9 @@ class MPG_CoreController
             echo  '{"success": true, "data":"' . str_replace("\n", '<br>', $results) . '"}';
             wp_die();
         } catch (Exception $e) {
+
+            do_action( 'themeisle_log_event', MPG_NAME, sprintf( 'Can\'t show preview due to error. Details: %s', $e->getMessage() ), 'debug', __FILE__, __LINE__ );
+
             echo json_encode([
                 'success' => false,
                 'error' => __('Can\'t show preview due to error. Details: ' . $e->getMessage())
@@ -236,6 +254,9 @@ class MPG_CoreController
             $redirect_rules = MPG_CoreModel::mpg_get_redirect_rules($path);
 
             if ($redirect_rules && isset($redirect_rules['project_id'])) {
+
+                do_action( 'themeisle_log_event', MPG_NAME, sprintf( 'Exception in [mpg_shortcode]: %s', $e->getMessage() ), 'debug', __FILE__, __LINE__ );
+
                 MPG_LogsController::mpg_write($redirect_rules['project_id'], 'error', __('Exception in [mpg_shortcode]: ', 'mpg') . $e->getMessage());
             }
         }
@@ -264,6 +285,9 @@ class MPG_CoreController
             $redirect_rules = MPG_CoreModel::mpg_get_redirect_rules($path);
 
             if ($redirect_rules && isset($redirect_rules['project_id'])) {
+
+                do_action( 'themeisle_log_event', MPG_NAME, sprintf( 'Exception in [mpg_match]: %s', $e->getMessage() ), 'debug', __FILE__, __LINE__ );
+
                 MPG_LogsController::mpg_write($redirect_rules['project_id'], 'error', __('Exception in [mpg_match]: ', 'mpg') . $e->getMessage());
             }
         }
@@ -291,17 +315,13 @@ class MPG_CoreController
             MPG_Validators::mpg_order_params($order_by, $direction);
 
             // 1. Возьмем текущий проект
-            $current_project = MPG_ProjectModel::mpg_get_project_by_id($current_project_id);
-
-            // 2. Надо получить значение шорткода $current_header_value для текущего УРЛа. Типа mpg_city => Los Angeles
-            $current_dataset_path = isset($current_project[0]) ? $current_project[0]->source_path : null;
-            $current_dataset_array = MPG_Helper::mpg_get_dataset_array($current_dataset_path, $current_project_id);
-            $current_header_value = MPG_CoreModel::mpg_get_ceil_value_by_header($current_project, $current_dataset_array, $current_header);
+            $current_project       = MPG_ProjectModel::mpg_get_project_by_id($current_project_id);
+            $current_dataset_array = MPG_Helper::mpg_get_dataset_array( reset( $current_project ) );
+            $current_header_value  = MPG_CoreModel::mpg_get_ceil_value_by_header($current_project, $current_dataset_array, $current_header);
 
             // 3. Теперь мы знаем что надо искать в связаном проекте. Это ок, теперь надо прочитать этот связанный проект ($seaarch_in_project_id)
-            $search_in_project = MPG_ProjectModel::mpg_get_project_by_id($search_in_project_id);
-            $search_in_dataset_path = isset($search_in_project[0]) ? $search_in_project[0]->source_path : null;
-            $search_in_dataset_array = MPG_Helper::mpg_get_dataset_array($search_in_dataset_path, $search_in_project_id);
+            $search_in_project       = MPG_ProjectModel::mpg_get_project_by_id($search_in_project_id);
+            $search_in_dataset_array = MPG_Helper::mpg_get_dataset_array( reset( $search_in_project ) );
 
             $url_column_index = null;
             $headers_has_prefix = false;
@@ -435,6 +455,9 @@ class MPG_CoreController
                 return implode("", $shortcode_response_data);
             }
         } catch (Exception $e) {
+
+            do_action( 'themeisle_log_event', MPG_NAME, $e->getMessage(), 'debug', __FILE__, __LINE__ );
+
             return $e->getMessage();
         }
     }
@@ -460,13 +483,10 @@ class MPG_CoreController
             }
 
             $project = MPG_ProjectModel::mpg_get_project_by_id($project_id);
-
             if (!$project) {
                 return  __('MPG Warning: Wrong project-id in [mpg] shortcode: ' . $project_id, 'mpg');
             }
-
-            $dataset_path = isset($project[0]) ? $project[0]->source_path : null;
-            $dataset_array = MPG_Helper::mpg_get_dataset_array($dataset_path, $project_id);
+            $dataset_array = MPG_Helper::mpg_get_dataset_array( reset( $project ) );
 
             $headers = $dataset_array[0];
 
@@ -499,7 +519,7 @@ class MPG_CoreController
 
             // Приводим заголовки в нижний регистр
             $column_names = array_map(function ($column) {
-                return strtolower($column);
+                return str_replace(' ', '_', strtolower($column));
             }, (array) $dataset_array[0]);
 
             $where_storage = MPG_CoreModel::mpg_prepare_where_condition($project, $where_params, $dataset_array, $column_names);
@@ -551,11 +571,6 @@ class MPG_CoreController
                             // Это сделано для того, чтобы передать индекс ряда, корорый попал в where, нужно для правильной подмены УРЛа
                             $where_filter_results[] = ['row' => $row, 'index' => $row_index - 1];
                         }
-                    }
-
-                    // Если результатов насобиралось соответственно с лимитом, то прекращаем итерации.
-                    if (!is_null($limit) && count($where_filter_results) === $limit) {
-                        break;
                     }
                 }
             }
@@ -677,6 +692,9 @@ class MPG_CoreController
                 return implode("", $shortcode_response_data);
             }
         } catch (Exception $e) {
+
+            do_action( 'themeisle_log_event', MPG_NAME, $e->getMessage(), 'debug', __FILE__, __LINE__ );
+
             return $e->getMessage();
         }
     }

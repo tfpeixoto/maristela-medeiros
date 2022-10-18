@@ -33,7 +33,11 @@ class ES_Email_Delivery_Check extends ES_Services {
 
 		$this->cmd = str_replace( ':mailbox', $mailbox, $this->cmd );
 
-		$response = $this->send_request( array(), 'GET' );
+		$request_data     = array();
+		$request_method   = 'GET';
+		$validate_request = false;
+
+		$response = $this->send_request( $request_data, $request_method, $validate_request );
 
 		$res = array();
 		if ( is_wp_error( $response ) ) {
