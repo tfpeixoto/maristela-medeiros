@@ -325,13 +325,13 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 				}
 			}
 
-			// if ( $show_offer ) {
-			// 	$args['url']     = 'https://www.icegram.com/';
-			// 	$args['include'] = ES_PLUGIN_DIR . 'lite/includes/notices/views/ig-es-bfcm-offer.php';
-			// 	ES_Admin_Notices::add_custom_notice( 'bfcm_offer_2021', $args );
-			// } else {
-			// 	ES_Admin_Notices::remove_notice( 'bfcm_offer_2021' );
-			// }
+			if ( $show_offer ) {
+				$args['url']     = 'https://www.icegram.com/';
+				$args['include'] = ES_PLUGIN_DIR . 'lite/includes/notices/views/ig-es-halloween-offer.php';
+				ES_Admin_Notices::add_custom_notice( 'halloween_offer_2022', $args );
+			} else {
+				ES_Admin_Notices::remove_notice( 'halloween_offer_2022' );
+			}
 
 			$screen_id = $this->get_current_screen_id();
 			// Don't show admin notices on Dashboard if onboarding is not yet completed.
@@ -978,6 +978,7 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 				'lite/admin/class-es-gallery.php',
 
 				'lite/admin/class-es-form-admin.php',
+				'lite/admin/class-es-gb-subscription-form-block.php',
 
 				'starter/starter-class-email-subscribers.php',
 				'pro/pro-class-email-subscribers.php',
@@ -2042,9 +2043,9 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 				$offer_start_time = 0;
 				$offer_end_time   = 0;
 
-				if ( 'bfcm' === $offer_name ) {
-					$offer_start_time = strtotime( '2021-11-24 12:00:00' ); // Offer start time in IST
-					$offer_end_time   = strtotime( '2021-12-01 12:00:00' ); // Offer end time in IST
+				if ( 'halloween' === $offer_name ) {
+					$offer_start_time = strtotime( '2022-10-25 12:30:00' ); // Offer start time in IST
+					$offer_end_time   = strtotime( '2022-11-01 12:30:00' ); // Offer end time in IST
 				}
 
 				$is_offer_period = $current_ist_time >= $offer_start_time && $current_ist_time <= $offer_end_time;

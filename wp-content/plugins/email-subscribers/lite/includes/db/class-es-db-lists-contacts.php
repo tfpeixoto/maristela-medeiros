@@ -645,15 +645,30 @@ class ES_DB_Lists_Contacts extends ES_DB {
 			}
 			return $result;
 		} elseif ( 'unsubscribed' === $status ) {
-			return $wpbd->query(
-				$wpbd->prepare(
-					"UPDATE {$wpbd->prefix}ig_lists_contacts SET status = %s, unsubscribed_at = %s WHERE contact_id IN( {$ids_str} )",
-					array(
-						$status,
-						$current_date,
+			if ( ! empty( $list_ids ) ) {
+
+				$list_ids_str = implode( ',', $list_ids );
+
+				return $wpbd->query(
+					$wpbd->prepare(
+						"UPDATE {$wpbd->prefix}ig_lists_contacts SET status = %s, unsubscribed_at = %s WHERE contact_id IN( {$ids_str} ) AND list_id IN( {$list_ids_str} )",
+						array(
+							$status,
+							$current_date,
+						)
 					)
-				)
-			);
+				);
+			} else {
+				return $wpbd->query(
+					$wpbd->prepare(
+						"UPDATE {$wpbd->prefix}ig_lists_contacts SET status = %s, unsubscribed_at = %s WHERE contact_id IN( {$ids_str} )",
+						array(
+							$status,
+							$current_date,
+						)
+					)
+				);
+			}
 		} elseif ( 'unconfirmed' === $status ) {
 			return $wpbd->query(
 				$wpbd->prepare(

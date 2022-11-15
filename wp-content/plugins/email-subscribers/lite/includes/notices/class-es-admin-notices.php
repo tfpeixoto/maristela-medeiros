@@ -224,8 +224,8 @@ class ES_Admin_Notices {
 					}
 				}
 
-				// BFCM 2021 offer
-				if ( 'offer_bfcm_2021' === $option_name ) {
+				// Halloween 2022 offer
+				if ( 'offer_halloween_2022' === $option_name ) {
 					$url = 'https://www.icegram.com/email-subscribers-pricing/?utm_source=in_app&utm_medium=es_banner&utm_campaign=' . $option_name;
 					header( "Location: {$url}" );
 					exit();

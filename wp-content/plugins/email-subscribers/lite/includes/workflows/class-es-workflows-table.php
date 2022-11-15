@@ -138,7 +138,7 @@ class ES_Workflows_Table extends ES_List_Table {
 						<div class="ig-es-workflow-gallery-item-actions">
 							<button data-item-name=<?php echo esc_attr( $item_name ); ?> type="button" class="ig-es-create-workflow-from-gallery-item ig-es-inline-loader inline-flex justify-center w-full py-1.5 text-sm font-medium leading-5 text-white transition duration-150 ease-in-out bg-indigo-600 border border-indigo-500 rounded-md cursor-pointer select-none focus:outline-none focus:shadow-outline-indigo focus:shadow-lg hover:bg-indigo-500 hover:text-white  hover:shadow-md md:px-2 lg:px-3 xl:px-4">
 								<span>
-									<?php echo esc_html__( 'Create workflow', 'email-subscribers' ); ?>
+									<?php echo esc_html__( 'Use workflow', 'email-subscribers' ); ?>
 								</span>
 								<svg class="es-btn-loader animate-spin h-4 w-4 text-indigo" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
 									<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

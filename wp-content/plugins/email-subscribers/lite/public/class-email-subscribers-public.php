@@ -110,7 +110,7 @@ class Email_Subscribers_Public {
 
 			'messages' => array(
 				'es_empty_email_notice'           => __( 'Please enter email address', 'email-subscribers' ),
-				'es_rate_limit_notice'            => __( 'You need to wait for sometime before subscribing again', 'email-subscribers' ),
+				'es_rate_limit_notice'            => __( 'You need to wait for some time before subscribing again', 'email-subscribers' ),
 				'es_single_optin_success_message' => __( 'Successfully Subscribed.', 'email-subscribers' ),
 				// 'es_double_optin_success_message' => __( 'Your subscription was successful! Kindly check your mailbox and confirm your subscription. If you don\'t see the email within a few minutes, check the spam/junk folder.', 'email-subscribers' ),
 				'es_email_exists_notice'          => __( 'Email Address already exists!', 'email-subscribers' ),

@@ -6,7 +6,7 @@ Tags: email marketing, subscription, autoresponder, post notification, welcome e
 Requires at least: 3.9
 Tested up to: 6.0.2
 Requires PHP: 5.6
-Stable tag: 5.4.16
+Stable tag: 5.4.17
 License: GPLv3
 License URI: http://www.gnu.org/licenses
 
@@ -310,12 +310,19 @@ Refer [here](https://www.icegram.com/documentation/es-faq/).
 
 == Upgrade Notice ==
 
-= 5.4.16 =
+= 5.4.17 =
 
-* Enhancement: Added post notification keyword blocks in Drag and Drop  editor
-* Enhancement: Added new rules for cart abandoned workflow [PRO]
+* New: Added Gutenberg block for subscription form
+* New: Added new workflow action to change subscriber's status in the list [PRO]
+* Enhancement: Small UI improvements
 
 == Changelog ==
+
+**5.4.17 (19.10.2022)**
+
+* New: Added Gutenberg block for subscription form
+* New: Added new workflow action to change subscriber's status in the list [PRO]
+* Enhancement: Small UI improvements
 
 **5.4.16 (13.10.2022)**
 

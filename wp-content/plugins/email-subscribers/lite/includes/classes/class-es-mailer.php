@@ -1097,16 +1097,9 @@ if ( ! class_exists( 'ES_Mailer' ) ) {
 			if ( 0 != $contact_id ) {
 				$contact_details = ES()->contacts_db->get_details_by_ids( array( $contact_id ) );
 				if ( is_array( $contact_details ) ) {
-					$contact_details = array_shift( $contact_details );
 
-					$first_name = $contact_details['first_name'];
-					$last_name  = $contact_details['last_name'];
-
-					$merge_tags['first_name'] = $first_name;
-					$merge_tags['last_name']  = $last_name;
-					$merge_tags['name']       = ES_Common::prepare_name_from_first_name_last_name( $first_name, $last_name );
-					$merge_tags['hash']       = $contact_details['hash'];
-					$merge_tags['email']      = $contact_details['email'];
+					$merge_tags         = array_shift( $contact_details );
+					$merge_tags['name'] = ES_Common::prepare_name_from_first_name_last_name( $merge_tags['first_name'], $merge_tags['last_name'] );
 				}
 			}
 
@@ -1189,7 +1182,7 @@ if ( ! class_exists( 'ES_Mailer' ) ) {
 			$content = str_replace( '{{site.name}}', $blog_name, $content );
 			$content = str_replace( '{{site.url}}', $site_url, $content );
 
-			return $content;
+			return apply_filters( 'ig_es_message_content', $content, $merge_tags );
 		}
 
 		/**

@@ -606,7 +606,7 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 			$ig_es_form_submission_success_message = get_option( 'ig_es_form_submission_success_message' );
 			$messages                              = array(
 				'es_empty_email_notice'       => __( 'Please enter email address', 'email-subscribers' ),
-				'es_rate_limit_notice'        => __( 'You need to wait for sometime before subscribing again', 'email-subscribers' ),
+				'es_rate_limit_notice'        => __( 'You need to wait for some time before subscribing again', 'email-subscribers' ),
 				'es_optin_success_message'    => ! empty( $ig_es_form_submission_success_message ) ? $ig_es_form_submission_success_message : __( 'Successfully Subscribed.', 'email-subscribers' ),
 				'es_email_exists_notice'      => __( 'Email Address already exists!', 'email-subscribers' ),
 				'es_unexpected_error_notice'  => __( 'Oops.. Unexpected error occurred.', 'email-subscribers' ),
