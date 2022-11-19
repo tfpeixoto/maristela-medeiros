@@ -1,0 +1,130 @@
+.footer {
+  background: $chumbo;
+  color: $white;
+  padding-top: 2.5rem;
+
+  &__info {
+    align-items: center;
+    display: flex;
+    padding-bottom: 2.5rem;
+
+    @include media-breakpoint-up(md) {
+      justify-content: space-between;
+    }
+  }
+
+  &__marca {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+    text-align: center;
+
+    @include media-breakpoint-up(md) {
+      justify-content: flex-start;
+      margin: 0;
+      text-align: left;
+    }
+  }
+
+  &__newsletter {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+
+    @include media-breakpoint-up(md) {
+      margin: 0;
+    }
+
+    #mc_embed_signup {
+      text-align: center;
+      width: 100%;
+
+      p {
+        margin-bottom: 0.25rem;
+      }
+    }
+
+    .form-group {
+      background-color: $white;
+      border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+
+      input {
+        border: none;
+
+        &#mce-EMAIL {
+          background-color: transparent;
+          padding: 0.25rem 1rem;
+          width: 75%;
+        }
+
+        &#mc-embedded-subscribe {
+          border-top-left-radius: 0;
+          border-bottom-left-radius: 0;
+          width: 25%;
+        }
+      }
+    }
+  }
+
+  &__navsocial {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+
+    @include media-breakpoint-up(md) {
+      justify-content: flex-end;
+    }
+
+    .nav-social {
+      align-items: center;
+      display: flex;
+      margin-bottom: 0;
+      padding: 0;
+      list-style: none;
+
+      li {
+        margin: 0 0.25rem;
+
+        &.linkedin a {
+          background: url(../images/linkedin.svg) no-repeat;
+        }
+
+        &.facebook a {
+          background: url(../images/facebook.svg) no-repeat;
+        }
+
+        &.youtube a {
+          background: url(../images/youtube.svg) no-repeat;
+        }
+
+        &.instagram a {
+          background: url(../images/instagram.svg) no-repeat;
+        }
+
+        a {
+          background-color: $white;
+          border-radius: 50%;
+          display: block;
+          height: 40px;
+          overflow: hidden;
+          text-indent: -9999px;
+          transition: all ease 0.25s;
+          width: 40px;
+        }
+      }
+    }
+  }
+
+  &__copy {
+    border-top: 1px solid $white;
+    padding: 1rem 0;
+    text-align: center;
+
+    a{
+      color: $white;
+    }
+  }
+}

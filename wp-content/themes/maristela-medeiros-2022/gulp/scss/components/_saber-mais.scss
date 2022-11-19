@@ -1,0 +1,24 @@
+.sabermais {
+  background-color: $palha;
+  padding: 2.5rem 0;
+
+  &__row {
+    display: flex;
+    justify-content: center;
+  }
+
+  &__texto {
+    text-align: center;
+
+    @include media-breakpoint-up(md) {
+      text-align: left;
+    }
+  }
+
+  &__cta {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+  }
+}

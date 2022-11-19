@@ -1,13 +1,45 @@
-.quemsomos{
+.quemsomos {
+  padding: 2.5rem 0;
   text-align: center;
 
-  .quemsomos-foto{
+  @include media-breakpoint-up(md) {
+    text-align: left;
+  }
+
+  &__foto {
     margin-bottom: 1rem;
   }
 
-  .quemsomos-conteudo{
-    img{
-      display: none;
+  &__conteudo {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    h2 {
+      margin-bottom: 1rem;
+    }
+  }
+
+  &__empresas {
+    ul {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      padding: 0;
+
+      li {
+        align-items: center;
+        display: flex;
+        justify-content: center;
+        list-style: none;
+        margin: .5rem 1rem;
+
+        img {
+          height: auto;
+          max-width: 100px;
+          width: 100%;
+        }
+      }
     }
   }
 }

@@ -39,9 +39,25 @@ function maristela_style_and_scripts()
   );
 
   wp_enqueue_script(
+    'owl-carousel',
+    get_template_directory_uri() . '/js/owl.carousel.min.js',
+    array('jquery'),
+    '2.3.4',
+    'true'
+  );
+
+  wp_enqueue_script(
+    'jquery-mask-min',
+    get_template_directory_uri() . '/js/jquery.mask.min.js',
+    array('jquery'),
+    '1.14.16',
+    'true'
+  );
+
+  wp_enqueue_script(
     'mm-scripts',
     get_template_directory_uri() . '/js/scripts.min.js',
-    array('jquery-slim', 'bootstrap'),
+    array('jquery-slim', 'bootstrap', 'owl-carousel', 'jquery-mask-min'),
     '1.0',
     'true'
   );
@@ -80,14 +96,14 @@ function meus_posts_type()
   register_post_type(
     'depoimentos',
     array(
-      'labels'           => array(
-        'name'           => __('Depoimentos'),
+      'labels' => array(
+        'name' => __('Depoimentos'),
         'singular_name' => __('Depoimento'),
       ),
-      'public'           => true,
-      'has_archive'     => false,
-      'menu_icon'        => 'dashicons-format-quote',
-      'supports'        => array('title', 'editor', 'thumbnail', 'page-attributes'),
+      'public' => true,
+      'has_archive' => false,
+      'menu_icon' => 'dashicons-format-quote',
+      'supports' => array('title', 'editor', 'thumbnail', 'page-attributes'),
     )
   );
 
@@ -95,15 +111,31 @@ function meus_posts_type()
   register_post_type(
     'servicos',
     array(
-      'labels'           => array(
-        'name'           => __('Serviços'),
+      'labels' => array(
+        'name' => __('Serviços'),
         'singular_name' => __('Serviço'),
       ),
-      'public'           => true,
-      'has_archive'     => false,
-      'menu_icon'        => 'dashicons-admin-appearance',
-      'supports'        => array('title', 'editor', 'thumbnail', 'page-attributes'),
-      'taxonomies'      => array('category'),
+      'public' => true,
+      'has_archive' => false,
+      'menu_icon' => 'dashicons-admin-appearance',
+      'supports' => array('title', 'editor', 'thumbnail', 'page-attributes'),
+      'taxonomies' => array('category'),
+    )
+  );
+
+  // Empresas
+  register_post_type(
+    'empresas',
+    array(
+      'labels' => array(
+        'name' => __('Empresas'),
+        'singular_name' => __('Empresa'),
+      ),
+      'public' => true,
+      'has_archive' => false,
+      'menu_icon' => 'dashicons-format-image',
+      'supports' => array('title', 'editor', 'thumbnail', 'page-attributes'),
+      'taxonomies' => array('category'),
     )
   );
 }
