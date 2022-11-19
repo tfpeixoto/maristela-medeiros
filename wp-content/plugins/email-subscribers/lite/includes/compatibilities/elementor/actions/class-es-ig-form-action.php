@@ -24,7 +24,7 @@ class Es_Form_Action extends Integration_Base {
 	 * @return string
 	 */
 	public function get_label() {
-		return __( 'Email Subscribers & Newsletter', 'email-subscribers' );
+		return __( 'Icegram Express (formerly known as Email Subscribers & Newsletters)', 'email-subscribers' );
 	}
 
 	/**
@@ -37,7 +37,7 @@ class Es_Form_Action extends Integration_Base {
 			$form->start_controls_section(
 				'section_email_subscribers',
 				array(
-					'label'     => __( 'Email Subscribers', 'email-subscribers' ),
+					'label'     => __( 'Icegram Express', 'email-subscribers' ),
 					'condition' => array(
 						'submit_actions' => $this->get_name(),
 					),
@@ -127,7 +127,7 @@ class Es_Form_Action extends Integration_Base {
 	}
 
 	/**
-	 * Email subscribers fields that need to map with Elementor form fields
+	 * Icegram Express fields that need to map with Elementor form fields
 	 *
 	 * @return array
 	 */

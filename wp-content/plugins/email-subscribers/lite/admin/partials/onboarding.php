@@ -133,7 +133,7 @@
 									<label for="es_allow_tracking" class="text-sm">
 									<?php
 										/* translators: %s. Plugin name. */
-										echo sprintf( esc_html__( 'Help us to improve %s by opting in to share non-sensitive plugin usage data. No personal data is tracked or stored.', 'email-subscribers' ), '<strong>Email Subscribers</strong>' );
+										echo sprintf( esc_html__( 'Help us to improve %s by opting in to share non-sensitive plugin usage data. No personal data is tracked or stored.', 'email-subscribers' ), '<strong>Icegram Express (formerly known as Email Subscribers & Newsletters)</strong>' );
 									?>
 									</label>
 								</div>

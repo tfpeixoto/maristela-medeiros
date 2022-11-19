@@ -67,6 +67,49 @@ class ES_Common {
 		return $total_emails_sent;
 	}
 
+	/**
+	 * Process the email template and get variable fallbacks
+	 *
+	 * @param $template
+	 */
+	public static function get_template_fallbacks( $template ) {
+		preg_match_all( '/{{(.*?)}}/', $template, $matches );
+		$default_keywords = array();
+		if ( 1 < count( $matches ) ) {
+			$fallback_matches = $matches[1];
+			foreach ( $fallback_matches as $keyword ) {
+				if ( strstr( $keyword, '|' ) ) {
+					list( $variable_name, $variable_params ) = explode( '|', $keyword, 2 );
+				} else {
+					$variable_name   = $keyword;
+					$variable_params = '';
+				}
+				$variable_name = trim( $variable_name );
+				$variable      = new IG_ES_Workflow_Variable_Parser();
+				$parameters    = $variable->parse_parameters_from_string( trim( $variable_params ) );
+				if ( is_array( $parameters ) && ! empty( $parameters ) ) {
+					if ( isset( $parameters['fallback'] ) && ! empty( $parameters['fallback'] ) ) {
+						$replace_with_fallback = self::un_quote( $parameters['fallback'] );
+						$is_nested_variable    = strpos( $variable_name, '.' ); // Check if variable has dont(.) in its name
+						if ( $is_nested_variable ) {
+							$variable_parts = explode( '.', $variable_name );
+							$variable_type  = $variable_parts[0];
+							$variable_slug  = $variable_parts[1];
+							/**
+							 * For variables like subscribers.name, we need to pass the fallback data as nested array
+							 * $default_keywords['subscribers']['name'] = fallback_value
+							 **/ 
+							$default_keywords[ $variable_type ][ $variable_slug ] = $replace_with_fallback;
+						} else {
+							$default_keywords[ $variable_name ] = $replace_with_fallback;
+						}
+					}
+				}
+			}
+		}
+		return $default_keywords;
+	}
+
 
 	/**
 	 * Callback to replace keywords
@@ -1836,7 +1879,7 @@ class ES_Common {
 			$pricing_page_url = admin_url( 'admin.php?page=es_pricing' );
 
 			$articles_upsell[] = array(
-				'title'       => __( '<b>Email Subscribers Secret Club</b>', 'email-subscribers' ),
+				'title'       => __( '<b>Icegram Express</b> (formerly known as <br/><b>Email Subscribers & Newsletters</b>) Secret Club', 'email-subscribers' ),
 				'link'        => 'https://www.facebook.com/groups/2298909487017349/',
 				'label'       => __( 'Join Now', 'email-subscribers' ),
 				'label_class' => 'bg-green-100 text-green-800',
@@ -1844,9 +1887,9 @@ class ES_Common {
 
 			if ( ! ES()->is_premium() ) {
 				$articles_upsell[] = array(
-					'title'       => __( 'Email Subscribers PRO', 'email-subscribers' ),
+					'title'       => __( 'Icegram Express (formerly known as Email Subscribers & Newsletters) MAX', 'email-subscribers' ),
 					'link'        => $pricing_page_url,
-					'label'       => __( 'PRO', 'email-subscribers' ),
+					'label'       => __( 'MAX', 'email-subscribers' ),
 					'label_class' => 'bg-green-100 text-green-800',
 				);
 			}
@@ -2791,9 +2834,9 @@ class ES_Common {
 	public static function download_image_from_url( $image_url ) {
 
 		$attachment_url = '';
-		$upload_dir = wp_upload_dir();
-		$image_data = file_get_contents( $image_url );
-		$filename   = basename( $image_url );
+		$upload_dir     = wp_upload_dir();
+		$image_data     = file_get_contents( $image_url );
+		$filename       = basename( $image_url );
 		if ( wp_mkdir_p( $upload_dir['path'] ) ) {
 			$file = $upload_dir['path'] . '/' . $filename;
 		} else {
@@ -2809,11 +2852,46 @@ class ES_Common {
 			'post_content'   => '',
 			'post_status'    => 'inherit',
 		);
-		$attach_id = wp_insert_attachment( $attachment, $file );
+		$attach_id   = wp_insert_attachment( $attachment, $file );
 		if ( ! empty( $attach_id ) ) {
 			$attachment_url = wp_get_attachment_url( $attach_id );
 		}
 		return $attachment_url;
 	}
 
+	/**
+	 * Get list status(subscribed or unconfirmed) based on optin type(single optin or double optin)
+	 * 
+	 * @since 5.4.18
+	 * 
+	 * @return string
+	 */
+	public static function get_list_status_from_optin_type() {
+		$es_optin_type = get_option( 'ig_es_optin_type' );
+			
+		if ( in_array( $es_optin_type, array( 'double_opt_in', 'double_optin' ), true ) ) { 
+			$status = 'unconfirmed';
+		} else {
+			$status = 'subscribed';
+		}
+
+		return $status;
+	}
+
+	/**
+	 * Check if WordPress has REST API support or not
+	 * 
+	 * @since 5.4.18
+	 * 
+	 * @return bool
+	 */
+	public static function is_rest_api_supported() {
+		global $wp_version;
+
+		if ( version_compare( $wp_version, '4.4.0', '<' ) ) {
+			return false;
+		}
+
+		return true;
+	}
 }

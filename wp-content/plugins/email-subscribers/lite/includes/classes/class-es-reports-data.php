@@ -295,9 +295,9 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 					$click_percentage_growth = 100;
 				}
 
-				$reports_data['open_percentage_growth']  = $open_percentage_growth > 0 ? number_format_i18n( $open_percentage_growth, 2 ) : $open_percentage_growth;
+				$reports_data['open_percentage_growth']  = number_format_i18n( $open_percentage_growth, 2 );
 				$reports_data['open_before_two_months']  = number_format_i18n( $open_before_two_months );
-				$reports_data['click_percentage_growth'] = $click_percentage_growth > 0 ? number_format_i18n( $click_percentage_growth, 2 ) : $click_percentage_growth;
+				$reports_data['click_percentage_growth'] = number_format_i18n( $click_percentage_growth, 2 );
 				$reports_data['click_before_two_months'] = number_format_i18n( $click_before_two_months );
 				
 				$start_time  = strtotime( '-' . $days . ' days', time() );

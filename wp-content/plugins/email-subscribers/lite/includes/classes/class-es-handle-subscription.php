@@ -210,7 +210,7 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 			$doing_ajax      = defined( 'DOING_AJAX' ) && DOING_AJAX;
 			$return_response = defined( 'IG_ES_RETURN_HANDLE_RESPONSE' ) && IG_ES_RETURN_HANDLE_RESPONSE;
 
-			// Verify nonce only if it is submitted through Email Subscribers' subscription form else check if we have form data in $external_form_data.
+			// Verify nonce only if it is submitted through Icegram Express (formerly known as Email Subscribers & Newsletters)' subscription form else check if we have form data in $external_form_data.
 			if ( ( 'subscribe' === $es ) || ! empty( $external_form_data ) ) {
 
 				// Get form data from external source if passed.

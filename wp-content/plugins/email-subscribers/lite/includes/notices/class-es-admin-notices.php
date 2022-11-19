@@ -225,9 +225,13 @@ class ES_Admin_Notices {
 				}
 
 				// Halloween 2022 offer
-				if ( 'offer_halloween_2022' === $option_name ) {
-					$url = 'https://www.icegram.com/email-subscribers-pricing/?utm_source=in_app&utm_medium=es_banner&utm_campaign=' . $option_name;
-					header( "Location: {$url}" );
+				if ( 'offer_bfcm_2022' === $option_name ) {
+					$redirect_url = 'https://www.icegram.com/email-subscribers-pricing/?utm_source=in_app&utm_medium=es_banner&utm_campaign=offer_bfcm_2022';
+					if ( ES()->is_pro() ) {
+						$redirect_url = 'https://www.icegram.com/?utm_source=in_app&utm_medium=es_banner&utm_campaign=offer_bfcm_2022';
+					}
+
+					header( "Location: {$redirect_url}" );
 					exit();
 				} else {
 

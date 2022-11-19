@@ -37,10 +37,11 @@ class ES_Workflow_Actions extends ES_Workflow_Registry {
 	public static function load_includes() {
 
 		$includes = array(
-			'ig_es_add_to_list'    => 'ES_Action_Add_To_List',
-			'ig_es_delete_contact' => 'ES_Action_Delete_Contact',
-			'ig_es_update_contact' => 'ES_Action_Update_Contact',
-			'ig_es_send_email' 	   => 'ES_Action_Send_Email',
+			'ig_es_add_to_list'    				=> 'ES_Action_Add_To_List',
+			'ig_es_delete_contact' 				=> 'ES_Action_Delete_Contact',
+			'ig_es_update_contact' 				=> 'ES_Action_Update_Contact',
+			'ig_es_send_email' 	   				=> 'ES_Action_Send_Email',
+			'ig_es_update_contact_custom_field' => 'ES_Action_Update_Contact_Custom_Field',
 		);
 
 		return apply_filters( 'ig_es_workflow_actions', $includes );

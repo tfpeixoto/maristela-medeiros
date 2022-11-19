@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class ES_Widget extends WP_Widget {
 
 	public function __construct() {
-		parent::__construct( 'email_subscriber_widget', __( 'Email Subscribers Widget', 'email-subscribers' ), array( 'description' => __( 'Email Subscribers', 'email-subscribers' ) ) );
+		parent::__construct( 'email_subscriber_widget', __( 'Icegram Express Widget', 'email-subscribers' ), array( 'description' => __( 'Icegram Express', 'email-subscribers' ) ) );
 	}
 
 	public function widget( $args, $instance ) {

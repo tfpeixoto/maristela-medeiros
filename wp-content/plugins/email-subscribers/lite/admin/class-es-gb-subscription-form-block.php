@@ -60,6 +60,11 @@ class ES_GB_Subscription_Form_Block {
 
 	public function register_gb_subscription_form_block() {
 		
+		if ( ! function_exists( 'register_block_type' ) ) {
+			// Block editor is not available.
+			return;
+		}
+
 		register_block_type(
 		  'email-subscribers/subscription-form-block',
 		  array(

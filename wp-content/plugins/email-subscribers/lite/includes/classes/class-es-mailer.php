@@ -522,7 +522,7 @@ if ( ! class_exists( 'ES_Mailer' ) ) {
 		 */
 		public function get_test_email_subject( $email = '' ) {
 			/* translators: %s: Email address */
-			return 'Email Subscribers: ' . sprintf( esc_html__( 'Test email to %s', 'email-subscribers' ), $email );
+			return 'Icegram Express: ' . sprintf( esc_html__( 'Test email to %s', 'email-subscribers' ), $email );
 		}
 
 		/**
@@ -540,7 +540,7 @@ if ( ! class_exists( 'ES_Mailer' ) ) {
 			<head></head>
 			<body>
 			<p><?php echo esc_html__( 'Congrats, test email was sent successfully!', 'email-subscribers' ); ?></p>
-			<p><?php echo esc_html__( 'Thank you for trying out Email Subscribers. We are on a mission to make the best Email Marketing Automation plugin for WordPress.', 'email-subscribers' ); ?></p>
+			<p><?php echo esc_html__( 'Thank you for trying out Icegram Express. We are on a mission to make the best Email Marketing Automation plugin for WordPress.', 'email-subscribers' ); ?></p>
 			<!-- Start-IG-Code -->
 			<p>
 			<?php

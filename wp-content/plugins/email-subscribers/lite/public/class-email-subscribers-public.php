@@ -490,7 +490,7 @@ class Email_Subscribers_Public {
 	}
 
 	/**
-	 * Add Email Subscribers template types
+	 * Add Icegram Express (formerly known as Email Subscribers & Newsletters) template types
 	 *
 	 * @param array $template_type Template types
 	 *

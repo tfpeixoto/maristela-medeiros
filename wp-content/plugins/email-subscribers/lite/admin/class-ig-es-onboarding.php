@@ -813,12 +813,12 @@ if ( ! class_exists( 'IG_ES_Onboarding' ) ) {
 
 			// First Create Default Template.
 			// Start-IG-Code.
-			$sample = '<strong style="color: #990000">What can you achieve using Email Subscribers?</strong><p>Add subscription forms on website, send HTML newsletters & automatically notify subscribers about new blog posts once it is published.';
+			$sample = '<strong style="color: #990000">What can you achieve using Icegram Express (formerly known as Email Subscribers & Newsletters)?</strong><p>Add subscription forms on website, send HTML newsletters & automatically notify subscribers about new blog posts once it is published.';
 			// End-IG-Code.
 			// Start-Woo-Code.
-			$sample = '<strong style="color: #990000">What can you achieve using Email Subscribers?</strong><p>Add subscription forms on website, send HTML newsletters.';
+			$sample = '<strong style="color: #990000">What can you achieve using Icegram Express (formerly known as Email Subscribers & Newsletters)?</strong><p>Add subscription forms on website, send HTML newsletters.';
 			// End-Woo-Code.
-			$sample .= ' You can also Import or Export subscribers from any list to Email Subscribers.</p>';
+			$sample .= ' You can also Import or Export subscribers from any list to Icegram Express (formerly known as Email Subscribers & Newsletters).</p>';
 			$sample .= ' <strong style="color: #990000">Plugin Features</strong><ol>';
 			// Start-IG-Code.
 			$sample .= ' <li>Send notification emails to subscribers when new blog posts are published.</li>';
@@ -833,8 +833,8 @@ if ( ! class_exists( 'IG_ES_Onboarding' ) ) {
 			$sample .= ' </ol>';
 			$sample .= ' <strong>Thanks & Regards,</strong><br/>Admin<br/>';
 
-			$title   = esc_html__( 'Welcome To Email Subscribers', 'email-subscribers' );
-			$subject = esc_html__( 'Welcome To Email Subscribers', 'email-subscribers' );
+			$title   = esc_html__( 'Welcome To Icegram Express (formerly known as Email Subscribers & Newsletters)', 'email-subscribers' );
+			$subject = esc_html__( 'Welcome To Icegram Express (formerly known as Email Subscribers & Newsletters)', 'email-subscribers' );
 
 			// Create Broadcast Campaign
 

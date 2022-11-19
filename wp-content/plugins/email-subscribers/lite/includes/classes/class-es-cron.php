@@ -282,7 +282,7 @@ class ES_Cron {
 		$es_schedules = array(
 			'ig_es_cron_interval'   => array(
 				'interval' => $this->get_cron_interval(),
-				'display'  => __( 'Email Subscribers Cronjob Interval', 'email-subscribers' ),
+				'display'  => __( 'Icegram Express (formerly known as Email Subscribers & Newsletters) Cronjob Interval', 'email-subscribers' ),
 			),
 			'ig_es_two_minutes'     => array(
 				'interval' => 2 * MINUTE_IN_SECONDS,

@@ -11,7 +11,7 @@
     const esForms     = window.es_forms;
     registerBlockType( 'email-subscribers/subscription-form-block', {
         apiVersion: 2,
-        title: 'Email Subscribers Form',
+        title: 'Icegram Express Form',
         icon: 'feedback',
         category: 'common',
         attributes: { // The data this block will be storing

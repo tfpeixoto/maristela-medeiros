@@ -347,10 +347,10 @@ class Email_Subscribers_Pricing {
 				<div class="ig_es_main_heading">
 					<div style="display: inline-flex;">
 						<div style="padding-right: 0.5rem;">🎉</div>
-						<div style="line-height: 1.5rem;">
+						<div style="line-height: 2.5rem;">
 							<?php
 								/* translators: %s: Offer text */
-								echo sprintf( esc_html__( 'Congratulations! You just unlocked %s on Email Subscribers Premium!', 'email-subscribers' ), '<span class="ig_es_discount_code">' . esc_html__( '25% off', 'email-subscribers' ) . '</span>' );
+								echo sprintf( esc_html__( 'Congratulations! You just unlocked %s on Icegram Express (formerly known as Email Subscribers & Newsletters) Premium!', 'email-subscribers' ), '<span class="ig_es_discount_code">' . esc_html__( '25% off', 'email-subscribers' ) . '</span>' );
 							?>
 						</div>
 						<div style="padding-left: 0.5rem;">🎉</div>
@@ -359,11 +359,11 @@ class Email_Subscribers_Pricing {
 				</div>
 				<div id="ig_es_price_column_container">
 						<div class="ig_es_column column_one_fourth pricing ig_es_lifetime_price">
-							<span class="ig_es_plan"><h4 class="clr-a center"><?php echo esc_html__( 'Starter', 'email-subscribers' ); ?></h4></span>
+							<span class="ig_es_plan"><h4 class="clr-a center"><?php echo esc_html__( 'Pro', 'email-subscribers' ); ?></h4></span>
 							<span class="ig_es_plan"><h4 class="clr-a center"><?php echo esc_html__( '1 site (Annual)', 'email-subscribers' ); ?></h4></span>
 							<span class="ig_es_price">
-								<p><del class="center"><?php echo esc_html__( '$79', 'email-subscribers' ); ?></del></p>
-								<h2><?php echo esc_html__( '$60', 'email-subscribers' ); ?></h2>
+								<p><del class="center"><?php echo esc_html__( '$129', 'email-subscribers' ); ?></del></p>
+								<h2><?php echo esc_html__( '$97', 'email-subscribers' ); ?></h2>
 							</span>
 
 							<div class="center">
@@ -372,11 +372,11 @@ class Email_Subscribers_Pricing {
 						</div>
 						<div class="ig_es_column column_one_fourth pricing scaleup" style="border-color: #15576F;padding: 0;border-width: 0.2em;">
 							<div style="text-align: center;background-color: #15576F;color: #FFF;padding: 1em;font-weight: 900;text-transform: uppercase;"> <?php echo esc_html__( 'Best Seller', 'email-subscribers' ); ?> </div>
-							<span class="ig_es_plan"><h4 class="clr-a center"><?php echo esc_html__( 'Pro', 'email-subscribers' ); ?></h4></span>
-							<span class="ig_es_plan"><h4 class="clr-a center"><?php echo esc_html__( '1 site (Annual)', 'email-subscribers' ); ?></h4></span>
+							<span class="ig_es_plan"><h4 class="clr-a center"><?php echo esc_html__( 'Max', 'email-subscribers' ); ?></h4></span>
+							<span class="ig_es_plan"><h4 class="clr-a center"><?php echo esc_html__( '3 sites (Annual)', 'email-subscribers' ); ?></h4></span>
 							<span class="ig_es_price">
-								<p><del class="center"><?php echo esc_html__( '$129', 'email-subscribers' ); ?></del></p>
-								<h2><?php echo esc_html__( '$97', 'email-subscribers' ); ?></h2>
+								<p><del class="center"><?php echo esc_html__( '$229', 'email-subscribers' ); ?></del></p>
+								<h2><?php echo esc_html__( '$172', 'email-subscribers' ); ?></h2>
 							</span>
 
 							<div class="center">
@@ -400,7 +400,7 @@ class Email_Subscribers_Pricing {
 				</div>
 			</div>
 			<div class="ig_es_row" id="ig_es_comparison_table">
-				<div class="ig_es_sub_headline"><span class="dashicons dashicons-awards"></span><?php echo esc_html__( ' More powerful features with Email Subscribers Premium!', 'email-subscribers' ); ?></div>
+				<div class="ig_es_sub_headline"><span class="dashicons dashicons-awards"></span><?php echo esc_html__( ' More powerful features with Icegram Express (formerly known as Email Subscribers & Newsletters) Premium!', 'email-subscribers' ); ?></div>
 				<table class="ig_es_feature_table wp-list-table widefat">
 					<thead>
 						<tr>
@@ -411,10 +411,10 @@ class Email_Subscribers_Pricing {
 								<?php echo esc_html__( 'Free', 'email-subscribers' ); ?>
 							</th>
 							<th class="ig_es_starter_features">
-								<?php echo esc_html__( 'Starter', 'email-subscribers' ); ?>
+								<?php echo esc_html__( 'Pro', 'email-subscribers' ); ?>
 							</th>
 							<th class="ig_es_pro_features">
-								<?php echo esc_html__( 'Pro', 'email-subscribers' ); ?>
+								<?php echo esc_html__( 'Max', 'email-subscribers' ); ?>
 							</th>
 						</tr>
 					</thead>
@@ -430,7 +430,7 @@ class Email_Subscribers_Pricing {
 								<?php echo esc_html__( 'Everything in Free +', 'email-subscribers' ); ?>
 							</td>
 							<td class="ig_es_pro_feature_name">
-								<?php echo esc_html__( 'Everything in Starter +', 'email-subscribers' ); ?>
+								<?php echo esc_html__( 'Everything in Pro +', 'email-subscribers' ); ?>
 							</td>
 						</tr>
 						<tr>
@@ -739,12 +739,12 @@ class Email_Subscribers_Pricing {
 							</td>
 							<td class="ig_es_starter_feature_name">
 								<div class="center">
-									<a class="ig_es_button small green center" href="#ig_es_price_column_container" style="text-transform: none;"><?php esc_html_e( 'Buy Starter', 'email-subscribers' ); ?></a>
+									<a class="ig_es_button small green center" href="#ig_es_price_column_container" style="text-transform: none;"><?php esc_html_e( 'Buy Pro', 'email-subscribers' ); ?></a>
 								</div>
 							</td>
 							<td class="ig_es_pro_feature_name">
 									<div class="center">
-										<a class="ig_es_button small green center" href="#ig_es_price_column_container" style="text-transform: none;"><?php esc_html_e( 'Buy Pro', 'email-subscribers' ); ?></a>
+										<a class="ig_es_button small green center" href="#ig_es_price_column_container" style="text-transform: none;"><?php esc_html_e( 'Buy Max', 'email-subscribers' ); ?></a>
 									</div>
 							</td>
 						</tr>
@@ -778,7 +778,7 @@ class Email_Subscribers_Pricing {
 			<div class="ig_es_row" id="ig_es_product_page_link">
 				<?php 
 					/* translators: %s: Pricing page URL */
-					echo sprintf( esc_html__( 'You can either manually send normal email marketing campaigns or use %s to automate reliable emails that land in subscribers’ inboxes, not in the spam folders.', 'email-subscribers' ), '<a style="color: #00848D;" target="_blank" href="https://www.icegram.com/email-subscribers/?utm_source=es_in_app&utm_medium=in_app_pricing&utm_campaign=es_pricing_footer">' . esc_html__( 'Email Subscribers', 'email-subscribers' ) . '</a>' );
+					echo sprintf( esc_html__( 'You can either manually send normal email marketing campaigns or use %s to automate reliable emails that land in subscribers’ inboxes, not in the spam folders.', 'email-subscribers' ), '<a style="color: #00848D;" target="_blank" href="https://www.icegram.com/email-subscribers/?utm_source=es_in_app&utm_medium=in_app_pricing&utm_campaign=es_pricing_footer">' . esc_html__( 'Icegram Express (formerly known as Email Subscribers & Newsletters)', 'email-subscribers' ) . '</a>' );
 				?>
 				<br>
 			</div>

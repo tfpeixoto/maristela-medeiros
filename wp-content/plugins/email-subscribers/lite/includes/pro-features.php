@@ -192,12 +192,12 @@ function render_user_permissions_settings_fields_premium() {
 	<div class="text-center py-3 lg:px-4">
 		<div class="p-2 bg-indigo-800 items-center text-indigo-100 leading-none lg:rounded-full flex lg:inline-flex mx-4 leading-normal" role="alert">
 			<span class="font-semibold text-left flex-auto">
-				<?php esc_html_e( 'Customize user roles permissions with ', 'email-subscribers' ); ?><a href="<?php echo esc_url( $url ); ?>" target="_blank" class="text-indigo-400"><?php esc_html_e( 'Email Subscribers PRO', 'email-subscribers' ); ?></a>
+				<?php esc_html_e( 'Customize user roles permissions with ', 'email-subscribers' ); ?><a href="<?php echo esc_url( $url ); ?>" target="_blank" class="text-indigo-400"><?php esc_html_e( 'Icegram Express (formerly known as Email Subscribers & Newsletters) PRO', 'email-subscribers' ); ?></a>
 			</span>
 		</div>
 	</div>
 
-	<p class="py-2 text-sm font-normal text-gray-500"><?php echo esc_html__( 'You can allow different user roles access to different operations within Email Subscribers plugin. Please select which roles should have what access below.', 'email-subscribers' ); ?> </p>
+	<p class="py-2 text-sm font-normal text-gray-500"><?php echo esc_html__( 'You can allow different user roles access to different operations within Icegram Express (formerly known as Email Subscribers & Newsletters) plugin. Please select which roles should have what access below.', 'email-subscribers' ); ?> </p>
 	<table class="min-w-full rounded-lg">
 		<thead>
 			<tr class="bg-gray-100 leading-4 text-gray-500 tracking-wider">
@@ -303,7 +303,7 @@ function ig_es_add_upsale( $fields ) {
 				'link'          => $premium_url,
 				'disabled'      => true,
 				/* translators: %s: Icegram Pricing page url with utm tracking */
-				'upgrade_title' => __( 'Track key insight behaviour with PRO', 'email-subscribers' ),
+				'upgrade_title' => __( 'Track key insight behaviour with MAX', 'email-subscribers' ),
 				'upgrade_desc'  => __( 'Enable Link Tracking, UTM tracking and understand customer behavior to plan your next campaign accordingly.', 'email-subscribers' ),
 			),
 
@@ -462,7 +462,7 @@ function ig_es_add_upsale( $fields ) {
 			'link'          => ES_Common::get_utm_tracking_url( array( 'utm_medium' => 'ip_tracking' ) ),
 			'disabled'      => true,
 			/* translators: %s: Icegram Pricing page url with utm tracking */
-			'upgrade_title' => __( 'Track subscribers IP addresses with PRO', 'email-subscribers' ),
+			'upgrade_title' => __( 'Track subscribers IP addresses with MAX', 'email-subscribers' ),
 			'upgrade_desc'  => __( 'Enable IP tracking to store IP addresses and country name of subscribers. With this, you can target campaigns like Broadcasts, Sequences to subscribers from specific countries.', 'email-subscribers' ),
 		);
 
@@ -570,14 +570,14 @@ function ig_es_add_comments_tab_settings( $tab_options ) {
 		<h2><?php esc_html_e( 'Sync Comment Users', 'email-subscribers' ); ?></h2>
 		<p><?php esc_html_e( 'Quickly add to your mailing list when someone post a comment on your website.', 'email-subscribers' ); ?></p>
 		<h2><?php esc_html_e( 'How to setup?', 'email-subscribers' ); ?></h2>
-		<p><?php esc_html_e( 'Once you upgrade to ', 'email-subscribers' ); ?><a href="https://www.icegram.com/email-subscribers-starter/?utm_source=in_app&utm_medium=comment_sync&utm_campaign=es_upsell#sync_comment_users"><?php esc_html_e( 'Email Subscribers Starter', 'email-subscribers' ); ?></a>,
+		<p><?php esc_html_e( 'Once you upgrade to ', 'email-subscribers' ); ?><a href="https://www.icegram.com/email-subscribers-starter/?utm_source=in_app&utm_medium=comment_sync&utm_campaign=es_upsell#sync_comment_users"><?php esc_html_e( 'Icegram Express (formerly known as Email Subscribers & Newsletters) Starter', 'email-subscribers' ); ?></a>,
 		<?php
 			esc_html_e('you will have settings panel where you need to enable Comment user sync and select the list in which you want to add people whenever someone post a
 		comment.', 'email-subscribers')
 		?>
 		</p>
 		<hr>
-		<p class="help"><?php esc_html_e( 'Checkout ', 'email-subscribers' ); ?><a href="https://www.icegram.com/email-subscribers-pricing/?utm_source=in_app&utm_medium=comment_sync&utm_campaign=es_upsell#sync_comment_users"><?php esc_html_e( 'Email Subscribers Starter', 'email-subscribers' ); ?></a> <?php esc_html_e( 'now', 'email-subscribers' ); ?></p>
+		<p class="help"><?php esc_html_e( 'Checkout ', 'email-subscribers' ); ?><a href="https://www.icegram.com/email-subscribers-pricing/?utm_source=in_app&utm_medium=comment_sync&utm_campaign=es_upsell#sync_comment_users"><?php esc_html_e( 'Icegram Express (formerly known as Email Subscribers & Newsletters) Starter', 'email-subscribers' ); ?></a> <?php esc_html_e( 'now', 'email-subscribers' ); ?></p>
 	</div>
 	<?php
 
@@ -603,7 +603,7 @@ function ig_es_add_woocommerce_tab_settings( $tab_options ) {
 		<h2><?php esc_html_e( 'Sync WooCommerce Customers', 'email-subscribers' ); ?></h2>
 		<p><?php esc_html_e( 'Are you using WooCommerce for your online business? You can use this integration to add to a specific list whenever someone make a purchase from you', 'email-subscribers' ); ?></p>
 		<h2><?php esc_html_e( 'How to setup?', 'email-subscribers' ); ?></h2>
-		<p><?php esc_html_e( 'Once you upgrade to ', 'email-subscribers' ); ?><a href="https://www.icegram.com/email-subscribers-starter/?utm_source=in_app&utm_medium=woocommerce_sync&utm_campaign=es_upsell#sync_woocommerce_customers"><?php esc_html_e( 'Email Subscribers Starter', 'email-subscribers' ); ?></a>,
+		<p><?php esc_html_e( 'Once you upgrade to ', 'email-subscribers' ); ?><a href="https://www.icegram.com/email-subscribers-starter/?utm_source=in_app&utm_medium=woocommerce_sync&utm_campaign=es_upsell#sync_woocommerce_customers"><?php esc_html_e( 'Icegram Express (formerly known as Email Subscribers & Newsletters) Starter', 'email-subscribers' ); ?></a>,
 					 <?php
 						esc_html_e(
 							'you will have settings panel where you need to enable WooCommerce sync and select the list in which you want to add people whenever they
@@ -614,7 +614,7 @@ function ig_es_add_woocommerce_tab_settings( $tab_options ) {
 						?>
 						</p>
 			<hr>
-			<p class="help"><?php esc_html_e( 'Checkout ', 'email-subscribers' ); ?><a href="https://www.icegram.com/email-subscribers-pricing/?utm_source=in_app&utm_medium=woocommerce_sync&utm_campaign=es_upsell#sync_woocommerce_customers"><?php esc_html_e( 'Email Subscribers Starter', 'email-subscribers' ); ?></a><?php esc_html_e( ' Now', 'email-subscribers' ); ?></p>
+			<p class="help"><?php esc_html_e( 'Checkout ', 'email-subscribers' ); ?><a href="https://www.icegram.com/email-subscribers-pricing/?utm_source=in_app&utm_medium=woocommerce_sync&utm_campaign=es_upsell#sync_woocommerce_customers"><?php esc_html_e( 'Icegram Express (formerly known as Email Subscribers & Newsletters) Starter', 'email-subscribers' ); ?></a><?php esc_html_e( ' Now', 'email-subscribers' ); ?></p>
 		</div>
 		<?php $content = ob_get_clean(); ?>
 
@@ -646,13 +646,13 @@ function ig_es_add_cf7_tab_settings( $tab_options ) {
 			<p><?php esc_html_e( 'Once you upgrade to ', 'email-subscribers' ); ?><a href="https://www.icegram.com/email-subscribers-starter/?utm_source=in_app&utm_medium=cf7_sync&utm_campaign=es_upsell#sync_cf7_subscribers">
 						 <?php
 							esc_html_e(
-								'Email Subscribers Starter',
+								'Icegram Express (formerly known as Email Subscribers & Newsletters) Starter',
 								'email-subscribers'
 							)
 							?>
 			</a>, <?php esc_html_e( 'you will have settings panel where you need to enable Contact form 7 sync and select the list in which you want to add people whenever they fill any of the Contact Form.', 'email-subscribers' ); ?></p>
 			<hr>
-			<p class="help"><?php esc_html_e( 'Checkout ', 'email-subscribers' ); ?><a href="https://www.icegram.com/email-subscribers-pricing/?utm_source=in_app&utm_medium=cf7_sync&utm_campaign=es_upsell#sync_cf7_subscribers">Email Subscribers Starter</a> Now</p>
+			<p class="help"><?php esc_html_e( 'Checkout ', 'email-subscribers' ); ?><a href="https://www.icegram.com/email-subscribers-pricing/?utm_source=in_app&utm_medium=cf7_sync&utm_campaign=es_upsell#sync_cf7_subscribers">Icegram Express (formerly known as Email Subscribers & Newsletters) Starter</a> Now</p>
 		</div>
 		<?php $content = ob_get_clean(); ?>
 
@@ -684,13 +684,13 @@ function ig_es_add_give_tab_settings( $tab_options ) {
 			<p><?php esc_html_e( 'Once you upgrade to ', 'email-subscribers' ); ?><a target="_blank" href="https://www.icegram.com/email-subscribers-starter/?utm_source=in_app&utm_medium=give_sync&utm_campaign=es_upsell#sync_give_donors">
 						 <?php
 							esc_html_e(
-								'Email Subscribers Starter',
+								'Icegram Express (formerly known as Email Subscribers & Newsletters) Starter',
 								'email-subscribers'
 							)
 							?>
 			</a>, <?php esc_html_e( 'you will have settings panel where you need to enable Give integration and select the list in which you want to add people whenever they make donation.', 'email-subscribers' ); ?></p>
 			<hr>
-			<p class="help"><?php esc_html_e( 'Checkout ', 'email-subscribers' ); ?><a target="_blank" href="https://www.icegram.com/email-subscribers-pricing/?utm_source=in_app&utm_medium=give_sync&utm_campaign=es_upsell#sync_give_donors">Email Subscribers Starter</a> Now</p>
+			<p class="help"><?php esc_html_e( 'Checkout ', 'email-subscribers' ); ?><a target="_blank" href="https://www.icegram.com/email-subscribers-pricing/?utm_source=in_app&utm_medium=give_sync&utm_campaign=es_upsell#sync_give_donors">Icegram Express (formerly known as Email Subscribers & Newsletters) Starter</a> Now</p>
 		</div>
 		<?php $content = ob_get_clean(); ?>
 
@@ -722,13 +722,13 @@ function ig_es_add_wpforms_tab_settings( $tab_options ) {
 			<p><?php esc_html_e( 'Once you upgrade to ', 'email-subscribers' ); ?><a target="_blank" href="https://www.icegram.com/email-subscribers-starter/?utm_source=in_app&utm_medium=wpforms_sync&utm_campaign=es_upsell#sync_wpforms_contacts">
 						 <?php
 							esc_html_e(
-								'Email Subscribers Starter',
+								'Icegram Express (formerly known as Email Subscribers & Newsletters) Starter',
 								'email-subscribers'
 							)
 							?>
 			</a>, <?php esc_html_e( 'you will have settings panel where you need to enable Give sync and select the list in which you want to add people whenever they make donation.', 'email-subscribers' ); ?></p>
 			<hr>
-			<p class="help"><?php esc_html_e( 'Checkout ', 'email-subscribers' ); ?><a target="_blank" href="https://www.icegram.com/email-subscribers-pricing/?utm_source=in_app&utm_medium=wpforms_sync&utm_campaign=es_upsell#sync_wpforms_contacts"><?php esc_html_e( 'Email Subscribers Starter', 'email-subscribers' ); ?></a><?php esc_html_e( ' Now', 'email-subscribers' ); ?></p>
+			<p class="help"><?php esc_html_e( 'Checkout ', 'email-subscribers' ); ?><a target="_blank" href="https://www.icegram.com/email-subscribers-pricing/?utm_source=in_app&utm_medium=wpforms_sync&utm_campaign=es_upsell#sync_wpforms_contacts"><?php esc_html_e( 'Icegram Express (formerly known as Email Subscribers & Newsletters) Starter', 'email-subscribers' ); ?></a><?php esc_html_e( ' Now', 'email-subscribers' ); ?></p>
 		</div>
 		<?php $content = ob_get_clean(); ?>
 
@@ -760,13 +760,13 @@ function ig_es_add_ninja_forms_tab_settings( $tab_options ) {
 			<p><?php esc_html_e( 'Once you upgrade to ', 'email-subscribers' ); ?><a target="_blank" href="https://www.icegram.com/email-subscribers-starter/?utm_source=in_app&utm_medium=ninja_forms_sync&utm_campaign=es_upsell#sync_ninja_forms_contacts">
 						 <?php
 							esc_html_e(
-								'Email Subscribers Starter',
+								'Icegram Express (formerly known as Email Subscribers & Newsletters) Starter',
 								'email-subscribers'
 							)
 							?>
 			</a>, <?php esc_html_e( 'you will have settings panel where you need to enable Give sync and select the list in which you want to add people whenever they make donation.', 'email-subscribers' ); ?></p>
 			<hr>
-			<p class="help"><?php esc_html_e( 'Checkout ', 'email-subscribers' ); ?><a target="_blank" href="https://www.icegram.com/email-subscribers-pricing/?utm_source=in_app&utm_medium=ninja_forms_sync&utm_campaign=es_upsell#sync_ninja_forms_contacts">Email Subscribers Starter</a> Now</p>
+			<p class="help"><?php esc_html_e( 'Checkout ', 'email-subscribers' ); ?><a target="_blank" href="https://www.icegram.com/email-subscribers-pricing/?utm_source=in_app&utm_medium=ninja_forms_sync&utm_campaign=es_upsell#sync_ninja_forms_contacts">Icegram Express (formerly known as Email Subscribers & Newsletters) Starter</a> Now</p>
 		</div>
 		<?php $content = ob_get_clean(); ?>
 
@@ -798,13 +798,13 @@ function ig_es_add_edd_tab_settings( $tab_options ) {
 			<p><?php esc_html_e( 'Once you upgrade to ', 'email-subscribers' ); ?><a target="_blank" href="https://www.icegram.com/email-subscribers-starter/?utm_source=in_app&utm_medium=edd_sync&utm_campaign=es_upsell#sync_edd_customers">
 						 <?php
 							esc_html_e(
-								'Email Subscribers Starter',
+								'Icegram Express (formerly known as Email Subscribers & Newsletters) Starter',
 								'email-subscribers'
 							)
 							?>
 			</a>, <?php esc_html_e( 'you will have settings panel where you need to enable EDD sync and select the list in which you want to add people whenever they purchase something from you.', 'email-subscribers' ); ?></p>
 			<hr>
-			<p class="help"><?php esc_html_e( 'Checkout ', 'email-subscribers' ); ?><a target="_blank" href="https://www.icegram.com/email-subscribers-pricing/?utm_source=in_app&utm_medium=edd_sync&utm_campaign=es_upsell#sync_edd_customers">Email Subscribers Starter</a> Now</p>
+			<p class="help"><?php esc_html_e( 'Checkout ', 'email-subscribers' ); ?><a target="_blank" href="https://www.icegram.com/email-subscribers-pricing/?utm_source=in_app&utm_medium=edd_sync&utm_campaign=es_upsell#sync_edd_customers">Icegram Express (formerly known as Email Subscribers & Newsletters) Starter</a> Now</p>
 		</div>
 		<?php $content = ob_get_clean(); ?>
 
@@ -868,9 +868,9 @@ function ig_es_workflows_integration_upsell() {
 			            <p class="text-sm leading-5 py-0.5 text-gray-500 group-hover:text-gray-900 group-focus:text-gray-900 transition ease-in-out duration-150">' . esc_html( $plugin_name ) . '</p>
 			    </div>';
 		}
-		$upsell_message .= '</div><br>' . esc_html__( 'Avoid manual actions and make your workflow quick, simple and effortless by integrating popular WordPress plugins with Email Subscribers PRO.', 'email-subscribers' );
+		$upsell_message .= '</div><br>' . esc_html__( 'Avoid manual actions and make your workflow quick, simple and effortless by integrating popular WordPress plugins with Icegram Express (formerly known as Email Subscribers & Newsletters) MAX.', 'email-subscribers' );
 		$upsell_info     = array(
-			'upgrade_title'  => __( 'Unlock plugin integrations with PRO', 'email-subscribers' ),
+			'upgrade_title'  => __( 'Unlock plugin integrations with MAX', 'email-subscribers' ),
 			'pricing_url'    => $pricing_url,
 			'upsell_message' => $upsell_message,
 			'cta_html'       => false,
@@ -973,7 +973,7 @@ function ig_es_additional_multilist_and_post_digest() {
 			            <div class="flex-shrink-0 h-5 w-5 relative flex justify-center">
 			              <span class="block h-1.5 w-1.5 mt-2.5 bg-gray-300 rounded-full group-hover:bg-gray-400 group-focus:bg-gray-400 transition ease-in-out duration-150"></span>
 			            </div>
-			            <p class="text-sm leading-5 py-0.5 text-gray-500 group-hover:text-gray-900 group-focus:text-gray-900 transition ease-in-out duration-150">' . esc_html__( 'Want to send notification emails to more than one list? You can select multiple list with', 'email-subscribers' ) . '<b class="font-medium text-teal-800">' . esc_html__( 'Email Subscribers PRO.', 'email-subscribers' ) . '</b></p>
+			            <p class="text-sm leading-5 py-0.5 text-gray-500 group-hover:text-gray-900 group-focus:text-gray-900 transition ease-in-out duration-150">' . esc_html__( 'Want to send notification emails to more than one list? You can select multiple list with', 'email-subscribers' ) . '<b class="font-medium text-teal-800">' . esc_html__( 'Icegram Express (formerly known as Email Subscribers & Newsletters) MAX.', 'email-subscribers' ) . '</b></p>
 			    </div>
 
 			    <div class="flex items-start space-x-3 -ml-8">
@@ -1097,7 +1097,7 @@ function ig_es_upsale_campaign_tracking_options( $campaign_data ) {
 
 		$pricing_url = ES_Common::get_utm_tracking_url( $utm_args );
 		$upsell_info = array(
-			'upgrade_title'  => __( 'Reduce the possibility to land in spam with PRO', 'email-subscribers' ),
+			'upgrade_title'  => __( 'Reduce the possibility to land in spam with MAX', 'email-subscribers' ),
 			'pricing_url'    => $pricing_url,
 			'upsell_message' => __( 'Build your brand, track your links with the help of Link tracking, UTM tracking and schedule your next campaign accordingly. Also prevent your emails from landing into spam by checking its spam score' ),
 			'cta_html'       => false,
@@ -1273,10 +1273,10 @@ function ig_es_view_additional_reports_data() {
 
 		 $pricing_url = ES_Common::get_utm_tracking_url( $utm_args );
 		 $upsell_info = array(
-			 'upgrade_title'  => __( 'Get campaign analytics with PRO', 'email-subscribers' ),
+			 'upgrade_title'  => __( 'Get campaign analytics with MAX', 'email-subscribers' ),
 			 'pricing_url'    => $pricing_url,
 			 /* translators: 1. Bold tag 2. Bold close tag */
-			 'upsell_message' => sprintf( __( 'Want to track some very useful statistics of your campaigns and improve your future campaign ? Upgrade to %1$s Email Subscribers Pro %2$s and measure the effectiveness of your campaigns.', 'email-subscribers' ), '<b class="font-medium text-teal-800">', '</b>' ),
+			 'upsell_message' => sprintf( __( 'Want to track some very useful statistics of your campaigns and improve your future campaign ? Upgrade to %1$s Icegram Express (formerly known as Email Subscribers & Newsletters) MAX %2$s and measure the effectiveness of your campaigns.', 'email-subscribers' ), '<b class="font-medium text-teal-800">', '</b>' ),
 			 'cta_html'       => true,
 		 );
 			?>
@@ -1864,51 +1864,51 @@ function ig_es_upsell_pro_campaign_rules( $campaign_rules = array() ) {
 		$pro_campaign_rules = array(
 			'List'       => array(
 				array(
-					'name'     => esc_html__( 'is not in List [PRO]', 'email-subscribers' ),
+					'name'     => esc_html__( 'is not in List [MAX]', 'email-subscribers' ),
 					'disabled' => true,
 				),
 			),
 			'Subscriber' => array(
 				array(
-					'name'     => esc_html__( 'Email [PRO]', 'email-subscribers' ),
+					'name'     => esc_html__( 'Email [MAX]', 'email-subscribers' ),
 					'disabled' => true,
 				),
 				array(
-					'name'     => esc_html__( 'Country [PRO]', 'email-subscribers' ),
+					'name'     => esc_html__( 'Country [MAX]', 'email-subscribers' ),
 					'disabled' => true,
 				),
 				array(
-					'name'     => esc_html__( 'Engagement score [PRO]', 'email-subscribers' ),
+					'name'     => esc_html__( 'Engagement score [MAX]', 'email-subscribers' ),
 					'disabled' => true,
 				),
 				array(
-					'name'     => esc_html__( 'Bounce status [PRO]', 'email-subscribers' ),
+					'name'     => esc_html__( 'Bounce status [MAX]', 'email-subscribers' ),
 					'disabled' => true,
 				),
 			),
 			'Campaign'   => array(
 				array(
-					'name'     => esc_html__( 'has received [PRO]', 'email-subscribers' ),
+					'name'     => esc_html__( 'has received [MAX]', 'email-subscribers' ),
 					'disabled' => true,
 				),
 				array(
-					'name'     => esc_html__( 'has not received [PRO]', 'email-subscribers' ),
+					'name'     => esc_html__( 'has not received [MAX]', 'email-subscribers' ),
 					'disabled' => true,
 				),
 				array(
-					'name'     => esc_html__( 'has received and opened [PRO]', 'email-subscribers' ),
+					'name'     => esc_html__( 'has received and opened [MAX]', 'email-subscribers' ),
 					'disabled' => true,
 				),
 				array(
-					'name'     => esc_html__( 'has received but not opened [PRO]', 'email-subscribers' ),
+					'name'     => esc_html__( 'has received but not opened [MAX]', 'email-subscribers' ),
 					'disabled' => true,
 				),
 				array(
-					'name'     => esc_html__( 'has received and clicked [PRO]', 'email-subscribers' ),
+					'name'     => esc_html__( 'has received and clicked [MAX]', 'email-subscribers' ),
 					'disabled' => true,
 				),
 				array(
-					'name'     => esc_html__( 'has received and not clicked [PRO]', 'email-subscribers' ),
+					'name'     => esc_html__( 'has received and not clicked [MAX]', 'email-subscribers' ),
 					'disabled' => true,
 				),
 			),
@@ -1930,7 +1930,7 @@ function ig_es_upsell_campaign_rules_message() {
 
 		$pricing_url = ES_Common::get_utm_tracking_url( $utm_args );
 		$upsell_info = array(
-			'upgrade_title'  => __( 'Send campaign to specific audience with PRO', 'email-subscribers' ),
+			'upgrade_title'  => __( 'Send campaign to specific audience with MAX', 'email-subscribers' ),
 			'pricing_url'    => $pricing_url,
 			'upsell_message' => __( 'Now, you can select multiple lists and also filter your subscribers based on their country, emails and whether they have received, opened or clicked a specific campaign or not and then send campaign emails to them.', 'email-subscribers' ),
 			'cta_html'       => false,
@@ -1947,7 +1947,7 @@ function ig_es_upsell_campaign_rules_message() {
 function ig_es_upsell_contacts_bulk_action( $actions = array() ) {
 
 	if ( ES()->can_upsell_features( array( 'lite', 'starter', 'trial' ) ) ) {
-		$actions['bulk_send_confirmation_email_upsell'] = __( 'Send confirmation email [PRO]', 'email-subscribers' );
+		$actions['bulk_send_confirmation_email_upsell'] = __( 'Send confirmation email [MAX]', 'email-subscribers' );
 	}
 
 	return $actions;

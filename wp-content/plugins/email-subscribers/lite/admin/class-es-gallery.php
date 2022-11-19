@@ -506,8 +506,11 @@ if ( ! class_exists( 'ES_Gallery' ) ) {
 					if ( ! empty( $json_response ) && ES_Common::is_valid_json( $json_response ) ) {
 						$gallery_items = json_decode( $json_response );
 						if ( is_array( $gallery_items ) ) {
-							update_option( 'ig_es_remote_gallery_items', $gallery_items, 'no' );
-							set_transient( 'ig_es_remote_gallery_items_updated', time(), 24 * HOUR_IN_SECONDS ); // 1 day
+							$updated = update_option( 'ig_es_remote_gallery_items', $gallery_items, 'no' );
+							if ( $updated ) {
+								set_transient( 'ig_es_remote_gallery_items_updated', time(), 24 * HOUR_IN_SECONDS ); // 1 day
+							}
+							return $gallery_items;
 						}
 					}
 				} 

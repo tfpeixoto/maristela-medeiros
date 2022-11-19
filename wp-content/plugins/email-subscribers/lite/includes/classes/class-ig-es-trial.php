@@ -247,8 +247,8 @@ class IG_ES_Trial {
 
 		$show_offer_notice = false;
 
-		// Add upgrade to premium nudging notice if user has opted for trial and is not a premium user and premium plugin is not installed on site and is not dashboard page.
-		if ( $is_trial && ! $is_premium && ! $is_premium_installed && 'es_dashboard' !== $current_page ) {
+		// Add upgrade to premium nudging notice if currently isn't any offer going on, user has opted for trial and is not a premium user and premium plugin is not installed on site and is not dashboard page.
+		if ( ! ES()->is_offer_period() && $is_trial && ! $is_premium && ! $is_premium_installed && 'es_dashboard' !== $current_page ) {
 
 			// Start nudging the user on following days before trial expiration.
 			$nudging_days    = array( 1, 3, 5 );

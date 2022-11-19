@@ -12,7 +12,7 @@ if ( 'undefined' !== typeof wp.i18n ) {
 
 var canUpsellESTemplate = ( templatePlan ) => {
     let canUpsellTemplate = false;
-    if ( 'lite' === ig_es_main_js_data.es_plan ) {
+    if ( 'lite' === ig_es_main_js_data.es_plan || 'trial' === ig_es_main_js_data.es_plan ) {
         canUpsellTemplate = templatePlan === 'starter' || templatePlan === 'pro';
     } else if ( 'starter' === ig_es_main_js_data.es_plan ) {
         canUpsellTemplate = templatePlan === 'pro';

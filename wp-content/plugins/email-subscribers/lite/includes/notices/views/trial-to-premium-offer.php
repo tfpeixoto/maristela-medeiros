@@ -41,17 +41,17 @@ $remaining_trial_days = ES()->trial->get_remaining_trial_days();
 $day_or_days          = _n( 'day', 'days', $remaining_trial_days, 'email-subscribers' );
 
 $discount_messages = array(
-	'halloween' => array(
-		'message' => __( 'Get flat <strong>30%</strong> discount on annual plan if you upgrade now!<br/><strong>No coupon code</strong> required. Discount will be applied automatically.', 'email-subscribers' ),
+	'bfcm' => array(
+		'message' => __( 'Get flat <strong>50%</strong> discount on annual plan if you upgrade now!<br/><strong>No coupon code</strong> required. Discount will be applied automatically.', 'email-subscribers' ),
 	),
 );
 
 $offer_type_to_show = 'trial';
 
 $offers_date_ranges = array(
-	'halloween' => array(
-		'start_date' => '2021-10-27',
-		'end_date'   => '2021-11-02',
+	'bfcm' => array(
+		'start_date' => '2022-11-23 7:00:00',
+		'end_date'   => '2022-11-30 7:00:00',
 	),
 );
 
@@ -85,7 +85,7 @@ if ( ! empty( $discount_messages[ $offer_type_to_show ] ) ) {
 }
 
 /* translators: 1. Trial expiration message. 2. Discount message. */
-$offer_message = sprintf( __( 'Hi there,<br/>Hope you are enjoying <strong>Email Subscribers PRO trial</strong>.<br/>%1$s<br/>Upgrade now to continue uninterrupted use of premium features like <strong>block fake signups, prevent bot attacks, broadcast scheduling, automatic email sending, detailed campaign report, prevent emails from going to spam</strong> & lot more....<br/>%2$s', 'email-subscribers' ), $trial_expiration_message, $discount_message );
+$offer_message = sprintf( __( 'Hi there,<br/>Hope you are enjoying <strong>Icegram Express (formerly known as Email Subscribers & Newsletters) MAX trial</strong>.<br/>%1$s<br/>Upgrade now to continue uninterrupted use of premium features like <strong>block fake signups, prevent bot attacks, broadcast scheduling, automatic email sending, detailed campaign report, prevent emails from going to spam</strong> & lot more....<br/>%2$s', 'email-subscribers' ), $trial_expiration_message, $discount_message );
 
 ?>
 <div id="ig-es-trial-to-premium-notice" class="notice notice-success">

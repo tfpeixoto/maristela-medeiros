@@ -9,19 +9,18 @@
 </style>
 <?php
 $plan    = ES()->get_plan();
-$img_url = esc_url( ES_PLUGIN_URL ) . 'lite/admin/images/bfcm2021.png';
-if ( 'lite' === $plan || 'trial' === $plan ) {
-	$img_url = esc_url( ES_PLUGIN_URL ) . 'lite/admin/images/bfcm2021_lite.png';
-} elseif ('starter' === $plan ) {
-	$img_url = esc_url( ES_PLUGIN_URL ) . 'lite/admin/images/bfcm2021_starter.png';
+$offer_name = 'offer_bfcm_2022';
+$img_url = esc_url( ES_PLUGIN_URL ) . 'lite/admin/images/bfcm-pro-banner-2022.png';
+if ( ES()->is_pro() ) {
+	$img_url = esc_url( ES_PLUGIN_URL ) . 'lite/admin/images/bfcm-common-banner-2022.png';
 }
 
-if ( ( get_option( 'ig_es_offer_bfcm_2021' ) !== 'yes' ) && ES()->is_offer_period( 'bfcm' ) ) { 
+if ( ( get_option( 'ig_es_offer_bfcm_2022' ) !== 'yes' ) && ES()->is_offer_period( 'bfcm' ) ) { 
 	$notice_dismiss_url = wp_nonce_url(
 		add_query_arg(
 			array(
 				'es_dismiss_admin_notice' => 1,
-				'option_name'             => 'offer_bfcm_2021',
+				'option_name'             => $offer_name,
 			) 
 		),
 		'es_dismiss_admin_notice'

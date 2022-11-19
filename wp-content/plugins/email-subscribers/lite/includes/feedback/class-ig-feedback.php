@@ -4,20 +4,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-if ( ! class_exists( 'IG_Feedback_V_1_2_7' ) ) {
+if ( ! class_exists( 'IG_Feedback_V_1_2_8' ) ) {
 	/**
 	 * IG Feedback
 	 *
 	 * The IG Feedback class adds functionality to get quick interactive feedback from users.
 	 * There are different types of feedabck widget like Stars, Emoji, Thubms Up/ Down, Number etc.
 	 *
-	 * @class       IG_Feedback_V_1_2_7
+	 * @class       IG_Feedback_V_1_2_8
 	 * @since       1.0.0
 	 * @copyright   Copyright (c) 2019, Icegram
 	 * @license     https://opensource.org/licenses/gpl-license GNU Public License
 	 * @package     feedback
 	 */
-	class IG_Feedback_V_1_2_7 {
+	class IG_Feedback_V_1_2_8 {
 
 		/**
 		 * Version of Feedback Library
@@ -25,7 +25,7 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_7' ) ) {
 		 * @since 1.0.13
 		 * @var string
 		 */
-		public $version = '1.2.7';
+		public $version = '1.2.8';
 		/**
 		 * The API URL where we will send feedback data.
 		 *
@@ -267,7 +267,7 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_7' ) ) {
 
 								.ig-feedback-notice-links li a {
 									display: inline-block;
-									color: #10738b;
+									color: #5850EC;
 									text-decoration: none;
 									padding-left: 26px;
 									position: relative;
@@ -911,9 +911,9 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_7' ) ) {
 			} else {
 				$slug = sanitize_title( $title );
 			}
-			$event      = $this->event_prefix . $params['event'];
-			$desc       = ! empty( $params['desc'] ) ? $params['desc'] : '';
-			$display_as = ! empty( $params['display_as'] ) ? $params['display_as'] : 'inline';
+			$event       = $this->event_prefix . $params['event'];
+			$desc        = ! empty( $params['desc'] ) ? $params['desc'] : '';
+			$display_as  = ! empty( $params['display_as'] ) ? $params['display_as'] : 'inline';
 			$system_info = isset( $params['system_info'] ) ? $params['system_info'] : true;
 
 			ob_start();
@@ -1021,7 +1021,7 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_7' ) ) {
 			$event = $this->event_prefix . $params['event'];
 			
 			if ( 'inline' === $display_as ) {
-				$this->render_inline_feedback_widget( $html );
+				$this->render_inline_feedback_widget( $html, $params );
 			} elseif ( 'popup' === $display_as ) {
 				$this->render_popup_feedback_widget( $html, $params );
 			}
@@ -1062,11 +1062,11 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_7' ) ) {
 		 *
 		 * @since 1.2.7
 		 * 
-		 * @param array $params
 		 * @param string $html
+		 * @param array $params
 		 * @return void
 		 */
-		public function render_inline_feedback_widget( $html ) {
+		public function render_inline_feedback_widget( $html, $params ) {
 			$escape_allowed_tags = $this->get_escape_allowed_tags();
 			?>
 			<style type="text/css">
@@ -1076,7 +1076,7 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_7' ) ) {
 				}
 				.ig-feedback-inline{
 					border:none;
-					width:80%;
+					width:90%;
 					margin: 1em auto !important;
 					/* background:#fbe2597d; */
 				}
@@ -1091,8 +1091,8 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_7' ) ) {
 					float:right;
 				}
 				.ig-feedback-inline label{
-					font-size: 1.2em;
-					padding-bottom: 0.1em;
+					font-size: 1.1em;
+					padding-bottom: 0.5em;
 				}
 				.ig-feedback-inline .button{
 				padding: 0.7em;
@@ -1101,9 +1101,15 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_7' ) ) {
 				}
 				</style>
 			<div class="notice ig-feedback-notice ig-feedback-inline">
-				<div class="ig-feedback-logo">
-					<img src="<?php echo esc_url( plugin_dir_url( __FILE__ ) ); ?>../../admin/assets/images/icon-64.png">
-				</div>
+				<?php
+				if ( $params['logo_img_url'] ) {
+					?>
+				 <div class="ig-feedback-logo">
+					 <img src="<?php echo esc_url( $params['logo_img_url'] ); ?>">
+				 </div>
+					<?php
+				}
+				?>
 				<?php echo wp_kses( $html, $escape_allowed_tags ); ?>
 			</div>
 			<script type="text/javascript">

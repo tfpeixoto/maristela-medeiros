@@ -10,9 +10,9 @@ class ES_Old_Widget extends WP_Widget {
 	public function __construct() {
 		$widget_ops = array(
 			'classname'   => 'widget_text elp-widget',
-			'description' => __( 'Email Subscribers', 'email-subscribers' ),
+			'description' => __( 'Icegram Express', 'email-subscribers' ),
 		);
-		parent::__construct( 'email-subscribers', __( 'Email Subscribers', 'email-subscribers' ), $widget_ops );
+		parent::__construct( 'email-subscribers', __( 'Icegram Express ', 'email-subscribers' ), $widget_ops );
 	}
 
 	public function widget( $args, $instance ) {

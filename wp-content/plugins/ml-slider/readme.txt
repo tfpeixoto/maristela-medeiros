@@ -2,9 +2,9 @@
 Contributors: matchalabs, DavidAnderson, dnutbourne, kbat82, andergmartins, htmgarcia
 Tags: slideshow, slider, image slider, carousel, gallery, flexslider, wordpress slider, nivoslider, rotating banner, responsive slideshow, seo slideshow, unsplash
 Requires at least: 3.5
-Stable tag: 3.27.13
+Stable tag: 3.27.14
 Requires PHP: 5.4
-Tested up to: 6.0
+Tested up to: 6.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -323,6 +323,10 @@ See https://www.metaslider.com/documentation/image-cropping/
 
 The format is based on [Keep a Changelog recommendations](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
+
+= [3.27.14] - 17 Nov, 2022 =
+
+* FIXED: Fix banner that will not dismiss, #285;
 
 = [3.27.13] - 22 Sep, 2022 =
 

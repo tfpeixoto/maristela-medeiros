@@ -401,7 +401,7 @@ if ( ! class_exists( 'ES_Install' ) ) {
 
 			if ( self::is_new_install() ) {
 
-				self::$logger->info( 'It seems new Email Subscribers. Start Installation process.', self::$logger_context );
+				self::$logger->info( 'It seems new Icegram Express (formerly known as Email Subscribers & Newsletters). Start Installation process.', self::$logger_context );
 
 				// If we made it till here nothing is running yet, lets set the transient now.
 				set_transient( 'ig_es_installing', 'yes', MINUTE_IN_SECONDS * 10 );
@@ -796,11 +796,11 @@ if ( ! class_exists( 'ES_Install' ) ) {
 			$report .= "Unique ID: {{UNIQUE}}\n";
 			$report .= "Start Time: {{STARTTIME}}\n";
 			$report .= "End Time: {{ENDTIME}}\n";
-			$report .= "For more information, login to your dashboard and go to Reports menu in Email Subscribers.\n\n";
+			$report .= "For more information, login to your dashboard and go to Reports menu in Icegram Express.\n\n";
 			$report .= 'Thank You.';
 
 			$new_contact_email_subject = 'One more contact joins our tribe!';
-			$new_contact_email_content = "Hi,\r\n\r\nYour friendly Email Subscribers notification bot here!\r\n\r\n{{NAME}} ({{EMAIL}}) joined our tribe just now.\r\n\r\nWhich list/s? {{LIST}}\r\n\r\nIf you know this person, or if they are an influencer, you may want to reach out to them personally!\r\n\r\nLater...";
+			$new_contact_email_content = "Hi,\r\n\r\nYour friendly Icegram Express (formerly known as Email Subscribers & Newsletters) notification bot here!\r\n\r\n{{NAME}} ({{EMAIL}}) joined our tribe just now.\r\n\r\nWhich list/s? {{LIST}}\r\n\r\nIf you know this person, or if they are an influencer, you may want to reach out to them personally!\r\n\r\nLater...";
 
 			$confirmation_email_subject = 'Thanks!';
 			$confirmation_email_content = "Hi {{NAME}},\r\n\r\nJust one more step before we share the awesomeness from {{SITENAME}}!\r\n\r\nPlease confirm your subscription by clicking on <a href='{{SUBSCRIBE-LINK}}'>this link</a>\r\n\r\nThanks!";

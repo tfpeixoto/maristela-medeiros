@@ -160,6 +160,14 @@ class ES_Admin_Settings {
 						'name' => __( 'Security', 'email-subscribers' ),
 					),
 				);
+				if ( ES_Common::is_rest_api_supported() ) {
+					$es_settings_tabs['rest_api_settings'] = array(
+						'icon' => '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 inline -mt-1.5" style="stroke-width:2">
+						<path stroke-linecap="round" stroke-linejoin="round" d="M13.5 16.875h3.375m0 0h3.375m-3.375 0V13.5m0 3.375v3.375M6 10.5h2.25a2.25 2.25 0 002.25-2.25V6a2.25 2.25 0 00-2.25-2.25H6A2.25 2.25 0 003.75 6v2.25A2.25 2.25 0 006 10.5zm0 9.75h2.25A2.25 2.25 0 0010.5 18v-2.25a2.25 2.25 0 00-2.25-2.25H6a2.25 2.25 0 00-2.25 2.25V18A2.25 2.25 0 006 20.25zm9.75-9.75H18a2.25 2.25 0 002.25-2.25V6A2.25 2.25 0 0018 3.75h-2.25A2.25 2.25 0 0013.5 6v2.25a2.25 2.25 0 002.25 2.25z" />
+					  </svg>',
+						'name' => __( 'REST API', 'email-subscribers' ),
+					);
+				}
 				$es_settings_tabs = apply_filters( 'ig_es_settings_tabs', $es_settings_tabs );
 				?>
 				<div id="es-settings-menu" class="w-1/5 pt-4 leading-normal text-gray-800 border-r border-gray-100">
@@ -451,7 +459,7 @@ class ES_Admin_Settings {
 				'default'      => 'no',
 				'id'           => 'ig_es_disable_wp_cron',
 				'name'         => __( 'Disable Wordpress Cron', 'email-subscribers' ),
-				'info'         => __( 'Enable this option if you do not want Email Subscribers to use WP Cron to send emails.', 'email-subscribers' ),
+				'info'         => __( 'Enable this option if you do not want Icegram Express (formerly known as Email Subscribers & Newsletters) to use WP Cron to send emails.', 'email-subscribers' ),
 			),
 
 			'ig_es_cron_interval'           => array(
@@ -545,13 +553,6 @@ class ES_Admin_Settings {
 				'default' => '',
 				'rows'    => 3,
 			),
-			'allow_api' => array(
-				'id'	=> 'ig_es_allow_api',
-				'name'  => __( 'Allow subscriptions through API', 'email-subscribers' ),
-				'info'    => __( 'Enable subscriptions API to add subscribers through third-party sites or apps.', 'email-subscribers' ),
-				'type'    => 'checkbox',
-				'default' => 'yes'
-			),
 		);
 
 		$security_settings = apply_filters( 'ig_es_registered_security_settings', $security_settings );
@@ -562,6 +563,30 @@ class ES_Admin_Settings {
 			'email_sending'       => $email_sending_settings,
 			'security_settings'   => $security_settings,
 		);
+
+		if ( ES_Common::is_rest_api_supported() ) {
+
+			$rest_api_endpoint = get_rest_url( null, 'email-subscribers/v1/subscribers' );
+			$rest_api_settings = array(
+				'allow_api' => array(
+					'id'	=> 'ig_es_allow_api',
+					'name'  => __( 'Enable REST API', 'email-subscribers' ),
+					'info'    => __( 'Enable REST API to add/edit/delete subscribers through third-party sites or apps.', 'email-subscribers' ),
+					'type'    => 'checkbox',
+					'default' => 'yes',
+					/* translators: REST API endpoint */
+					'desc' => sprintf( __( 'REST endpoint: %s', 'email-subscribers'), '<code class="es-code">' . $rest_api_endpoint . '</code>' )
+				),
+				'api_key_access_section' => array(
+					'id'   => 'ig_es_api_keys_section',
+					'name' => __( 'REST API Keys', 'email-subscribers' ),
+					'type' => 'html',
+					'html' => self::render_rest_api_keys_section(),
+				),
+			);
+	
+			$es_settings['rest_api_settings'] = $rest_api_settings;
+		}
 
 		return apply_filters( 'ig_es_registered_settings', $es_settings );
 	}
@@ -1042,7 +1067,7 @@ class ES_Admin_Settings {
 					'name'    => __( 'Plugin usage tracking', 'email-subscribers' ),
 					'type'    => 'checkbox',
 					'default' => 'no',
-					'info'    => __( 'Help us to improve Email Subscribers by opting in to share non-sensitive plugin usage data.', 'email-subscribers' ),
+					'info'    => __( 'Help us to improve Icegram Express (formerly known as Email Subscribers & Newsletters) by opting in to share non-sensitive plugin usage data.', 'email-subscribers' ),
 				),
 			);
 
@@ -1057,11 +1082,9 @@ class ES_Admin_Settings {
 	}
 
 	/**
-	 * Render User Permission Settings
+	 * Get HTML for workflow migration
 	 *
-	 * @return false|string
-	 *
-	 * @since 4.2.0
+	 * @return string
 	 */
 	public static function get_workflow_migration_notice_html() {
 		ob_start();
@@ -1079,6 +1102,104 @@ class ES_Admin_Settings {
 				echo sprintf( esc_html__( 'Click %1$shere%2$s to go to workflows.', 'email-subscribers' ), '<a href="' . esc_url( $workflow_url ) . '" class="text-indigo-600" target="_blank">', '</a>' );
 			?>
 		</p>
+		<?php
+		$html = ob_get_clean();
+		return $html;
+	}
+
+	public static function render_rest_api_keys_section() {
+		ob_start();
+		$rest_api_keys = get_option( 'ig_es_rest_api_keys', array() );
+
+		$rest_api_users_ids = get_users( array(
+			'meta_key' => 'ig_es_rest_api_keys',
+			'fields'   => 'ID'
+		) );
+		?>
+		<div id="ig-es-rest-api-section">
+			<table class="min-w-full rounded-lg">
+				<thead>
+				<tr class="bg-blue-50 text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+					<th class="px-5 py-4"><?php echo esc_html__( 'Key', 'email-subscribers' ); ?></th>
+					<th class="px-2 py-4 text-center"><?php echo esc_html__( 'Username', 'email-subscribers' ); ?></th>
+					<th class="px-2 py-4 text-center"><?php echo esc_html__( 'Actions', 'email-subscribers' ); ?></th>
+				</tr>
+				</thead>
+				<tbody class="bg-blue-50">
+					<?php
+					if ( ! empty( $rest_api_users_ids ) ) {
+						foreach ( $rest_api_users_ids as $user_id ) {
+							$user = get_userdata( $user_id );
+							if ( ! $user ) {
+								continue;
+							}
+							$rest_api_keys = get_user_meta( $user_id, 'ig_es_rest_api_keys', true );
+							if ( ! empty( $rest_api_keys ) ) {
+								foreach ( $rest_api_keys as $index => $rest_api_key ) {
+									$key_start = substr( $rest_api_key, 0, 4 );
+									$key_end   = substr( $rest_api_key, strlen( $rest_api_key ) - 4, 4 );
+									?>
+								<tr class="ig-es-rest-api-row border-b border-gray-200 text-xs leading-4 font-medium" data-user-id="<?php echo esc_attr( $user_id ); ?>" data-api-index="<?php echo esc_attr( $index ); ?>">
+									<td class="px-5 py-4 text-center"><?php echo esc_html( $key_start ); ?>***********<?php echo esc_html( $key_end ); ?></td>
+									<td class="px-2 py-4 text-center"><?php echo esc_html( $user->data->user_login ); ?></td>
+									<td class="px-2 py-4 text-center">
+											<a class="ig-es-delete-rest-api-key inline-block" href="#">
+												<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+													<path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+												</svg>
+											</a>
+									</td>
+								</tr>
+								<?php
+								}
+							}
+							?>
+							<?php
+						}
+					}
+					?>
+					<tr id="ig-es-no-api-keys-message" class="border-b border-gray-200 text-xs leading-4 font-medium">
+						<td colspan="3" class="px-5 py-4 text-center">
+							<?php echo esc_html__( 'No API keys found.', 'email-subscribers' ); ?>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<div id="ig-es-create-new-rest-api-container" class="mt-2">
+				<?php
+					$admin_users = get_users(
+						array(
+							'role' => 'administrator'
+						)
+					);
+				?>
+				<select id="ig-es-rest-api-user-id">
+					<option value=""><?php echo esc_html__( 'Please select a user', 'email-subscribers' ); ?></option>
+					<?php
+					foreach ( $admin_users as $user ) {
+						?>
+						<option value="<?php echo esc_attr( $user->ID ); ?>"><?php echo esc_html( $user->data->user_email ); ?></option>
+						<?php
+					}
+					?>
+				</select>
+				<button type="button" id="ig-es-generate-rest-api-key" class="ig-es-title-button ml-2 align-middle ig-es-inline-loader">
+					<span>
+						<?php echo esc_html__( 'Generate new key', 'email-subscribers' ); ?>
+					</span>
+					<svg class="es-btn-loader animate-spin h-4 w-4 text-indigo"
+									xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+						<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+								stroke-width="4"></circle>
+						<path class="opacity-75" fill="currentColor"
+								d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+					</svg>
+				</button>
+				<div id="response-messages" class="p-2 mt-2 hidden">
+					<div class="message"></div>
+				</div>
+			</div>
+		</div>
 		<?php
 		$html = ob_get_clean();
 		return $html;

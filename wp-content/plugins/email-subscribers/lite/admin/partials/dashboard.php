@@ -114,7 +114,7 @@ if ( $show_trial_optin ) {
 
 	$trial_block = array(
 		'trial-optin' => array(
-			'title'        => __( 'Try Email Subscribers Premium', 'email-subscribers' ),
+			'title'        => __( 'Try Icegram Express (formerly known as Email Subscribers & Newsletters) Premium', 'email-subscribers' ),
 			/* translators: %d: Trial period in days */
 			'desc'         => sprintf( __( 'Start your %d days free trial to get automatic email sending, advance spam protection and more.', 'email-subscribers' ), $trial_period_in_days),
 			'cta_text'     => __( 'Start trial', 'email-subscribers' ),
@@ -131,8 +131,8 @@ if ( $show_trial_optin ) {
 			/* translators: %d: Trial period in days */
 			'title'        => sprintf( __( 'Your free %d days trial is on', 'email-subscribers' ), $trial_period_in_days ),
 			/* translators: %s: Number of days remaining in trial */
-			'desc'         => sprintf( __( 'Hope you are enjoying the premium features of Email Subscribers. It will expire on %s. You can anytime upgrade it to Pro.', 'email-subscribers' ), $formatted_trial_expiry_date ),
-			'cta_text'     => __( 'Upgrade to Pro', 'email-subscribers' ),
+			'desc'         => sprintf( __( 'Hope you are enjoying the premium features of Icegram Express (formerly known as Email Subscribers & Newsletters). It will expire on %s. You can anytime upgrade it to MAX.', 'email-subscribers' ), $formatted_trial_expiry_date ),
+			'cta_text'     => __( 'Upgrade to Max', 'email-subscribers' ),
 			'feature_url'  => 'https://www.icegram.com/email-subscribers-pricing/?utm_source=in_app&utm_medium=upsell&utm_campaign=es_upsell',
 		),
 	);
@@ -144,7 +144,7 @@ if ( $show_trial_optin ) {
 			/* translators: %d: Trial period in days */
 			'title'        => sprintf( __( 'Your %d days trial is expired', 'email-subscribers' ), $trial_period_in_days ),
 			'desc'         => __( 'Upgrade now to continue uninterrupted use of premium features like automatic email sending and more.', 'email-subscribers' ),
-			'cta_text'     => __( 'Upgrade to Pro', 'email-subscribers' ),
+			'cta_text'     => __( 'Upgrade to Max', 'email-subscribers' ),
 			'feature_url'  => 'https://www.icegram.com/email-subscribers-pricing/?utm_source=in_app&utm_medium=upsell&utm_campaign=es_upsell',
 		),
 	);
@@ -525,10 +525,10 @@ $allowed_html_tags = ig_es_allowed_html_tags_in_esc();
 								<div class="flex items-center px-2 py-2">
 									<div class="w-3/5 min-w-0 flex-1">
 										<div class="flex flex-1 items-center text-sm ">
-											<?php echo esc_html( $message_title ); ?>
+											<span class="truncate">
+												<?php echo esc_html( $message_title ); ?>
+											</span>
 										</div>
-										<div class="text-base mt-2 pr-4">
-																				</div>
 									</div>
 									<div class="grid grid-cols-3">
 										<div class="p-3">

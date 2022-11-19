@@ -559,6 +559,7 @@ abstract class ES_DB {
 			return false;
 		}
 
+		$query = "DELETE FROM $this->table_name WHERE $where";
 		if ( false === $wpbd->query( "DELETE FROM $this->table_name WHERE $where" ) ) {
 			return false;
 		}

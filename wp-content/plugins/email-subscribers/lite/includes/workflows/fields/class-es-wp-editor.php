@@ -1,6 +1,6 @@
 <?php
 /**
- * Email Subscribers' WP Editor field
+ * Icegram Express' WP Editor field
  *
  * @since       4.5.3
  * @version     1.0

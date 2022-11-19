@@ -236,6 +236,8 @@ class Email_Subscribers_Admin {
 
 		if ( 'es_settings' === $get_page ) {
 			$ig_es_js_data['popular_domains'] = ES_Common::get_popular_domains();
+			$ig_es_js_data['i18n_data']['delete_rest_api_confirmation'] = __( 'Are you sure you want to delete this key? This action cannot be undone.', 'email-subscribers' );
+			$ig_es_js_data['i18n_data']['select_user'] = __( 'Please select a user.', 'email-subscribers' );
 		}
 
 		wp_localize_script( $this->email_subscribers, 'ig_es_js_data', $ig_es_js_data );
@@ -700,12 +702,21 @@ class Email_Subscribers_Admin {
 
 	public function count_contacts_by_list() {
 
+		check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
+
 		$list_id    = ig_es_get_request_data( 'list_id', 0 );
 		$status     = ig_es_get_request_data( 'status', 'all' );
 		$conditions = ig_es_get_request_data( 'conditions', array() );
 		$get_count  = ig_es_get_request_data( 'get_count', 'no' );
 
+		$list_id = absint( $list_id );
 		if ( 0 == $list_id && empty( $conditions ) ) {
+			return 0;
+		}
+
+		$expected_statuses = array( 'subscribed', 'unsubscribed', 'unconfirmed', 'confirmed', 'all' );
+
+		if ( ! in_array( $status, $expected_statuses, true ) ) {
 			return 0;
 		}
 
@@ -758,7 +769,7 @@ class Email_Subscribers_Admin {
 	}
 
 	/**
-	 * Get Email Subscribers' screen options
+	 * Get Icegram Express' screen options
 	 *
 	 * @return array
 	 *
@@ -850,6 +861,7 @@ class Email_Subscribers_Admin {
 				'show_new_keyword_notice',
 				'show_membership_integration_notice',
 				'show_email_sending_failed_notice',
+				'ig_es_show_feature_survey',
 			);
 		}
 
@@ -958,8 +970,8 @@ class Email_Subscribers_Admin {
 			$wordpress_url = 'https://www.wordpress.org';
 			$icegram_url   = 'https://www.icegram.com';
 
-			/* translators: 1. WordPress URL 2. Email Subscribers version 3. Icegram site URL */
-			$footer_text = sprintf( __( '<span id="footer-thankyou">Thank you for creating with <a href="%1$s" target="_blank">WordPress</a> | Email Subscribers <b>%2$s</b>. Developed by team <a href="%3$s" target="_blank">Icegram</a></span>', 'email-subscribers' ), esc_url( $wordpress_url ), ES_PLUGIN_VERSION, esc_url( $icegram_url ) );
+			/* translators: 1. WordPress URL 2. Icegram Express version 3. Icegram site URL */
+			$footer_text = sprintf( __( '<span id="footer-thankyou">Thank you for creating with <a href="%1$s" target="_blank">WordPress</a> | Icegram Express (formerly known as Email Subscribers & Newsletters) <b>%2$s</b>. Developed by team <a href="%3$s" target="_blank">Icegram</a></span>', 'email-subscribers' ), esc_url( $wordpress_url ), ES_PLUGIN_VERSION, esc_url( $icegram_url ) );
 		}
 
 		return $footer_text;
@@ -1459,7 +1471,7 @@ class Email_Subscribers_Admin {
 		$screen    = get_current_screen();
 		$screen_id = $screen ? $screen->id : '';
 
-		wp_add_dashboard_widget( 'es_dashboard_stats_widget', __( 'Email Subscribers', 'email-subscribers' ), array( $this, 'dashboard_stats_widget' ) );
+		wp_add_dashboard_widget( 'es_dashboard_stats_widget', __( 'Icegram Express', 'email-subscribers' ), array( $this, 'dashboard_stats_widget' ) );
 
 		if ( in_array( $screen_id, array( 'dashboard' ) ) ) {
 			wp_enqueue_style( 'ig_es_dashboard_style', plugin_dir_url( __FILE__ ) . 'css/es-wp-dashboard.css', array(), $this->version, 'all' );
