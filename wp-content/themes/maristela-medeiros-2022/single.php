@@ -1,43 +1,45 @@
-<?php get_header(); ?>
+<?php
+$estiloPagina = 'style.css';
+require_once('header.php');
+?>
 
-	<!--BANNER-->
-	<div class="jumbotron">
-		<div class="container">
-		<div class="row d-flex justify-content-center">
-			<div class="col-7">
-				<h2 class="h1 color-white font-weight-bold text-center">Blog</h2>
-			</div>
-		</div>
-	</div>
-
-	<?php // endwhile; endif; ?>
-</header>
-
-<!--MODAL-->
-<?php require_once("modal.php"); ?>
+<div class="jumbotron banner-interno">
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+        <h1>Blog</h1>
+      </div>
+    </div>
+  </div>
+</div>
 
 <main>
-	<div class="py-5">
-		<div class="container">
-			<div class="row d-flex justify-content-center align-items-center">
-				<div class="col-12 col-md-8">
-					<?php if ( have_posts() ) : while ( have_posts() ) : the_post(); ?>
+  <div class="post">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-12 col-md-8 post__texto">
+          <?php if (have_posts()) : while (have_posts()) : the_post(); ?>
 
-						<div class="imagem-post">
-							<?php the_post_thumbnail( 'img-post-wide' ); ?>
-						</div>
-						
-						<h1 class="my-3"><?php the_title(); ?></h1>
+              <?php the_post_thumbnail('img-post-wide'); ?>
+              <h1><?php the_title(); ?></h1>
+              <div class="post__info">
+                <ul>
+                  <li><?php the_date('d.m.Y'); ?></li>
+                  <li> - </li>
+                  <li>Por <?php the_author(); ?></li>
+                </ul>
+              </div>
+              <?php the_content(); ?>
 
-						<div class="content">
-							<?php the_content(); ?>
-						</div>
-					</div>
+          <?php endwhile;
+          endif; ?>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
 
-					<?php endwhile; endif; ?>
-				</div>
-			</div>
-		</div>
-	</div>
-
-<?php get_footer(); ?>
+<?php
+require_once("modal.php");
+get_footer();
+?>
