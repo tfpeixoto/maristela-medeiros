@@ -25,6 +25,6 @@ require_once('header.php');
 </main>
 
 <?php
-require_once("modal.php");
-get_footer();
+require_once("template-parts/modal.php");
+require_once('footer.php');
 ?>

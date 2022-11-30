@@ -1,0 +1,12 @@
+.post {
+  &__row {
+    display: flex;
+    justify-content: center;
+  }
+
+  &__image {
+    img {
+      border-radius: 20px;
+    }
+  }
+}

@@ -1,42 +1,44 @@
-<?php get_header(); ?>
+<?php
+/*
+Template Name: Serviços
+*/
+$estiloPagina = 'style.css';
+require_once('header.php');
 
-	<!--BANNER-->
-	<div class="jumbotron">
-		<?php if ( have_posts() ) : while ( have_posts() ) : the_post(); ?>
+if (have_posts()) : while (have_posts()) : the_post(); ?>
 
-		<div class="container">
-			<div class="row d-flex justify-content-center">
-				<div class="col-12 col-md-7">
-					<h2 class="h1 color-white font-weight-bold text-center"><?php the_title(); ?></h2>
-				</div>
-			</div>
-		</div>
-	</div>
+    <div class="jumbotron banner-interno">
+      <div class="container">
+        <div class="row">
+          <div class="col-12">
+            <h1><?php the_title(); ?></h1>
+          </div>
+        </div>
+      </div>
+    </div>
 
-	<?php // endwhile; endif; ?>
-</header>
+    <main>
+      <div class="servicos-conteudo">
+        <div class="container">
+          <div class="row justify-content-center">
+            <div class="col-12 col-md-5 servicos-conteudo__image">
+              <?php the_post_thumbnail('img-post-wide', array('class' => 'img-fluid')); ?>
+            </div>
 
-<!--MODAL-->
-<?php require_once("modal.php"); ?>
+            <div class="col-12 col-md-7 servicos-conteudo__content">
+              <?php the_content(); ?>
 
-<main>
-	<div class="py-5">
-		<div class="container">
-			<div class="row d-flex justify-content-center align-items-center">
-				<div class="col-11 col-md-5 imagem-post mb-3">
-					<?php the_post_thumbnail( 'img-post-wide' ); ?>
-				</div>
+              <a href="javascript:history.back()" title="Voltar" class="servicos-conteudo__btn">- Voltar para lista de serviços</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
 
-				<div class="col-11 col-md-7">
-						<div class="content">
-							<?php the_content(); ?>
-						</div>
-					</div>
+<?php
+  endwhile;
+endif;
 
-					<?php endwhile; endif; ?>
-				</div>
-			</div>
-		</div>
-	</div>
-
-<?php get_footer(); ?>
+require_once("template-parts/modal.php");
+require_once('footer.php');
+?>

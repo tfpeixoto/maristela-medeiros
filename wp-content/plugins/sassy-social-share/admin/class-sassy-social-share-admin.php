@@ -776,6 +776,17 @@ class Sassy_Social_Share_Admin {
 
 		$current_version = get_option( 'heateor_sss_version' );
 		if ( $current_version != $this->version ) {
+			if ( version_compare( '3.3.44', $current_version ) > 0 ) {
+				$networks_to_remove = array( 'Google_Bookmarks' );
+				if ( isset( $this->options['vertical_re_providers'] ) && $this->options['vertical_re_providers'] ) {
+					$this->options['vertical_re_providers'] = array_diff( $this->options['vertical_re_providers'], $networks_to_remove );
+				}
+				if ( isset( $this->options['horizontal_re_providers'] ) && $this->options['horizontal_re_providers'] ) {
+					$this->options['horizontal_re_providers'] = array_diff( $this->options['horizontal_re_providers'], $networks_to_remove );
+				}
+				update_option( 'heateor_sss', $this->options );
+			}
+
 			if ( version_compare( '3.3.43', $current_version ) > 0 ) {
 				$this->options['rutube_username'] = '';
 				$this->options['vertical_rutube_username'] = '';

@@ -247,6 +247,6 @@ require_once('header.php');
 </div>
 
 <?php
-require_once("modal.php");
+require_once("template-parts/modal.php");
 require_once('footer.php');
 ?>

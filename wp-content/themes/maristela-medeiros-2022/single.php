@@ -16,12 +16,16 @@ require_once('header.php');
 <main>
   <div class="post">
     <div class="container">
-      <div class="row justify-content-center">
-        <div class="col-12 col-md-8 post__texto">
+      <div class="row post__row">
+        <article class="col-12 col-md-8 post__texto">
           <?php if (have_posts()) : while (have_posts()) : the_post(); ?>
 
-              <?php the_post_thumbnail('img-post-wide'); ?>
+              <div class="post__image">
+                <?php the_post_thumbnail('img-post-wide'); ?>
+              </div>
+
               <h1><?php the_title(); ?></h1>
+
               <div class="post__info">
                 <ul>
                   <li><?php the_date('d.m.Y'); ?></li>
@@ -29,17 +33,18 @@ require_once('header.php');
                   <li>Por <?php the_author(); ?></li>
                 </ul>
               </div>
+
               <?php the_content(); ?>
 
           <?php endwhile;
           endif; ?>
-        </div>
+        </article>
       </div>
     </div>
   </div>
 </main>
 
 <?php
-require_once("modal.php");
-get_footer();
+require_once("template-parts/modal.php");
+require_once('footer.php');
 ?>
