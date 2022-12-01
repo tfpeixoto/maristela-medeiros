@@ -87,7 +87,7 @@ require_once('header.php');
 
     <div class="row servicos__lista">
       <div class="servicos__box">
-        <img src="<?= get_template_directory_uri(); ?>/images/icone-auditorias.png" width="120" height="120" lazy="loading" alt="auditorias">
+        <img src="<?= get_template_directory_uri(); ?>/images/icone-auditorias.png" width="120" height="120" loading="lazy" alt="auditorias">
 
         <div class="servicos-conteudo">
           <h3>Auditorias</h3>
@@ -97,7 +97,7 @@ require_once('header.php');
       </div>
 
       <div class="servicos__box">
-        <img src="<?= get_template_directory_uri(); ?>/images/icone-consultorias.png" width="120" height="120" lazy="loading" alt="consultorias">
+        <img src="<?= get_template_directory_uri(); ?>/images/icone-consultorias.png" width="120" height="120" loading="lazy" alt="consultorias">
 
         <div class="servicos-conteudo">
           <h3>Consultorias</h3>
@@ -107,7 +107,7 @@ require_once('header.php');
       </div>
 
       <div class="servicos__box">
-        <img src="<?= get_template_directory_uri(); ?>/images/icone-treinamentos.png" width="120" height="120" lazy="loading" alt="treinamentos">
+        <img src="<?= get_template_directory_uri(); ?>/images/icone-treinamentos.png" width="120" height="120" loading="lazy" alt="treinamentos">
 
         <div class="servicos-conteudo">
           <h3>Treinamentos</h3>
