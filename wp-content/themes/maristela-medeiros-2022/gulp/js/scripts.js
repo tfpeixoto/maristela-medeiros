@@ -26,7 +26,23 @@ $(document).ready(function () {
   // }
 });
 
+// active modal menu
 const btnContatoModal = document.querySelector('.btn-contato a')
 btnContatoModal.addEventListener('click', function () {
   $('#SolicitaContato').modal('toggle')
 })
+
+// passive events
+const events = ['touchstart', 'touchmove', 'wheel', 'mousewheel']
+function passiveEvent(events) {
+  events.forEach(mineEvent => {
+    jQuery.event.special.mineEvent = {
+      setup: function (_, ns, handle) {
+        this.addEventListener(mineEvent, handle, {
+          passive: true
+        });
+      }
+    }
+  })
+}
+passiveEvent(events)

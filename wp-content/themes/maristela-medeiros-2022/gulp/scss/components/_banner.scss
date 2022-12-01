@@ -1,6 +1,8 @@
 .banner {
   align-items: center;
-  background: url(../images/banner-mmn.png) no-repeat;
+  background: $primary;
+  background-image: url(../images/banner-mmn.png);
+  background-repeat: no-repeat;
   background-position: center center;
   background-size: cover;
   border-radius: 0;
