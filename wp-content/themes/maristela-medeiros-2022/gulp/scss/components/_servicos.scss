@@ -3,6 +3,10 @@
   padding: 2.5rem 0;
   text-align: center;
 
+  @include media-breakpoint-up(md) {
+    padding: 5rem 0;
+  }
+
   &__titulo {
     margin-bottom: calc(2rem + 70px);
 

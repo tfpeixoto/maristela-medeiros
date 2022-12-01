@@ -13,9 +13,6 @@ require_once('header.php');
   </div>
 </div>
 
-<!--MODAL-->
-<?php require_once("modal.php"); ?>
-
 <main>
   <div class="conteudo-boxes">
     <div class="container">

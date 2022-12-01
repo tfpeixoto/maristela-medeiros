@@ -1,6 +1,10 @@
 .depoimentos {
   padding: 2.5rem 0;
 
+  @include media-breakpoint-up(md) {
+    padding: 5rem 0;
+  }
+
   &__titulo {
     margin-bottom: 2rem;
     text-align: center;
@@ -19,7 +23,7 @@
     display: flex;
     justify-content: center;
     text-decoration: none;
-    transition: all ease-in-out .25s;
+    transition: all ease-in-out 0.25s;
 
     &:hover {
       color: $primary;

@@ -21,12 +21,12 @@ $(document).ready(function () {
   $('#telefone').mask('(00) 00000-0000');
 
   // Abrir modal
-  if (window.location.href.indexOf('#SolicitaContato') != -1) {
-    $('#SolicitaContato').modal('show');
-  }
+  // if (window.location.href.indexOf('#SolicitaContato') != -1) {
+  //   $('#SolicitaContato').modal('show');
+  // }
 });
 
-// Botão voltar ao topo
-$(".back-top").click(function () {
-  $(window).scrollTop(0);
-});
+const btnContatoModal = document.querySelector('.btn-contato a')
+btnContatoModal.addEventListener('click', function () {
+  $('#SolicitaContato').modal('toggle')
+})

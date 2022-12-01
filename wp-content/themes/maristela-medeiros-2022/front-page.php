@@ -179,7 +179,7 @@ require_once('header.php');
           </div>
 
           <div class="modal" id="tab-<?php the_id(); ?>" tabindex="-1" role="dialog">
-            <div class="modal-dialog" role="document">
+            <div class="modal-dialog modal-dialog-centered" role="document">
               <div class="modal-content">
                 <div class="modal-header">
                   <h3 class="modal-title h5"><?php the_title(); ?></h3>
@@ -187,6 +187,7 @@ require_once('header.php');
                     <span aria-hidden="true">&times;</span>
                   </button>
                 </div>
+
                 <div class="modal-body">
                   <?php the_field('video'); ?>
 

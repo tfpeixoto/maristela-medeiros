@@ -18,7 +18,10 @@
 @import "./node_modules/bootstrap/scss/code";
 @import "./node_modules/bootstrap/scss/grid";
 @import "./node_modules/bootstrap/scss/images";
+/*! purgecss start ignore */
 @import "./node_modules/bootstrap/scss/modal";
+@import "components/modal";
+/*! purgecss end ignore */
 
 @import "components/quem-somos";
 @import "components/servicos";
