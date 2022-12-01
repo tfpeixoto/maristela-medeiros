@@ -31,7 +31,7 @@ class ES_Data_Type_Subscriber extends ES_Workflow_Data_Type {
 	 */
 	public function validate( $item ) {
 
-		if ( empty( $item['email'] ) || ! is_email( $item['email'] ) ) {
+		if ( empty( $item ) || ! is_email( $item['email'] ) ) {
 			return false;
 		}
 
@@ -49,7 +49,7 @@ class ES_Data_Type_Subscriber extends ES_Workflow_Data_Type {
 	 * @return mixed
 	 */
 	public function compress( $item ) {
-		return $item['email'];
+		return $item;
 	}
 
 
@@ -65,13 +65,11 @@ class ES_Data_Type_Subscriber extends ES_Workflow_Data_Type {
 	 */
 	public function decompress( $compressed_item, $compressed_data_layer ) {
 
-		$data = array();
-
-		if ( is_email( $compressed_item ) ) {
-			$data['email'] = $compressed_item;
+		if ( ! $compressed_item ) {
+			return false;
 		}
 
-		return $data;
+		return $compressed_item;
 	}
 
 	/**
@@ -88,7 +86,7 @@ class ES_Data_Type_Subscriber extends ES_Workflow_Data_Type {
 
 		if ( ! empty( $item['email'] ) ) {
 			$data 		    = $item;
-			$data['source'] = 'wp';
+			$data['source'] = 'es';
 		}
 
 		return $data;

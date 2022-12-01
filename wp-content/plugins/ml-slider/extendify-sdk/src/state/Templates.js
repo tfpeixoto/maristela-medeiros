@@ -1,100 +1,133 @@
 import create from 'zustand'
-import { templates as config } from '../config'
-import { createBlocksFromInnerBlocksTemplate } from '../util/blocks'
+import { subscribeWithSelector } from 'zustand/middleware'
+import { useGlobalStore } from './GlobalState'
+import { useTaxonomyStore } from './Taxonomies'
+import { useUserStore } from './User'
 
-const defaultCategoryForType = (type, tax) => type === 'pattern' && tax === 'tax_categories'
-    ? 'Default'
-    : ''
+const defaultCategoryForType = (tax) =>
+    tax === 'siteType'
+        ? { slug: '', title: 'Not set' }
+        : { slug: '', title: 'Featured' }
 
-export const useTemplatesStore = create((set, get) => ({
-    templates: [],
-    fetchToken: null,
-    activeTemplate: {},
-    activeTemplateBlocks: {},
-    taxonomyDefaultState: {},
-    searchParams: {
-        taxonomies: {},
-        type: config.defaultType,
-        search: '',
-    },
-    // The offset is returned from Airtable.
-    // It's removed when search params are updated
-    // Or otherwise updated on each request
-    nextPage: '',
-    removeTemplates: () => set({
-        nextPage: '',
+export const useTemplatesStore = create(
+    subscribeWithSelector((set, get) => ({
         templates: [],
-    }),
-    appendTemplates: (templates) => set({
-        templates: [...new Map([...get().templates, ...templates].map(item => [item.id, item])).values()],
-    }),
-    setupDefaultTaxonomies: (taxonomies) => {
-        // This will transform ['tax_categories', 'tax_another'] to {tax_categories: 'Default', tax_another: ''}
-        const defaultState = (tax) => defaultCategoryForType(get().searchParams.type, tax)
-        const taxonomyDefaultState = Object.keys(taxonomies).reduce((theObject, current) => (theObject[current] = defaultState(current), theObject), {})
-        const tax = {}
-        tax.taxonomies = Object.assign(
-            {}, taxonomyDefaultState, get().searchParams.taxonomies,
-        )
+        skipNextFetch: false,
+        fetchToken: null,
+        taxonomyDefaultState: {},
+        nextPage: '',
+        searchParams: {
+            taxonomies: {},
+            type: 'pattern',
+        },
+        initTemplateData() {
+            set({ activeTemplate: {} })
+            get().setupDefaultTaxonomies()
+            get().updateType(useGlobalStore.getState().currentType)
+        },
+        appendTemplates: async (templates) => {
+            for (const template of templates) {
+                // If we already have this one, ignore it
+                if (get().templates.find((t) => t.id === template.id)) {
+                    continue
+                }
+                // Add some delay to prevent a batch update.
+                await new Promise((resolve) => setTimeout(resolve, 5))
+                requestAnimationFrame(() => {
+                    const templatesAll = [...get().templates, template]
+                    set({ templates: templatesAll })
+                })
+            }
+        },
+        setupDefaultTaxonomies: () => {
+            const taxonomies = useTaxonomyStore.getState().taxonomies
+            let taxonomyDefaultState = Object.entries(taxonomies).reduce(
+                (state, current) => (
+                    (state[current[0]] = defaultCategoryForType(current[0])),
+                    state
+                ),
+                {},
+            )
+            const tax = {}
+            let preferredTax =
+                useUserStore.getState().preferredOptions?.taxonomies ?? {}
 
-        set({
-            taxonomyDefaultState: taxonomyDefaultState,
-            searchParams: {
-                ...Object.assign(get().searchParams, tax),
-            },
-        })
-    },
-    setActive: (template) => {
-        set({
-            activeTemplate: template,
-        })
+            // Check for old site type and set it if it exists
+            if (preferredTax.tax_categories) {
+                preferredTax = get().getLegacySiteType(preferredTax, taxonomies)
+            }
+            taxonomyDefaultState = Object.assign(
+                {},
+                taxonomyDefaultState,
 
-        // This will convert the template to blocks for quick(er) injection
-        if (template?.fields?.code) {
-            const { parse } = window.wp.blocks
+                // Override with the user's preferred taxonomies
+                preferredTax,
+
+                // Override with the global state
+                useGlobalStore.getState()?.currentTaxonomies ?? {},
+            )
+
+            tax.taxonomies = Object.assign({}, taxonomyDefaultState)
             set({
-                activeTemplateBlocks: createBlocksFromInnerBlocksTemplate(parse(template.fields.code)),
+                taxonomyDefaultState: taxonomyDefaultState,
+                searchParams: {
+                    ...Object.assign(get().searchParams, tax),
+                },
             })
-        }
-    },
-    resetTaxonomies: () => {
-        // Special default state for tax_categories
-        const taxCatException = {
-            ['tax_categories']: get().searchParams.type === 'pattern'
-                ? 'Default'
-                : '',
-        }
-        get().updateSearchParams({
-            taxonomies: Object.assign(get().taxonomyDefaultState, taxCatException),
-        })
-    },
-    updateTaxonomies: (params) => {
-        // Special case for when the user isn't searching defaults. This way it mimics "all"
-        // if (!Object.values(params).includes('Default') && !Object.keys(params).includes('tax_categories')) {
-        //     console.log(get().searchParams.type,get().searchParams.taxonomies.tax_categories === 'Default')
-        //     if (get().searchParams.type === 'pattern' && get().searchParams.taxonomies.tax_categories === 'Default') {
-        //         params.tax_categories = ''
-        //     }
-        // }
+        },
+        updateTaxonomies: (params) => {
+            const data = {}
+            data.taxonomies = Object.assign(
+                {},
+                get().searchParams.taxonomies,
+                params,
+            )
+            if (data?.taxonomies?.siteType) {
+                // This is what the user "prefers", which may be used outside the library
+                // which is persisted to the database, where as the global library state is in local storage
+                useUserStore
+                    .getState()
+                    .updatePreferredOption(
+                        'siteType',
+                        data?.taxonomies?.siteType,
+                    )
+            }
+            useGlobalStore.getState().updateCurrentTaxonomies(data?.taxonomies)
+            get().updateSearchParams(data)
+        },
+        updateType(type) {
+            useGlobalStore.getState().updateCurrentType(type)
+            get().updateSearchParams({ type })
+        },
+        updateSearchParams: (params) => {
+            // If taxonomies are set to {}, lets use the default
+            if (params?.taxonomies && !Object.keys(params.taxonomies).length) {
+                params.taxonomies = get().taxonomyDefaultState
+            }
 
-        const tax = {}
-        tax.taxonomies = Object.assign(
-            {}, get().searchParams.taxonomies, params,
-        )
-        get().updateSearchParams(tax)
-    },
-    // TODO: Something is calling this too often
-    updateSearchParams: (params) => {
-        // If taxonomies are set to {}, lets use the default
-        if (params?.taxonomies && !Object.keys(params.taxonomies).length) {
-            params.taxonomies = get().taxonomyDefaultState
-        }
-        set({
-            templates: [],
-            nextPage: '',
-            searchParams: {
-                ...Object.assign(get().searchParams, params),
-            },
-        })
-    },
-}))
+            const searchParams = Object.assign({}, get().searchParams, params)
+
+            // If the params are not the same, then update
+            if (
+                JSON.stringify(searchParams) !==
+                JSON.stringify(get().searchParams)
+            ) {
+                set({ templates: [], nextPage: '', searchParams })
+            }
+        },
+        resetTemplates: () => set({ templates: [], nextPage: '' }),
+        getLegacySiteType: (preferredTax, taxonomies) => {
+            const oldSiteType = taxonomies.siteType.find((t) =>
+                [t.slug, t?.title].includes(preferredTax.tax_categories),
+            )
+            // TODO: This is kind of wonky, as we keep track of the state in two places.
+            useUserStore.getState().updatePreferredSiteType(oldSiteType)
+            get().updateTaxonomies({ siteType: oldSiteType })
+            // Remove the legacy term so this only runs once
+            useUserStore
+                .getState()
+                .updatePreferredOption('tax_categories', null)
+            return useUserStore.getState().preferredOptions.taxonomies
+        },
+    })),
+)

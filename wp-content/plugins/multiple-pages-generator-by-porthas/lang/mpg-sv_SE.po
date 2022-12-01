@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: MPG 2.1.3\n"
 "POT-Creation-Date: 2021-07-19 13:07+0200\n"
-"PO-Revision-Date: 2021-07-20 11:30+0200\n"
+"PO-Revision-Date: 2021-08-21 13:51+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: sv_SE\n"
@@ -195,10 +195,8 @@ msgid "Hook priority is not correct"
 msgstr "Webbhook prioritet är inte korrekt"
 
 #: controllers/ProjectController.php:774
-#, fuzzy
-#| msgid "Hook name is not correct"
 msgid "Basepath is not correct"
-msgstr "Webbhook namnet är inte korrekt"
+msgstr "Basepath är inte korrekt"
 
 #: controllers/SearchController.php:138
 msgid "Total results:"
@@ -424,14 +422,6 @@ msgid "Cache hooks"
 msgstr "Cachestorlek"
 
 #: views/advanced-settings/index.php:72
-#, fuzzy
-#| msgid ""
-#| "Use these settings only if the generated page is displayed incorrectly, "
-#| "there is no header, footer, or non-replaced shortcodes. MPG has a "
-#| "universal default setting, but sometimes it does not work properly, "
-#| "because different users have different plugins, builders, versions of "
-#| "Wordpress, and so on. Therefore, if you see problems with the pages - "
-#| "change these options to achieve the desired effect."
 msgid ""
 "Use these settings only if the generated page with enabled caching in MPG is "
 "displayed incorrectly. MPG has a universal default setting, but sometimes it "
@@ -440,11 +430,11 @@ msgid ""
 "with the pages after few visits as guest - change these options to achieve "
 "the desired effect."
 msgstr ""
-"Använd endast dessa inställningar om den genererade sidan visas felaktigt, t."
-"ex. det finns inget sidhuvud, sidfot eller icke-ersatta kortkoder. MPG har en "
-"universell standardinställning, men ibland fungerar den inte korrekt, "
-"eftersom olika användare har olika plugins, sidbyggare, versioner av "
-"Wordpress och så vidare. Därför, om du ser problem på sidorna - ändra dessa "
+"Använd endast dessa inställningar om den genererade sidan med aktiverad "
+"cachelagring i MPG visas felaktigt. MPG har en universell "
+"standardinställning, men ibland fungerar det inte korrekt, eftersom olika "
+"användare har olika plugins, byggare, versioner av Wordpress och så vidare. "
+"Därför, om du ser problem med sidorna efter få besök som gäst - ändra dessa "
 "alternativ för att uppnå önskad effekt."
 
 #: views/advanced-settings/index.php:87
@@ -703,16 +693,12 @@ msgstr ""
 
 #: views/project-builder/logs/sidebar.php:40
 #: views/project-builder/shortcode/sidebar.php:40
-#, fuzzy
-#| msgid ""
-#| "Generate lists of the MPG pages and place them anywhere around your "
-#| "website, where applicable. The closer to the homepage the better."
 msgid ""
 "Generate lists of the MPG pages and place them anywhere around your website, "
 "where appropriate. The closer to the homepage the better."
 msgstr ""
-"Skapa listor över MPG-sidor och placera dem var som helst runt din webbplats, "
-"där så är tillämpligt. Ju närmare hemsidan desto bättre."
+"Generera listor över MPG-sidorna och placera dem var som helst runt din "
+"webbplats, där det är lämpligt. Ju närmare hemsidan desto bättre."
 
 #: views/project-builder/logs/sidebar.php:46
 #: views/project-builder/shortcode/sidebar.php:46
@@ -1009,16 +995,12 @@ msgid "Without trailing slash"
 msgstr "Utan efterföljande snedstreck"
 
 #: views/project-builder/main/index.php:335
-#, fuzzy
-#| msgid ""
-#| "Allow to generate URLs with trailing slashes, without trailing slashes or "
-#| "use combine mode"
 msgid ""
 "Allow to generate URLs with trailing slashes, without trailing slashes or use "
 "default mode"
 msgstr ""
-"Tillåt att skapa webbadresser med efterföljande snedstreck, utan "
-"efterföljande snedstreck eller använd kombinationsläge"
+"Tillåt att generera webbadresser med snedstreck, utan att snedstreck eller "
+"använda standardläge"
 
 #: views/project-builder/main/index.php:343
 msgid "URL preview"
@@ -1095,10 +1077,8 @@ msgid "Generate list"
 msgstr "Generera lista"
 
 #: views/project-builder/shortcode/index.php:51
-#, fuzzy
-#| msgid "Set up condition"
 msgid "Set conditions"
-msgstr "Ställ upp villkor"
+msgstr "Välj villkor"
 
 #: views/project-builder/shortcode/index.php:53
 msgid ""
@@ -1155,8 +1135,6 @@ msgid "Random"
 msgstr "Slumpmässig"
 
 #: views/project-builder/shortcode/index.php:77
-#, fuzzy
-#| msgid "Use this to set up column header for sorting by (optional)"
 msgid "Use this to set up column header to sort by (optional)"
 msgstr ""
 "Använd detta för att ställa in kolumnrubrik att sortera efter (valfritt)"
@@ -1170,8 +1148,6 @@ msgid "Choose column to order by"
 msgstr "Välj kolumn att sortera efter"
 
 #: views/project-builder/shortcode/index.php:85
-#, fuzzy
-#| msgid "Use this to set up column header for sorting by"
 msgid "Use this to set up column header to sort by"
 msgstr "Använd detta för att ställa in kolumnrubrik att sortera efter"
 
@@ -1180,11 +1156,9 @@ msgid "Limit"
 msgstr "Gräns"
 
 #: views/project-builder/shortcode/index.php:92
-#, fuzzy
-#| msgid "Use this to set up limit of rows that shortcode will display"
 msgid "Use this to set up the number of rows that the shortcode will display"
 msgstr ""
-"Använd detta för att ställa in antal rader som kortkoden kommer att visa"
+"Använd detta för att ställa in antal rader som kortkoden kommer att visas"
 
 #: views/project-builder/shortcode/index.php:96
 msgid "Unique rows"
@@ -1298,10 +1272,6 @@ msgstr ""
 "webbplats, utan någon nackdel."
 
 #: views/project-builder/sitemap/sidebar.php:39
-#, fuzzy
-#| msgid ""
-#| "When sitemap is loaded into Google Search Console, try to Request Index "
-#| "manually for couple pages, for testing purposes."
 msgid ""
 "When sitemap is loaded into Google Search Console, try to Request Index "
 "manually for testing purposes."
@@ -1320,11 +1290,8 @@ msgstr ""
 "öka indexfrekvensen."
 
 #: views/project-builder/spintax/index.php:9
-#, fuzzy
-#| msgid "Enter Spintax condition here, and click to Spin button to get results"
 msgid "Enter Spintax conditions here, and click to Spin button to get results"
-msgstr ""
-"Skriv Spintax villkor här och klicka på Spin-knappen för att få resultat"
+msgstr "Ange Spintax-villkor här och klicka på spinnknappen för att få resultat"
 
 #: views/project-builder/spintax/index.php:15
 msgid "Spin!"
@@ -1347,30 +1314,21 @@ msgid "Click Spin button to see result"
 msgstr "Klicka på Spin-knappen för att se resultatet"
 
 #: views/project-builder/spintax/index.php:30
-#, fuzzy
-#| msgid ""
-#| "When users go to some of generated URL at first time, MPG generate and "
-#| "save in cache (i.e. database) some string, according to provided Spintax "
-#| "expression."
 msgid ""
 "When users go to one of generated URL at first time, MPG generate and save in "
 "cache (i.e. database) some string, according to provided Spintax expression."
 msgstr ""
 "När användare går till någon av de genererade URL sidorna första gången "
-"genererar och sparar MPG en sträng i cache (dvs. databas), enligt det angivna "
+"genererar MPG och sparar en sträng i cache (dvs. databas), enligt det angivna "
 "Spintax-koden."
 
 #: views/project-builder/spintax/index.php:31
-#, fuzzy
-#| msgid ""
-#| "Each time, when users visit the same URL again, Spintax string return from "
-#| "cache, and will not be generated again until you clear cache."
 msgid ""
 "Each time, when users visit the same URL again, Spintax string is retrieved "
 "from the cache, and will not be generated again until you clear cache."
 msgstr ""
 "Varje gång, när användare besöker samma URL igen, hämtas Spintax-strängen "
-"från cache och kommer inte att genereras igen förrän du rensar cache."
+"från cacheminnet och genereras inte igen förrän du rensar cacheminnet."
 
 #: views/project-builder/spintax/index.php:34
 msgid "Flush cache"
@@ -1392,10 +1350,6 @@ msgstr ""
 "Använd Spintax-syntaxerna för att generera dynamisk text för dina MPG-sidor."
 
 #: views/project-builder/spintax/sidebar.php:34
-#, fuzzy
-#| msgid ""
-#| "When satisfied, copy the expression and add it to your template, where "
-#| "applicable."
 msgid ""
 "When satisfied, copy the expression and add it to your template, where "
 "appropriate."
@@ -1413,16 +1367,12 @@ msgid "Flush cache if you wish to reset remembered spintax expression."
 msgstr "Töm cache om du vill återställa minnet av spintaxuttryck."
 
 #: views/search/index.php:15
-#, fuzzy
-#| msgid "Advanced settings"
 msgid "Search settings"
-msgstr "Avancerade inställningar"
+msgstr "Sökinställningar"
 
 #: views/search/index.php:21
-#, fuzzy
-#| msgid "Search for template"
 msgid "Single search result template"
-msgstr "Sök efter mall"
+msgstr "Mall för ett enda sökresultat"
 
 #: views/search/index.php:22
 msgid ""
@@ -1487,4 +1437,3 @@ msgstr ""
 
 #~ msgid "Enter URL"
 #~ msgstr "Ange URL"
-

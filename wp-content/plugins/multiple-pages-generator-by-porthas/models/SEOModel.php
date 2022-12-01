@@ -76,6 +76,17 @@ class MPG_SEOModel
 
             return  MPG_CoreModel::mpg_shortcode_replacer($value, $project_id);
         });
+
+		// Filter SmartCrawl SEO plugin title.
+		add_filter(
+			'wds_title',
+			function( $new_title ) use ( $project_id ) {
+				if ( false !== strpos( $new_title, '{{mpg_' ) ) {
+					$new_title = MPG_CoreModel::mpg_shortcode_replacer( $new_title, $project_id );
+				};
+				return $new_title;
+			}
+		);
     }
 
     public static function mpg_all_in_one_seo_pack($project_id)
@@ -109,7 +120,14 @@ class MPG_SEOModel
     {
         // RankMath SEO Plugin fix. Filter to change the page title
         add_filter('rank_math/frontend/title', function ($title) use ($post, $project_id) {
-            return MPG_CoreModel::mpg_shortcode_replacer($post->post_title, $project_id);
+            $title = RankMath\Post::get_meta( 'title', $post->ID );
+            if ( ! $title ) {
+                $title = RankMath\Helper::get_settings( "titles.pt_{$post->post_type}_title" );
+                if ( $title ) {
+                    return MPG_CoreModel::mpg_shortcode_replacer( RankMath\Helper::replace_vars( $title, $post ), $project_id );
+                }
+            }
+            return  MPG_CoreModel::mpg_shortcode_replacer( $title, $project_id );
         });
 
 

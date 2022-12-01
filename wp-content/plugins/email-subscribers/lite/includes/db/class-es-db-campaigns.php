@@ -681,6 +681,7 @@ class ES_DB_Campaigns extends ES_DB {
 			}
 
 			$campaigns = $this->get_by_conditions( $where, ARRAY_A );
+			$campaigns = apply_filters( 'ig_es_campaigns_for_post', $campaigns, $post_id );
 		}
 
 		return $campaigns;
@@ -721,6 +722,10 @@ class ES_DB_Campaigns extends ES_DB {
 			$wpbd->query( $wpbd->prepare( "UPDATE {$wpbd->prefix}ig_campaigns SET status = %d WHERE parent_id IN({$id_str})", $status ) );
 		}
 
+		if ( $updated ) {
+			do_action( 'ig_es_after_campaign_status_updated', $campaign_ids, $status );
+		}
+
 		return $updated;
 
 	}
@@ -731,6 +736,8 @@ class ES_DB_Campaigns extends ES_DB {
 	 * @param $id
 	 *
 	 * @since 4.6.3
+	 *
+	 * @modify 5.4.9
 	 */
 	public function duplicate_campaign( $id = null ) {
 
@@ -746,6 +753,10 @@ class ES_DB_Campaigns extends ES_DB {
 			$campaign_id = $campaign['id'];
 			unset( $campaign['id'] );
 			unset( $campaign['created_at'] );
+
+			$campaign_meta = maybe_unserialize( $campaign['meta'] );
+			unset( $campaign_meta['date'], $campaign_meta['es_schedule_date'], $campaign_meta['es_schedule_time'] );
+			$campaign['meta'] = maybe_serialize( $campaign_meta );
 
 			$duplicate_campaign_id = $this->save_campaign( $campaign );
 

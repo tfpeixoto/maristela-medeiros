@@ -2,18 +2,18 @@
 
 namespace Yoast\WP\SEO\Helpers;
 
-use Brain\Monkey\Hook\Exception\InvalidHookArgument;
-use Yoast\WP\SEO\Actions\Indexing\Indexation_Action_Interface;
+use Yoast\WP\SEO\Actions\Indexing\Indexable_General_Indexation_Action;
 use Yoast\WP\SEO\Actions\Indexing\Indexable_Post_Indexation_Action;
 use Yoast\WP\SEO\Actions\Indexing\Indexable_Post_Type_Archive_Indexation_Action;
 use Yoast\WP\SEO\Actions\Indexing\Indexable_Term_Indexation_Action;
+use Yoast\WP\SEO\Actions\Indexing\Indexation_Action_Interface;
 use Yoast\WP\SEO\Actions\Indexing\Limited_Indexing_Action_Interface;
 use Yoast\WP\SEO\Actions\Indexing\Post_Link_Indexing_Action;
 use Yoast\WP\SEO\Actions\Indexing\Term_Link_Indexing_Action;
-use Yoast\WP\SEO\Actions\Indexing\Indexable_General_Indexation_Action;
 use Yoast\WP\SEO\Config\Indexing_Reasons;
 use Yoast\WP\SEO\Integrations\Admin\Indexing_Notification_Integration;
 use Yoast_Notification_Center;
+use Yoast\WP\SEO\Repositories\Indexable_Repository;
 
 /**
  * A helper object for indexing.
@@ -47,6 +47,13 @@ class Indexing_Helper {
 	 * @var Indexation_Action_Interface[]|Limited_Indexing_Action_Interface[]
 	 */
 	protected $indexing_actions;
+
+	/**
+	 * The indexable repository.
+	 *
+	 * @var Indexable_Repository
+	 */
+	protected $indexable_repository;
 
 	/**
 	 * Indexing_Helper constructor.
@@ -96,13 +103,52 @@ class Indexing_Helper {
 	}
 
 	/**
+	 * Sets the indexable repository for the indexing helper class.
+	 *
+	 * @required
+	 *
+	 * @param Indexable_Repository $indexable_repository The indexable repository.
+	 */
+	public function set_indexable_repository(
+		Indexable_Repository $indexable_repository
+	) {
+		$this->indexable_repository = $indexable_repository;
+	}
+
+	/**
 	 * Sets several database options when the indexing process is started.
+	 *
+	 * @deprecated 17.4 This method was renamed to prepare for internal consistency.
+	 * @codeCoverageIgnore
 	 *
 	 * @return void
 	 */
 	public function start() {
+		$this->prepare();
+	}
+
+	/**
+	 * Prepares the indexing process by setting several database options and removing the indexing notification.
+	 *
+	 * @return void
+	 */
+	public function prepare() {
 		$this->set_first_time( false );
 		$this->set_started( $this->date_helper->current_time() );
+		$this->remove_indexing_notification();
+		// Do not set_reason here; if the process is cancelled, the reason to start indexing is still valid.
+	}
+
+	/**
+	 * Sets several database options when the indexing process is finished.
+	 *
+	 * @deprecated 17.4 This method was renamed to complete for internal consistency.
+	 * @codeCoverageIgnore
+	 *
+	 * @return void
+	 */
+	public function finish() {
+		$this->complete();
 	}
 
 	/**
@@ -110,7 +156,7 @@ class Indexing_Helper {
 	 *
 	 * @return void
 	 */
-	public function finish() {
+	public function complete() {
 		$this->set_reason( '' );
 		$this->set_started( null );
 	}
@@ -134,11 +180,13 @@ class Indexing_Helper {
 	 */
 	public function set_reason( $reason ) {
 		$this->options_helper->set( 'indexing_reason', $reason );
+		$this->remove_indexing_notification();
+	}
 
-		/*
-		 * Remove any pre-existing notification, so that a new notification
-		 * (with a possible new reason) can be added.
-		 */
+	/**
+	 * Removes any pre-existing notification, so that a new notification (with a possible new reason) can be added.
+	 */
+	protected function remove_indexing_notification() {
 		$this->notification_center->remove_notification_by_id(
 			Indexing_Notification_Integration::NOTIFICATION_ID
 		);
@@ -205,6 +253,15 @@ class Indexing_Helper {
 	}
 
 	/**
+	 * Gets a boolean that indicates whether or not the indexing of the indexables has completed.
+	 *
+	 * @return bool Whether the indexing of the indexables has completed.
+	 */
+	public function is_finished_indexables_indexing() {
+		return $this->options_helper->get( 'indexables_indexing_completed', false );
+	}
+
+	/**
 	 * Returns the total number of unindexed objects.
 	 *
 	 * @return int The total number of unindexed objects.
@@ -217,6 +274,42 @@ class Indexing_Helper {
 		}
 
 		return $unindexed_count;
+	}
+
+	/**
+	 * Returns the amount of un-indexed posts expressed in percentage, which will be needed to set a threshold.
+	 *
+	 * @param int $unindexed_count The number of unindexed objects.
+	 *
+	 * @return int The amount of unindexed posts expressed in percentage.
+	 */
+	public function get_unindexed_percentage( $unindexed_count ) {
+		// Gets the amount of indexed objects in the site.
+		$indexed_count = $this->indexable_repository->get_total_number_of_indexables();
+		// The total amount of objects in the site.
+		$total_objects_count = ( $indexed_count + $unindexed_count );
+
+		return ( ( $unindexed_count / $total_objects_count ) * 100 );
+	}
+
+	/**
+	 * Returns whether the SEO optimization button should show.
+	 *
+	 * @return bool Whether the SEO optimization button should show.
+	 */
+	public function should_show_optimization_button() {
+		// Gets the amount of unindexed objects in the site.
+		$unindexed_count = $this->get_filtered_unindexed_count();
+
+		// If the amount of unidexed posts is <10 don't show configuration button.
+		if ( $unindexed_count <= 10 ) {
+			return false;
+		}
+		// If the amount of unidexed posts is >10, but the total amount of unidexed posts is ≤4% of the total amount of objects in the site, don't show configuration button.
+		if ( $this->get_unindexed_percentage( $unindexed_count ) <= 4 ) {
+			return false;
+		}
+		return true;
 	}
 
 	/**

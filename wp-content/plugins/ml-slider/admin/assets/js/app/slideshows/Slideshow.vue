@@ -35,11 +35,11 @@ export default {
 	computed: {
 		...mapGetters({
 			current: 'slideshows/getCurrent'
-        }),
-        ...mapState({
-		    locked: state => state.slideshows.locked
-        }),
-    },
+		}),
+		...mapState({
+			locked: state => state.slideshows.locked
+		}),
+	},
 	created() {
 		window.metaslider_slider_id = this.id // used in admin.js
 		this.$store.commit('slideshows/setCurrent', this.id)
@@ -92,18 +92,18 @@ export default {
 			this.$store.commit('slideshows/setLocked', false)
 		})
 
-        // Listen to start the tour (only if there's an id and it hasnt been seen)
+		// Listen to start the tour (only if there's an id and it hasnt been seen)
 		EventManager.$on('metaslider/start-tour', () => {
 			!this.tourStatus && this.id && this.startTour()
 		})
 
 		if (!this.showOptIn) {
 			EventManager.$emit('metaslider/start-tour')
-        }
+		}
 
-        if (this.showOptIn) {
+		if (this.showOptIn) {
 			EventManager.$emit('metaslider/open-utility-modal', AnalyticsNotice)
-        }
+		}
 
 		window.addEventListener('load', () => {
 			setTimeout(() => {
@@ -180,9 +180,9 @@ export default {
 			}).catch(error => {
 				this.notifyError('metaslider/duplicate-error', error, true)
 			})
-        },
-        startTour() {
-            EventManager.tourEnabled = true
+		},
+		startTour() {
+			EventManager.tourEnabled = true
 
 			// Slight timeout to avoid any funky layouts like poopy.life
 			setTimeout(() => {
@@ -191,7 +191,7 @@ export default {
 
 			// Set an event to handle cancelling the tour
 			MainTour.on('cancel', () => { this.cancelTour() })
-        },
+		},
 		saveSettings(data) {
 			let settings = data.filter(input => 'title' === input.name || input.name.startsWith('settings'))
 			return Settings.save(settings).then(() => {
@@ -199,20 +199,15 @@ export default {
 			})
 		},
 		prepareSlideData(data) {
-			let slides = data.filter(input => input.name.startsWith('attachment'))
-			let allSlides = []
-			let currentSlide = ''
-			slides.forEach(slide => {
+			let slides = new Set(
+				data.filter(input => input.name.startsWith('attachment'))
+					.map(slide => slide.name.match(/attachment\[([\s\S]*?)\]/)[1])
+			)
 
-				// Grab the id from a string like "attachment[2069][]"
-				let thisSlide = slide.name.match(/attachment\[([\s\S]*?)\]/)[1]
-				currentSlide = (currentSlide != thisSlide) ? thisSlide : currentSlide
-				if ('undefined' === typeof allSlides[currentSlide]) {
-					allSlides[currentSlide] = []
-				}
-				allSlides[currentSlide].push(slide)
+			let allSlides = [...slides].map(slide => {
+				return data.filter(input => input.name.startsWith('attachment[' + slide + ']'))
 			})
-			return allSlides.filter(val => val) // re-index
+			return allSlides
 		},
 		saveSlides(slides) {
 			return new Promise((resolve, reject) => {

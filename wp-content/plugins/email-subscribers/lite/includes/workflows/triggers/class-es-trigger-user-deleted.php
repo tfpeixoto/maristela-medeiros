@@ -58,7 +58,7 @@ class ES_Trigger_User_Deleted extends ES_Workflow_Trigger {
 		if ( ! empty( $email ) ) {
 
 			$subscriber = array(
-				'email'      => $email,
+				'email' => $email,
 			);
 
 			// Prepare data.

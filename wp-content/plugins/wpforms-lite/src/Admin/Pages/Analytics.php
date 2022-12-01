@@ -100,14 +100,14 @@ class Analytics {
 		// Lity.
 		wp_enqueue_style(
 			'wpforms-lity',
-			WPFORMS_PLUGIN_URL . 'assets/css/lity.min.css',
+			WPFORMS_PLUGIN_URL . 'assets/lib/lity/lity.min.css',
 			null,
 			'3.0.0'
 		);
 
 		wp_enqueue_script(
 			'wpforms-lity',
-			WPFORMS_PLUGIN_URL . 'assets/js/lity.min.js',
+			WPFORMS_PLUGIN_URL . 'assets/lib/lity/lity.min.js',
 			array( 'jquery' ),
 			'3.0.0',
 			true
@@ -139,29 +139,29 @@ class Analytics {
 
 		$error_could_not_install = sprintf(
 			wp_kses( /* translators: %s - Lite plugin download URL. */
-				__( 'Could not install plugin. Please <a href="%s">download</a> and install manually.', 'wpforms-lite' ),
-				array(
-					'a' => array(
+				__( 'Could not install the plugin automatically. Please <a href="%s">download</a> it and install it manually.', 'wpforms-lite' ),
+				[
+					'a' => [
 						'href' => true,
-					),
-				)
+					],
+				]
 			),
 			esc_url( $this->config['lite_download_url'] )
 		);
 
 		$error_could_not_activate = sprintf(
 			wp_kses( /* translators: %s - Lite plugin download URL. */
-				__( 'Could not activate plugin. Please activate from the <a href="%s">Plugins page</a>.', 'wpforms-lite' ),
-				array(
-					'a' => array(
+				__( 'Could not activate the plugin. Please activate it on the <a href="%s">Plugins page</a>.', 'wpforms-lite' ),
+				[
+					'a' => [
 						'href' => true,
-					),
-				)
+					],
+				]
 			),
 			esc_url( admin_url( 'plugins.php' ) )
 		);
 
-		return array(
+		return [
 			'installing'               => esc_html__( 'Installing...', 'wpforms-lite' ),
 			'activating'               => esc_html__( 'Activating...', 'wpforms-lite' ),
 			'activated'                => esc_html__( 'MonsterInsights Installed & Activated', 'wpforms-lite' ),
@@ -173,7 +173,7 @@ class Analytics {
 			'error_could_not_activate' => $error_could_not_activate,
 			'mi_manual_install_url'    => $this->config['lite_download_url'],
 			'mi_manual_activate_url'   => admin_url( 'plugins.php' ),
-		);
+		];
 	}
 
 	/**
@@ -491,14 +491,13 @@ class Analytics {
 			case 'lite':
 				$step['button_url']   = $this->config['mi_forms_addon_page'];
 				$step['button_class'] = $this->output_data['plugin_setup'] ? 'button-primary' : 'grey';
-
 				break;
+
 			case 'pro':
 				$addon_installed      = array_key_exists( $this->config['forms_addon'], $this->output_data['all_plugins'] );
 				$step['button_text']  = $addon_installed ? esc_html__( 'Activate Now', 'wpforms-lite' ) : esc_html__( 'Install Now', 'wpforms-lite' );
 				$step['button_url']   = admin_url( $this->config['mi_addons'] );
 				$step['button_class'] = $this->output_data['plugin_setup'] ? 'button-primary' : 'grey';
-
 				break;
 		}
 

@@ -1,0 +1,44 @@
+.servicos-conteudo {
+  padding: 2.5rem 0;
+
+  @include media-breakpoint-up(md) {
+    padding: 5rem 0;
+  }
+
+  &__image {
+    margin-bottom: 1rem;
+
+    @include media-breakpoint-up(md) {
+      margin-bottom: 0;
+    }
+
+    img {
+      border-radius: 20px;
+    }
+  }
+
+  &__content {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  &__btn {
+    align-self: flex-start;
+    background-color: $primary;
+    border-radius: 50px;
+    color: $white;
+    font-size: .825rem;
+    margin-top: 1rem;
+    padding: .5rem .75rem;
+    text-align: left;
+    transition: all ease-in-out .25s;
+
+    &:hover{
+      background-color: $secondary;
+      color: $white;
+      text-decoration: none;
+    }
+  }
+}

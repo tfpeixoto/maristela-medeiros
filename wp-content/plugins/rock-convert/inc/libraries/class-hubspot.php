@@ -1,4 +1,13 @@
 <?php
+/**
+ * The HubsPot integration class.
+ *
+ * @package    Rock_Convert\Inc\libraries
+ * @link       https://rockcontent.com
+ * @since      1.0.0
+ *
+ * @author     Rock Content
+ */
 
 namespace Rock_Convert\inc\libraries;
 
@@ -11,97 +20,106 @@ namespace Rock_Convert\inc\libraries;
  * @since   2.0.0
  * @package Rock_Convert\inc\libraries
  */
-class Hubspot
-{
-    /**
-     * Hubspot form url
-     *
-     * @since 2.0.0
-     *
-     * @var null
-     */
-    public $form_url;
+class Hubspot {
 
-    /**
-     * @var
-     */
-    public $page_url;
+	/**
+	 * Hubspot form url
+	 *
+	 * @since 2.0.0
+	 *
+	 * @var null
+	 */
+	public $form_url;
 
-    /**
-     * Hubspot constructor.
-     *
-     * @param string $form_url
-     */
-    public function __construct($form_url, $page_url = null)
-    {
-        $this->form_url = $form_url;
-        $this->page_url = $page_url;
-    }
+	/**
+	 * Page URL
+	 *
+	 * @var null
+	 */
+	public $page_url;
 
-    /**
-     * @param string $email
-     * @param array $custom_context
-     * @param string $life_cycle
-     *
-     * @return array|\WP_Error
-     */
-    public function newLead(
-        $email,
-        $custom_context = array(),
-        $life_cycle = "subscriber"
-    ) {
+	/**
+	 * Hubspot constructor.
+	 *
+	 * @param string $form_url Hubspot URL form.
+	 * @param string $page_url Page of blog/site.
+	 */
+	public function __construct( $form_url, $page_url = null ) {
+		$this->form_url = $form_url;
+		$this->page_url = $page_url;
+	}
 
-        $context = $this->build_context($custom_context);
+	/**
+	 * Send new lead
+	 *
+	 * @param string $email Email from subscriber.
+	 * @param array  $custom_context Context from subscrition.
+	 * @param string $life_cycle Life cycle.
+	 *
+	 * @return array|\WP_Error
+	 */
+	public function new_lead(
+		$email,
+		$custom_context = array(),
+		$life_cycle = 'subscriber'
+	) {
 
-        return wp_remote_post($this->form_url, array(
-            'headers' => array('Content-Type' => 'application/x-www-form-urlencoded; charset=utf-8'),
-            'body'    => $this->get_post_body($email, $life_cycle, $context),
-            'method'  => 'POST'
-        ));
-    }
+		$context = $this->build_context( $custom_context );
 
-    /**
-     * @param array $custom_context
-     *
-     * @return string
-     */
-    private function build_context($custom_context = array())
-    {
-        /**
-         * Visitors cookie
-         */
-        $hubspotutk = $_COOKIE['hubspotutk'];
+		return wp_remote_post(
+			$this->form_url,
+			array(
+				'headers' => array( 'Content-Type' => 'application/x-www-form-urlencoded; charset=utf-8' ),
+				'body'    => $this->get_post_body( $email, $context, $life_cycle ),
+				'method'  => 'POST',
+			)
+		);
+	}
 
-        /**
-         * Current visitor IP address
-         */
-        $ip_addr = $_SERVER['REMOTE_ADDR'];
+	/**
+	 * Build context
+	 *
+	 * @param array $custom_context Custom context if needed.
+	 *
+	 * @return string
+	 */
+	private function build_context( $custom_context = array() ) {
+		/**
+		 * Visitors cookie
+		 */
+		$hubspotutk = isset( $_COOKIE['hubspotutk'] ) ? sanitize_text_field( wp_unslash( $_COOKIE['hubspotutk'] ) ) : null;
 
-        /**
-         * Merge custom context with both cookie and IP Address
-         */
-        $hs_context = array(
-            'hutk'      => $hubspotutk,
-            'ipAddress' => $ip_addr,
-            "pageUrl"   => $this->page_url
-        );
+		/**
+		 * Current visitor IP address
+		 */
+		$ip_addr = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : null;
 
-        $context = array_merge($hs_context, $custom_context);
+		/**
+		 * Merge custom context with both cookie and IP Address
+		 */
+		$hs_context = array(
+			'hutk'      => $hubspotutk,
+			'ipAddress' => $ip_addr,
+			'pageUrl'   => $this->page_url,
+		);
 
-        return json_encode($context);
-    }
+		$context = array_merge( $hs_context, $custom_context );
 
-    /**
-     * @param string $email
-     * @param string $life_cycle
-     * @param string $context
-     *
-     * @return string
-     */
-    private function get_post_body($email, $life_cycle, $context)
-    {
-        return "email=" . urlencode($email)
-               . "&lifecyclestage=" . $life_cycle
-               . "&hs_context=" . urlencode($context);
-    }
+		return wp_json_encode( $context );
+	}
+
+	/**
+	 * Get post body
+	 *
+	 * @param string $email Email from subscriber.
+	 * @param string $context Context from subscrition.
+	 * @param string $life_cycle Life cycle.
+	 *
+	 * @return string
+	 */
+	private function get_post_body( $email, $context, $life_cycle ) {
+		return 'email=' . rawurlencode( $email )
+			. '&lifecyclestage=' . $life_cycle
+			. '&hs_context=' . rawurlencode( $context );
+	}
 }

@@ -10,6 +10,23 @@ if ( ! class_exists( 'ES_Pepipost_Mailer' ) ) {
 	 * @since 4.3.2 Modified response
 	 */
 	class ES_Pepipost_Mailer extends ES_Base_Mailer {
+
+		/**
+		 * Mailer name
+		 *
+		 * @since 4.8.5
+		 * @var
+		 */
+		public $name = 'Pepipost';
+
+		/**
+		 * Mailer Slug
+		 *
+		 * @since 4.8.5
+		 * @var
+		 */
+		public $slug = 'pepipost';
+
 		/**
 		 * Pepipost API Url
 		 *
@@ -192,13 +209,23 @@ if ( ! class_exists( 'ES_Pepipost_Mailer' ) ) {
 		 * @since 4.7.5
 		 */
 		public function convert_es_tags_to_mailer_tags( $string = '' ) {
-			$string = str_replace( '{{NAME}}', '[%NAME%]', $string );
-			$string = str_replace( '{{FIRSTNAME}}', '[%FIRSTNAME%]', $string );
-			$string = str_replace( '{{LASTNAME}}', '[%LASTNAME%]', $string );
-			$string = str_replace( '{{EMAIL}}', '[%EMAIL%]', $string );
-			$string = str_replace( '{{UNSUBSCRIBE-LINK}}', '[%UNSUBSCRIBE_LINK%]', $string );
-			$string = str_replace( '{{SUBSCRIBE-LINK}}', '[%SUBSCRIBE_LINK%]', $string );
-			return $string;
+			$string = ES_Common::replace_keywords_with_fallback( $string, array(
+				'subscriber.name'             => '[%name%]',
+				'subscriber.first_name'        => '[%first_name%]',
+				'subscriber.last_name'         => '[%last_name%]',
+				'subscriber.email'            => '[%email%]',
+				'subscriber.unsubscribe_link' => '[%unsubscribe_link%]',
+				'subscriber.subscribe_link'   => '[%subscribe_link%]',
+			));
+
+			return ES_Common::replace_keywords_with_fallback( $string, array(
+				'NAME'             => '[%NAME%]',
+				'FIRSTNAME'        => '[%FIRSTNAME%]',
+				'LASTNAME'         => '[%LASTNAME%]',
+				'EMAIL'            => '[%EMAIL%]',
+				'UNSUBSCRIBE-LINK' => '[%UNSUBSCRIBE_LINK%]',
+				'SUBSCRIBE-LINK'   => '[%SUBSCRIBE_LINK%]',
+			) );
 		}
 
 		/**
@@ -262,10 +289,10 @@ if ( ! class_exists( 'ES_Pepipost_Mailer' ) ) {
 		 * @since 4.7.5
 		 */
 		public function set_content( $content ) {
-
-			// We are decoding HTML entities i.e. converting &#8220; to “ to fix garbage characters issue in CZech languange
-			// We need to decode entities only in case of Pepipost. For other mailers it is working as expected.
-			$content = ES_Common::decode_entities( $content );
+			
+			if ( function_exists( 'mb_convert_encoding' ) ) {
+				$content = mb_convert_encoding( $content, 'UTF-8', mb_detect_encoding( $content, 'UTF-8, ISO-8859-1', true ) );
+			}
 
 			$this->set_body_param(
 				array(

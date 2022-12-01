@@ -33,7 +33,6 @@ new MetaSlider_Callout($metaslider_callout_name, $metaslider_callout_text, $meta
  */
 class MetaSlider_Callout
 {
-
     /**
      * The notice key
      *
@@ -66,10 +65,10 @@ class MetaSlider_Callout
     /**
      * Constructor
      *
-     * @param string 	  $key   The key of the callout (should be unique)
-     * @param string 	  $text  The text of the callout
+     * @param string      $key   The key of the callout (should be unique)
+     * @param string      $text  The text of the callout
      * @param string|null $image The html of the image
-     * @param string 	  $page  The page to show the callout
+     * @param string      $page  The page to show the callout
      */
     public function __construct($key, $text, $image = null, $page = 'plugins')
     {
@@ -91,7 +90,7 @@ class MetaSlider_Callout
     {
 
         // Only show to users who can access MetaSlider
-        $capability = apply_filters('metaslider_capability', 'edit_others_posts');
+        $capability = apply_filters('metaslider_capability', MetaSliderPlugin::DEFAULT_CAPABILITY_EDIT_SLIDES);
         if (!current_user_can($capability)) {
             return;
         }
@@ -107,8 +106,8 @@ class MetaSlider_Callout
         update_user_option(get_current_user_id(), 'metaslider_user_saw_callout_' . $this->key, true);
 
         // Add all the necessary scripts and styles
-        wp_enqueue_script('metaslider-tether-js-callout', METASLIDER_ADMIN_URL . 'assets/tether/dist/js/tether.min.js', METASLIDER_VERSION, true);
-        wp_enqueue_script('metaslider-shepherd-js-callout', METASLIDER_ADMIN_URL . 'assets/tether-shepherd/dist/js/shepherd.min.js', array('metaslider-tether-js-callout'), METASLIDER_VERSION, true);
+        wp_enqueue_script('metaslider-tether-js-callout', METASLIDER_ADMIN_URL . 'assets/tether/dist/js/tether.min.js', METASLIDER_ASSETS_VERSION, true);
+        wp_enqueue_script('metaslider-shepherd-js-callout', METASLIDER_ADMIN_URL . 'assets/tether-shepherd/dist/js/shepherd.min.js', array('metaslider-tether-js-callout'), METASLIDER_ASSETS_VERSION, true);
         $this->wp_add_inline_script('metaslider-shepherd-js-callout', "
 			try {
 				window.jQuery(function($) {
@@ -133,7 +132,7 @@ class MetaSlider_Callout
 			}
 		");
 
-        wp_enqueue_style('metaslider-shepherd-css-callout', METASLIDER_ADMIN_URL . 'assets/tether-shepherd/dist/css/shepherd-theme-arrows.css', false, METASLIDER_VERSION);
+        wp_enqueue_style('metaslider-shepherd-css-callout', METASLIDER_ADMIN_URL . 'assets/tether-shepherd/dist/css/shepherd-theme-arrows.css', false, METASLIDER_ASSETS_VERSION);
         wp_add_inline_style('metaslider-shepherd-css-callout', "
 			.metaslider-callout-tip {
 				z-index: 999999;

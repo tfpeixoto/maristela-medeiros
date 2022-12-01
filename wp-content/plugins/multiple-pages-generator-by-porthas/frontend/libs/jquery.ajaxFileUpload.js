@@ -54,7 +54,7 @@ class Upload {
 
 
                         toastr.error(
-                            translate['Looks like you attempt to use large source file, that reached memory allocated to PHP or reached max_post_size. Please, increase memory limit according to documentation for your web server. For additional information, check .log files of web server or'] + `<a target="_blank" style="text-decoration: underline" href="https://docs.mpgwp.com/article/30-500-internal-server-error"> ${translate['read our article']}</a>.`,
+                            translate['Looks like you attempt to use large source file, that reached memory allocated to PHP or reached max_post_size. Please, increase memory limit according to documentation for your web server. For additional information, check .log files of web server or'] + `<a target="_blank" style="text-decoration: underline" href="https://docs.themeisle.com/article/1443-500-internal-server-error"> ${translate['read our article']}</a>.`,
                             translate['Server settings limitation'], { timeOut: 30000 });
                     
                     }else{

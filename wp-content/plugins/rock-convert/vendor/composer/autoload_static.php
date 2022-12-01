@@ -4,12 +4,16 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit4281be6bed8356f909e8d08e2d7e6bd2
+class ComposerStaticInit1aa60280cb219a8f19af7c33295979c6
 {
     public static $prefixLengthsPsr4 = array (
         'S' => 
         array (
             'Spipu\\Html2Pdf\\' => 15,
+        ),
+        'R' => 
+        array (
+            'Rock_Convert\\' => 13,
         ),
     );
 
@@ -18,9 +22,14 @@ class ComposerStaticInit4281be6bed8356f909e8d08e2d7e6bd2
         array (
             0 => __DIR__ . '/..' . '/spipu/html2pdf/src',
         ),
+        'Rock_Convert\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/inc',
+        ),
     );
 
     public static $classMap = array (
+        'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
         'Datamatrix' => __DIR__ . '/..' . '/tecnickcom/tcpdf/include/barcodes/datamatrix.php',
         'PDF417' => __DIR__ . '/..' . '/tecnickcom/tcpdf/include/barcodes/pdf417.php',
         'QRcode' => __DIR__ . '/..' . '/tecnickcom/tcpdf/include/barcodes/qrcode.php',
@@ -40,9 +49,9 @@ class ComposerStaticInit4281be6bed8356f909e8d08e2d7e6bd2
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit4281be6bed8356f909e8d08e2d7e6bd2::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit4281be6bed8356f909e8d08e2d7e6bd2::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInit4281be6bed8356f909e8d08e2d7e6bd2::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit1aa60280cb219a8f19af7c33295979c6::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit1aa60280cb219a8f19af7c33295979c6::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInit1aa60280cb219a8f19af7c33295979c6::$classMap;
 
         }, null, ClassLoader::class);
     }

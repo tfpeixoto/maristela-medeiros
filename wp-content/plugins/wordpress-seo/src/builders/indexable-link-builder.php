@@ -309,7 +309,12 @@ class Indexable_Link_Builder {
 
 				$model->width  = $width;
 				$model->height = $height;
-				$model->size   = \filesize( $file );
+				if ( \file_exists( $file ) ) {
+					$model->size = \filesize( $file );
+				}
+				else {
+					$model->size = null;
+				}
 			}
 			else {
 				$model->width  = 0;
@@ -404,8 +409,8 @@ class Indexable_Link_Builder {
 		return \array_udiff(
 			$links_a,
 			$links_b,
-			function( SEO_Links $link_a, SEO_Links $link_b ) {
-				return strcmp( $link_a->url, $link_b->url );
+			static function( SEO_Links $link_a, SEO_Links $link_b ) {
+				return \strcmp( $link_a->url, $link_b->url );
 			}
 		);
 	}

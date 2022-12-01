@@ -23,8 +23,10 @@ final class ES_Compatibility_Elementor {
 	 * @param $forms_module \ElementorPro\Modules\Forms\Module
 	 */
 	public function register_for_action( $forms_module ) {
-		require_once 'actions/class-es-ig-form-action.php';
-		$forms_module->add_form_action( 'email_subscribers', new Es_Form_Action() );
+		if (method_exists($forms_module, 'add_form_action')) {
+			require_once 'actions/class-es-ig-form-action.php';
+			$forms_module->add_form_action( 'email_subscribers', new Es_Form_Action() );
+		}
 	}
 
 }

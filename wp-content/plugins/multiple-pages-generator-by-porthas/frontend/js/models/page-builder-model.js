@@ -7,7 +7,8 @@ import { mpgGetState } from '../helper.js';
 async function fillCustomTypeDropdown(projectData) {
     let customTypes = await jQuery.post(ajaxurl, {
         action: 'mpg_get_posts_by_custom_type',
-        custom_type_name: projectData.data.entity_type
+        custom_type_name: projectData.data.entity_type,
+        template_id: projectData.data.template_id,
     });
 
     let postsData = JSON.parse(customTypes)
@@ -37,7 +38,7 @@ async function fillCustomTypeDropdown(projectData) {
         }
     });
 
-    // В каждый дропдаун добавляем ссылку на добавление нового поста, страницы или кастом типа. Просто для удобства.
+    // каждый дропдаун добавляем ссылку на добавление нового поста, страницы или кастом типа. Просто для удобства.
     if (projectData.data.entity_type === 'post') {
         setTemplateDropdown.append(new Option(translate['+ Add new post'], `${backendData.mpgAdminPageUrl}post-new.php`));
     } else if (projectData.data.entity_type) {
@@ -53,6 +54,49 @@ async function fillCustomTypeDropdown(projectData) {
     if (projectData.data.source_type === 'direct_link') {
         jQuery('#direct_link').click();
     }
+    setTemplateDropdown.select2({
+        width: '415px',
+        minimumInputLength: 3,
+        ajax: {
+            delay: 250,
+            url: ajaxurl,
+            dataType: 'json',
+            method: 'post',
+            data: function( term ) {
+                return {
+                    action: 'mpg_get_posts_by_custom_type',
+                    custom_type_name: projectData.data.entity_type,
+                    q: term
+                }
+            },
+            processResults: function (res) {
+                if (projectData.data.entity_type === 'post') {
+                    res.data.push(
+                        {
+                            id: backendData.mpgAdminPageUrl + 'post-new.php',
+                            title: translate['+ Add new post']
+                        }
+                    );
+                } else if (projectData.data.entity_type) {
+                    res.data.push(
+                        {
+                            id: backendData.mpgAdminPageUrl + 'post-new.php?post_type=' + projectData.data.entity_type,
+                            title: translate['+ Add new'] + ' ' + projectData.data.entity_type
+                        }
+                    ); 
+                }
+                return {
+                    results: jQuery.map( res.data, function( obj ) {
+                        return {
+                            id: obj.id,
+                            text: obj.title,
+                            disabled: obj.is_home || false,
+                        }
+                    } )
+                }
+            }
+        }
+    });
 }
 
 function fillDataPreviewAndUrlGeneration(project, headers) {
@@ -89,20 +133,24 @@ function fillDataPreviewAndUrlGeneration(project, headers) {
 
     {
         // Прячем колонки, которые не помищеются, чтобы небыло скрола.
-        let tableContainer = jQuery('.data-table-container');
-        let containerWidth = tableContainer.width();
-        let widthStorage = 0;
-        let tableHeaders = jQuery('#mpg_dataset_limited_rows_table thead th');
-        let columnsToHide = [];
+        try {
+            let tableContainer = jQuery('.data-table-container');
+            let containerWidth = tableContainer.width();
+            let widthStorage = 0;
+            let tableHeaders = jQuery('#mpg_dataset_limited_rows_table thead th');
+            let columnsToHide = [];
 
-        jQuery.each(tableHeaders, function (index, elem) {
-            widthStorage += jQuery(elem).outerWidth();
+            jQuery.each(tableHeaders, function (index, elem) {
+                widthStorage += jQuery(elem).outerWidth();
 
-            if (widthStorage > containerWidth) {
-                columnsToHide.push(index); // например 5, 6, 7 ..., потому что первых 4 помещаются.
-            }
-        });
-        table.columns(columnsToHide).visible(false);
+                if (widthStorage > containerWidth) {
+                    columnsToHide.push(index); // например 5, 6, 7 ..., потому что первых 4 помещаются.
+                }
+            });
+            table.columns(columnsToHide).visible(false);
+        } catch (err) {
+            console.error(err);
+        }
     }
 
 
@@ -126,7 +174,7 @@ function fillDataPreviewAndUrlGeneration(project, headers) {
 }
 
 
-function renderTableWithAllURLs(e){
+function renderTableWithAllURLs(e) {
 
     e.preventDefault();
 

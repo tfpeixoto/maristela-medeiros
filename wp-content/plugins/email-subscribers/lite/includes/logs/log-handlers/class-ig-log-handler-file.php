@@ -122,6 +122,11 @@ if ( ! class_exists( 'IG_Log_Handler_File' ) ) {
 			if ( $file ) {
 				if ( ! file_exists( $file ) ) {
 					$temphandle = @fopen( $file, 'w+' ); // @codingStandardsIgnoreLine.
+					
+					if ( ! $temphandle ) {
+						return false;
+					}
+					
 					@fclose( $temphandle ); // @codingStandardsIgnoreLine.
 
 					if ( defined( 'FS_CHMOD_FILE' ) ) {

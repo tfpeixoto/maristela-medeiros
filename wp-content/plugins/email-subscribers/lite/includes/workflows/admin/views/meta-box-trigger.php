@@ -57,6 +57,30 @@ if ( ! ES()->is_pro() ) {
 		'User'      => array(
 			'ig_es_user_role_changed' => __( 'User Role Changed', 'email-subscribers' ),
 		),
+		'LearnDash' => array(
+			'ig_es_ld_user_enrolled' => __( 'User enrolled in course', 'email-subscribers' ),
+			'ig_es_ld_user_removed'  => __( 'User removed from a course', 'email-subscribers' ),
+		),
+		'Ultimate Member' => array(
+			'ig_es_um_membership_approved' => __( 'Membership Approved', 'email-subscribers' ),
+			'ig_es_um_membership_deactivated'  => __( 'Membership Deactivated', 'email-subscribers' ),
+		),
+		'Paid Memberships Pro' => array(
+			'ig_es_pmp_membership_purchased' => __( 'Membership Purchased', 'email-subscribers' ),
+			'ig_es_pmp_membership_expired'  => __( 'Membership Expired', 'email-subscribers' ),
+			'ig_es_pmp_membership_canceled'  => __( 'Membership Canceled', 'email-subscribers' ),
+		),
+		'MemberPress' => array(
+			'ig_es_mp_one_time_product_purchased' => __( 'Product Purchased - One Time', 'email-subscribers' ),
+			'ig_es_mp_recurring_product_purchased'  => __( 'Product Purchased - Recurring', 'email-subscribers' ),
+			'ig_es_mp_membership_expired'  => __( 'Membership Expired', 'email-subscribers' ),
+			'ig_es_mp_membership_canceled'  => __( 'Membership Canceled', 'email-subscribers' ),
+		),
+		'WooCommerce Memberships' => array(
+			'ig_es_wcm_membership_created' => __( 'Membership Created', 'email-subscribers' ),
+			'ig_es_wcm_membership_expired' => __( 'Membership Expired', 'email-subscribers' ),
+			'ig_es_wcm_membership_canceled'  => __( 'Membership Canceled', 'email-subscribers' ),
+		),
 	);
 	$trigger_list     = array_merge_recursive( $trigger_list, $pro_trigger_list );
 }
@@ -88,11 +112,11 @@ if ( ! ES()->is_pro() ) {
 					</optgroup>
 				<?php endforeach; ?>
 			</select>
-			<?php if ( $current_trigger && $current_trigger->get_description() ) : ?>
-				<div class="js-trigger-description"><?php echo wp_kses_post( $current_trigger->get_description_html() ); ?></div>
-			<?php else : ?>
-				<div class="js-trigger-description"></div>
-			<?php endif; ?>
+			<div class="js-trigger-description">
+				<?php if ( $current_trigger && $current_trigger->get_description() ) : ?>
+					<?php echo wp_kses_post( $current_trigger->get_description_html() ); ?>
+				<?php endif; ?>
+			</div>
 		</td>
 	</tr>
 

@@ -58,7 +58,7 @@ class Email_Subscribers_Activator {
 			'not_found'          => __( 'No Templates found', 'email-subscribers' ),
 			'not_found_in_trash' => __( 'No Templates found in Trash', 'email-subscribers' ),
 			'parent_item_colon'  => '',
-			'menu_name'          => __( 'Email Subscribers', 'email-subscribers' ),
+			'menu_name'          => __( 'Icegram Express', 'email-subscribers' ),
 			'featured_image'     => __( 'Thumbnail (For Visual Representation only)', 'email-subscribers' ),
 			'set_featured_image' => __( 'Set thumbnail', 'email-subscribers' ),
 		);

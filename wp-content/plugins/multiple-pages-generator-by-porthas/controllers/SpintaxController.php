@@ -23,6 +23,8 @@ class MPG_SpintaxController
             wp_die();
         } catch (Exception $e) {
 
+            do_action( 'themeisle_log_event', MPG_NAME, $e->getMessage(), 'debug', __FILE__, __LINE__ );
+
             echo json_encode([
                 'success' => false,
                 'error' => $e->getMessage()
@@ -60,10 +62,17 @@ class MPG_SpintaxController
             $table_name = $wpdb->prefix .  MPG_Constant::MPG_SPINTAX_TABLE;
             $requested_url = MPG_Helper::mpg_get_request_uri();
 
-            $spintax_string = $wpdb->get_results('SELECT `spintax_string` FROM ' . $table_name . ' WHERE `url` = "' . $requested_url . '" and `block_id` = "' . $block_id . '"');
+            $spintax_string = $wpdb->get_results('SELECT `spintax_string`, `id` FROM ' . $table_name . ' WHERE `url` = "' . $requested_url . '" and `block_id` = "' . $block_id . '"');
 
-            if (!empty($spintax_string)) {
-                return $spintax_string[0]->spintax_string;
+            if ( ! empty( $spintax_string ) ) {
+                $id = $spintax_string[0]->id;
+                $spintax_content = $spintax_string[0]->spintax_string;
+                if ( false !== strpos( $spintax_content, 'mpg_' ) ) {
+                    $deleted = $wpdb->get_results( 'DELETE FROM ' . $table_name . ' WHERE `id` = ' . $id  );
+                    $spintax_content = MPG_SpintaxModel::mpg_generate_spintax_string($content);
+                    $requested_url = '/';
+                }
+                return $spintax_content;
             }
 
             // Делаем так, чтобы служебные УРЛы не попадали в базу.
@@ -84,6 +93,9 @@ class MPG_SpintaxController
             return;
 
         } catch (Exception $e) {
+
+            do_action( 'themeisle_log_event', MPG_NAME, $e->getMessage(), 'debug', __FILE__, __LINE__ );
+
             return $e->getMessage();
         }
     }
@@ -107,6 +119,8 @@ class MPG_SpintaxController
 
             wp_die();
         } catch (Exception $e) {
+
+            do_action( 'themeisle_log_event', MPG_NAME, $e->getMessage(), 'debug', __FILE__, __LINE__ );
 
             echo json_encode([
                 'success' => false,

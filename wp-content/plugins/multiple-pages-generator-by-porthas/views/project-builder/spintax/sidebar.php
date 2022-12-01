@@ -10,7 +10,7 @@
 
             <a class="btn btn-primary upgrade-btn" href="<?php echo mpg_app()->get_upgrade_url(); ?>"><?php _e('Upgrade to PRO', 'mpg'); ?></a>
 
-            <p><?php _e('Your current plan is limited to 50 generated pages and 1 template. Schedule source import is also a PRO feature', 'mpg') ?></p>
+            <p><?php mpg_app()->upgrade_notice(); ?></p>
 
         <?php } ?>
 

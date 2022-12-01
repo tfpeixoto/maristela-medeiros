@@ -3,7 +3,9 @@
  * Helper class for interacting with the user
  */
 
-namespace Extendify\ExtendifySdk;
+namespace Extendify\Library;
+
+use Extendify\Library\App;
 
 /**
  * Helper class for interacting with the user
@@ -26,7 +28,7 @@ class User
     protected $user = null;
 
     /**
-     * The DB key for scoping
+     * The DB key for scoping. For historical reasons do not change
      *
      * @var string
      */
@@ -67,6 +69,20 @@ class User
     }
 
     /**
+     * Updates the site type. Currently used by onboarding only
+     *
+     * @param array $siteType - Site type array.
+     * @return mixed - Data about the user.
+     */
+    public static function updateSiteType($siteType)
+    {
+        $data = json_decode(static::state(), true);
+        $data['state']['preferredOptions']['taxonomies']['siteType']['slug'] = $siteType['slug'];
+        $data['state']['preferredOptions']['taxonomies']['siteType']['title'] = $siteType['title'];
+        return static::updateState(\wp_json_encode($data));
+    }
+
+    /**
      * Returns data about the user
      * Use it like User::data('ID') to get the user id
      *
@@ -84,7 +100,19 @@ class User
     }
 
     /**
-     * Returns the application state for he current user
+     * Update the user state
+     *
+     * @param string $newState - JSON encoded state.
+     * @return string - JSON representation of the updated state
+     */
+    private function updateStateHandler($newState)
+    {
+        \update_user_meta($this->user->ID, $this->key . 'user_data', $newState);
+        return \get_user_meta($this->user->ID, $this->key . 'user_data');
+    }
+
+    /**
+     * Returns application state for the current user
      * Use it like User::data('ID') to get the user id
      *
      * @return string - JSON representation of the current state
@@ -103,15 +131,26 @@ class User
             $userData['version'] = 0;
         }
 
-        // Get the current default number of imports allowed.
-        if (!isset($userData['state']['allowedImports'])) {
-            $currentImports = Http::get('/max-free-imports');
-            $userData['state']['allowedImports'] = is_numeric($currentImports) && $currentImports > 0 ? $currentImports : 3;
+        // This will reset the allowed max imports to 0 once a week which will force the library to re-check.
+        if (!get_transient('extendify_import_max_check_' . $this->user->ID)) {
+            set_transient('extendify_import_max_check_' . $this->user->ID, time(), strtotime('1 week', 0));
+            $userData['state']['allowedImports'] = 0;
+        }
+
+        // Similar to above, this will give the user free imports once a month just for logging in.
+        if (!get_transient('extendify_free_extra_imports_check_' . $this->user->ID)) {
+            set_transient('extendify_free_extra_imports_check_' . $this->user->ID, time(), strtotime('first day of next month', 0));
+            $userData['state']['runningImports'] = 0;
+        }
+
+        if (!isset($userData['state']['sdkPartner']) || !$userData['state']['sdkPartner']) {
+            $userData['state']['sdkPartner'] = App::$sdkPartner;
         }
 
         $userData['state']['uuid'] = self::data('uuid');
         $userData['state']['canInstallPlugins'] = \current_user_can('install_plugins');
         $userData['state']['canActivatePlugins'] = \current_user_can('activate_plugins');
+        $userData['state']['isAdmin'] = \current_user_can('create_users');
 
         return \wp_json_encode($userData);
     }

@@ -31,7 +31,9 @@ class MPG_ProjectModel
             require_once(ABSPATH . '/wp-admin/includes/upgrade.php');
 
             #Check to see if the table exists already, if not, then create it
-            if ($wpdb->get_var("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '$mpg_projects_table'") != $mpg_projects_table) {
+
+            if (!$wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($mpg_projects_table))) == $mpg_projects_table) {
+
 
                 $sql = "CREATE TABLE `" . $mpg_projects_table . "` ( ";
 
@@ -76,8 +78,11 @@ class MPG_ProjectModel
                 $sql = null;
             }
 
-            if ($wpdb->get_var("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '$mpg_spintax_table'") != $mpg_spintax_table) {
+            if ( ! $wpdb->get_var( "SHOW COLUMNS FROM `$mpg_projects_table` LIKE 'sitemap_priority'" ) ) {
+                $wpdb->query( "ALTER TABLE `$mpg_projects_table` ADD `sitemap_priority` float NOT NULL" );
+            }
 
+            if (!$wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($mpg_spintax_table))) == $mpg_spintax_table) {
 
                 $sql  = "CREATE TABLE  `" . $mpg_spintax_table . "` ( ";
                 $sql .= "`id` INT(10) NOT NULL AUTO_INCREMENT , ";
@@ -90,14 +95,14 @@ class MPG_ProjectModel
                 $sql = null;
             }
 
-            $is_block_id_column_exist = $wpdb->get_results("SELECT `block_id` FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = '" . $mpg_spintax_table . "' AND column_name = 'block_id'");
+            $is_block_id_column_exist = $wpdb->get_results("SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '" . DB_NAME . "' AND  table_name = '" . $mpg_spintax_table . "' AND column_name = 'block_id'");
 
             if (empty($is_block_id_column_exist)) {
                 $wpdb->query("ALTER TABLE `" . $mpg_spintax_table . "` ADD `block_id` varchar(255) NOT NULL default '1' AFTER `project_id`");
             }
 
 
-            if ($wpdb->get_var("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '$mpg_cache_table'") != $mpg_cache_table) {
+            if (!$wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($mpg_cache_table))) == $mpg_cache_table) {
 
                 $sql  = "CREATE TABLE  `" . $mpg_cache_table . "` ( ";
                 $sql .= "`id` INT(10) NOT NULL AUTO_INCREMENT , ";
@@ -110,7 +115,7 @@ class MPG_ProjectModel
                 $sql = null;
             }
 
-            if ($wpdb->get_var("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '$mpg_logs_table'") != $mpg_logs_table) {
+            if (!$wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($mpg_logs_table))) == $mpg_logs_table) {
 
                 $sql  = "CREATE TABLE  `" . $mpg_logs_table . "` ( ";
                 $sql .= "`id` INT(10) NOT NULL AUTO_INCREMENT , ";
@@ -125,38 +130,43 @@ class MPG_ProjectModel
                 $sql = null;
             }
 
-            $is_cache_column_exist = $wpdb->get_results("SELECT `cache_type` FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = '" . $mpg_projects_table . "' AND column_name = 'cache_type'");
+            $is_cache_column_exist = $wpdb->get_results("SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '" . DB_NAME . "' AND table_name = '" . $mpg_projects_table . "' AND column_name = 'cache_type'");
 
             if (empty($is_cache_column_exist)) {
                 $wpdb->query("ALTER TABLE `" . $mpg_projects_table . "` ADD `cache_type` varchar(255) NOT NULL default 'none' AFTER `schedule_notification_email`");
             }
 
-            $is_url_mode_column_exist = $wpdb->get_results("SELECT `url_mode` FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = '" . $mpg_projects_table . "' AND column_name = 'url_mode'");
+            $is_url_mode_column_exist = $wpdb->get_results("SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '" . DB_NAME . "' AND table_name = '" . $mpg_projects_table . "' AND column_name = 'url_mode'");
 
             if (empty($is_url_mode_column_exist)) {
                 $wpdb->query("ALTER TABLE `" . $mpg_projects_table . "` ADD `url_mode` varchar(25) NOT NULL default '" . MPG_Constant::DEFAULT_URL_MODE . "' AFTER `headers`");
             }
 
-            $is_apply_condition_column_exist = $wpdb->get_results("SELECT `apply_condition` FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = '" . $mpg_projects_table . "' AND column_name = 'apply_condition'");
+            $is_apply_condition_column_exist = $wpdb->get_results("SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '" . DB_NAME . "' AND table_name = '" . $mpg_projects_table . "' AND column_name = 'apply_condition'");
 
             if (empty($is_apply_condition_column_exist)) {
                 $wpdb->query("ALTER TABLE `" . $mpg_projects_table . "` ADD `apply_condition` varchar(200) default null  AFTER `url_mode`");
             }
 
-            $is_participate_in_search_column_exist =  $wpdb->get_results("SELECT `participate_in_search` FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = '" . $mpg_projects_table . "' AND column_name = 'participate_in_search'");
+            $is_participate_in_search_column_exist =  $wpdb->get_results("SELECT *  FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '" . DB_NAME . "' AND table_name = '" . $mpg_projects_table . "' AND column_name = 'participate_in_search'");
             if (empty($is_participate_in_search_column_exist)) {
                 $wpdb->query("ALTER TABLE `" . $mpg_projects_table . "` ADD `participate_in_search` BOOLEAN DEFAULT FALSE  AFTER `exclude_in_robots`");
             }
 
 
-            $is_logs_table_have_id_column = $wpdb->get_results("SELECT `id` FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = '" . $mpg_logs_table . "' AND column_name = 'id'");
+            $is_logs_table_have_id_column = $wpdb->get_results("SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '" . DB_NAME . "' AND table_name = '" . $mpg_logs_table . "' AND column_name = 'id'");
             if (empty($is_logs_table_have_id_column)) {
+
                 $wpdb->query("ALTER TABLE  `" . $mpg_logs_table . "`  DROP PRIMARY KEY;");
                 $wpdb->query("ALTER TABLE  `" . $mpg_logs_table . "` ADD `id` INT(10) NOT NULL AUTO_INCREMENT FIRST, ADD PRIMARY KEY (`id`);");
             }
         } catch (Exception $e) {
 
-            echo $e->getMessage();
+            // В WprdPress ошибка вида "Wprdpress database error" - не является throwable, т.е она не прырывает ход выполнения скрипта, а просто выводится как echo, и может ломать json ответ.
+            // Надо копать в сторону WP_Error
+            do_action( 'themeisle_log_event', MPG_NAME, $e->getMessage(), 'debug', __FILE__, __LINE__ );
+
+            throw new Exception($e->getMessage());
         }
     }
 
@@ -202,13 +212,36 @@ class MPG_ProjectModel
         try {
             $custom_type_name = sanitize_text_field($_POST['custom_type_name']);
 
-            $query_object = new WP_Query(
-                array(
-                    'post_type' => $custom_type_name,
-                    'posts_per_page' => -1,
-                    'post_status' => 'publish'
-                )
+            $template_id = ! empty( $_POST['template_id'] ) ? intval( $_POST['template_id'] ) : 0;
+            $args = array(
+                'post_type' => $custom_type_name,
+                'posts_per_page' => 10,
+                'post_status' => 'publish',
+                'post__in' => array( $template_id ),
+                'orderby' => 'title',
+                'order'   => 'ASC',
             );
+
+            if ( isset( $_POST['q'] ) && ! empty( $_POST['q']['term'] ) ) {
+                $args['s'] = sanitize_text_field( $_POST['q']['term'] );
+                unset( $args['posts_per_page'] );
+                unset( $args['post__in'] );
+                add_filter( 'posts_where', array( 'MPG_ProjectModel', 'mpg_get_search_by_title' ), 10, 2 );
+            }
+
+            global $sitepress;
+            $current_lang = '';
+
+            if ( is_object( $sitepress ) ) {
+                $current_lang = $sitepress->get_current_language();
+                $sitepress->switch_lang( 'all' );
+            }
+            $query_object = new WP_Query( $args );
+            
+            if ( is_object( $sitepress ) ) {
+                $sitepress->switch_lang( $current_lang );
+            }
+            remove_filter( 'posts_where', array( 'MPG_ProjectModel', 'mpg_get_search_by_title' ), 10 );
 
             // Свойство posts есть у всех типов, даж если єто page или какой-то кастом. тип.
             if (!$query_object->posts) {
@@ -235,9 +268,11 @@ class MPG_ProjectModel
 
                 array_push($storage, $entity);
             }
-
             echo json_encode(array('success' => true, 'data' => $storage));
         } catch (Exception $e) {
+
+            do_action( 'themeisle_log_event', MPG_NAME, $e->getMessage(), 'debug', __FILE__, __LINE__ );
+
             echo json_encode(['success' => false, 'error' => $e->getMessage()]);
         }
         wp_die();
@@ -271,10 +306,14 @@ class MPG_ProjectModel
                     echo json_encode(['success' => true, 'data' => ['path' => $destination, 'original_file_url' => $filename]]);
                     wp_die();
                 } else {
+                    do_action( 'themeisle_log_event', MPG_NAME, __('Error while uploading file', 'mpg'), 'debug', __FILE__, __LINE__ );
                     throw __('Error while uploading file', 'mpg');
                 }
             }
         } catch (Exception $e) {
+
+            do_action( 'themeisle_log_event', MPG_NAME, $e->getMessage(), 'debug', __FILE__, __LINE__ );
+
             echo json_encode(['success' => false, 'error' => $e->getMessage()]);
             wp_die();
         }
@@ -283,6 +322,9 @@ class MPG_ProjectModel
 
     public static function mpg_generate_urls_from_dataset($dataset_path, $url_structure, $space_replacer)
     {
+        if ( false === strpos( $dataset_path, 'wp-content' ) ) {
+            $dataset_path = MPG_UPLOADS_DIR . $dataset_path;
+        }
 
         $ext = MPG_Helper::mpg_get_extension_by_path($dataset_path);
 
@@ -293,6 +335,7 @@ class MPG_ProjectModel
         $dataset_array = [];
         foreach ($reader->getSheetIterator() as $sheet) {
             foreach ($sheet->getRowIterator() as $row) {
+                $row = $row->toArray();
                 if ($row[0] !== NULL) {
                     $dataset_array[] = $row;
                 }
@@ -303,7 +346,7 @@ class MPG_ProjectModel
         $reader->close();
 
         // 1. Берем первый ряд, тоесть тот что содержит заголовки
-        $headers = $dataset_array[0];
+        $headers = ! empty( $dataset_array[0] ) ? $dataset_array[0] : array();
 
         $shortcodes = [];
         foreach ($headers as $raw_header) {
@@ -323,6 +366,11 @@ class MPG_ProjectModel
         $url_structure = str_replace(' ', $space_replacer, $url_structure);
         preg_match_all($re, $url_structure, $matches, PREG_SET_ORDER, 0);
 
+        if ( empty( $matches ) ) {
+            $url_structure = $shortcodes[0];
+            $url_structure = str_replace(' ', $space_replacer, $url_structure);
+            preg_match_all($re, $url_structure, $matches, PREG_SET_ORDER, 0);
+        }
         // Тут будут номера столбцов, которым соответсвуюш шорткоды
 
         $indexes = [];
@@ -367,26 +415,30 @@ class MPG_ProjectModel
     }
 
 
-    public static function mpg_get_project_by_id($project_id)
+    public static function mpg_get_project_by_id($project_id, $force = false)
     {
 
         global $wpdb;
 
         try {
 
-            $project = wp_cache_get('project_id_' . $project_id, 'mpg');
-
-            if (!$project) {
-
+            $key_name = wp_hash( 'project_id_' . $project_id );
+            $project = get_transient( 'project_id_' . $project_id );
+            if ( false === $project ) {
+                $project = get_transient( $key_name );
+            }
+            if (!$project || $force) {
                 $project = $wpdb->get_results(
                     $wpdb->prepare("SELECT * FROM {$wpdb->prefix}" .  MPG_Constant::MPG_PROJECTS_TABLE . " WHERE id=%d", $project_id)
                 );
-
-                wp_cache_add('project_id_' . $project_id, $project, 'mpg');
+                set_transient( $key_name, $project );
             }
 
             return count($project) ? $project : null;
         } catch (Exception $e) {
+
+            do_action( 'themeisle_log_event', MPG_NAME, sprintf( 'Can\'t getproject by id. Details: %s', $e->getMessage() ), 'debug', __FILE__, __LINE__ );
+
             throw new Exception(__('Can\'t getproject by id. Details:', 'mpg') . $e->getMessage());
         }
     }
@@ -398,15 +450,21 @@ class MPG_ProjectModel
         global $wpdb;
 
         try {
-            // var_dump($fields_array);
+            if ( empty( $fields_array['worksheet_id'] ) ) {
+                unset( $fields_array['worksheet_id'] );
+            }
             $wpdb->update($wpdb->prefix .  MPG_Constant::MPG_PROJECTS_TABLE, $fields_array, ['id' => $project_id]);
 
             if ($wpdb->last_error) {
                 throw new Exception($wpdb->last_error);
             }
-
+	        delete_transient( 'project_id_' . $project_id );
+            delete_transient( wp_hash( 'project_id_' . $project_id ) );
             return true;
         } catch (Exception $e) {
+
+            do_action( 'themeisle_log_event', MPG_NAME, sprintf( 'Can\'t update project by ID. Details: %s', $e->getMessage() ), 'debug', __FILE__, __LINE__ );
+
             throw new Exception(__('Can\'t update project by ID. Details:', 'mpg') . $e->getMessage());
         }
     }
@@ -425,6 +483,9 @@ class MPG_ProjectModel
                 'data' => count($projects) ? $projects : null
             ]);
         } catch (Exception $e) {
+
+            do_action( 'themeisle_log_event', MPG_NAME, sprintf( 'Can\'t get all projects Details: %s', $e->getMessage() ), 'debug', __FILE__, __LINE__ );
+
             throw new Exception(__('Can\'t get all projects Details:', 'mpg') . $e->getMessage());
         }
 
@@ -440,6 +501,9 @@ class MPG_ProjectModel
             //  It returns the number of rows updated, or false on error.
             return $wpdb->delete($wpdb->prefix . MPG_Constant::MPG_PROJECTS_TABLE, ['id' => $project_id], ['%d']);
         } catch (Exception $e) {
+
+            do_action( 'themeisle_log_event', MPG_NAME, sprintf( 'Can\'t delete project. Details: %s', $e->getMessage() ), 'debug', __FILE__, __LINE__ );
+
             throw new Exception(__('Can\'t delete project. Details:', 'mpg') . $e->getMessage());
         }
     }
@@ -458,6 +522,9 @@ class MPG_ProjectModel
 
             return true;
         } catch (Exception $e) {
+
+            do_action( 'themeisle_log_event', MPG_NAME, sprintf( 'Details: %s', $e->getMessage() ), 'debug', __FILE__, __LINE__ );
+
             throw new Exception(__('Details: ' . $e->getMessage()));
         }
     }
@@ -467,7 +534,7 @@ class MPG_ProjectModel
 
         $ext = strtolower(pathinfo($source_path, PATHINFO_EXTENSION));
 
-        $destination = realpath(__DIR__ . '/../../../mpg-uploads/') . '/' . rand(1000000, 9999999) . '.' . $ext;
+        $destination = MPG_UPLOADS_DIR . rand(1000000, 9999999) . '.' . $ext;
 
         copy($source_path, $destination);
 
@@ -501,9 +568,11 @@ class MPG_ProjectModel
 
                 return true;
             } else {
+                do_action( 'themeisle_log_event', MPG_NAME, __('Some of needed values is missing, please, recreate task.', 'mpg'), 'debug', __FILE__, __LINE__ );
                 throw new Exception(__('Some of needed values is missing, please, recreate task.', 'mpg'));
             }
         } catch (Exception $e) {
+            do_action( 'themeisle_log_event', MPG_NAME, $e->getMessage(), 'debug', __FILE__, __LINE__ );
             throw new Exception($e->getMessage());
         }
     }
@@ -619,7 +688,25 @@ class MPG_ProjectModel
 
             return $storage;
         } catch (Exception $e) {
+
+            do_action( 'themeisle_log_event', MPG_NAME, sprintf( 'Can\'t get all projects Details: %s', $e->getMessage() ), 'debug', __FILE__, __LINE__ );
+
             throw new Exception(__('Can\'t get all projects Details:', 'mpg') . $e->getMessage());
         }
     }
+
+    /**
+     * Search by title only.
+     *
+     * @param string $where SQL where query.
+     * @param object $wp_query WP Query Object.
+     */
+    public static function mpg_get_search_by_title( $where, $wp_query ) {
+        global $wpdb;
+        if ( $search_term = $wp_query->get( 's' ) ) {
+            $where .= ' AND ' . $wpdb->posts . '.post_title LIKE \'%' . esc_sql( $wpdb->esc_like( $search_term ) ) . '%\'';
+        }
+        return $where;
+    }
+    
 }

@@ -3,9 +3,9 @@ Contributors: rockcontentplatform
 Plugin URI: https://stage.rockcontent.com/br/plugin-de-conversao/
 Tags: form,contact,statistics,marketing,ads
 Requires at least: 4.7
-Tested up to: 5.8.1
+Tested up to: 6.0.2
 Requires PHP: 5.6.0
-Stable tag: 2.8
+Stable tag: 3.0.0
 
 Publique banners no seu blog de maneira rápida e efetiva, e converta visitantes em subscribers, leads ou clientes sem precisar entender código.
 
@@ -53,6 +53,76 @@ Feito com ❤ pelo time da Rock Content no #SanPedroValley.
 [Conheça mais ferramentas de marketing gratuitas](https://rockcontent.com/ferramentas-de-marketing/?utm_source=wordpress&utm_medium=plugin&utm_campaign=cta)
 
 == Changelog ==
+
+= 3.0.0 =
+* Revisão completa do plugin
+* Refatorado o código para melhor desempenho e segurança
+* Todas as variáveis e opções foram escapadas a fim de evitar ataques XSS
+* Refatoração baseada no WordPress Coding Standard
+
+= 2.11.0 =
+Correção:
+* Corrigidos pontos de vulnerabilidade XSS
+* Melhoria na semântica dos formulários da área administrativa
+* Corrigida chamada a API Rest
+
+= 2.10.2 =
+Improvements:
+* Improvements in the plugin security
+
+= 2.10.1 =
+Correção:
+* Css which affected the theme fixed
+
+= 2.10.0 =
+Correção:
+* Fix popup front
+
+= 2.9.9 =
+Correção:
+* Fix query categories and layout admin
+
+= 2.9.8 =
+Correção:
+* Correção do formulário de popup
+
+= 2.9.7 =
+Correção:
+* Melhorias no layout do preview
+
+= 2.9.6 =
+Correção:
+* Correção de chamada de função javascript
+* Melhorias no layout do preview
+
+= 2.9.5 =
+Correção:
+* Correção dos endpoints rest
+
+= 2.9.4 =
+Correção:
+* Correção de css dos titulos do blog
+
+= 2.9.3 =
+Correção:
+* Correção de versão do arquivo javascript
+
+= 2.9.2 =
+Correção:
+* Correção de bug no campo de widget
+
+= 2.9.1 =
+Correção:
+* Correção de bug no layout do admin
+
+= 2.9 =
+Novidades:
+* Adição de nova funcionalidade de popup exit
+
+= 2.8.1 =
+Melhorias:
+* Corrigida chamada rest
+* Corrigida quebra de layout no painel
 
 = 2.8 =
 Novidades:
@@ -127,3 +197,4 @@ Esta versão inclui diversas novas funcionalidades como:
 * Visibilidade: Agora é possível escolher páginas onde um banner não deve aparecer;
 * Shortcode: Todo banner tem um shortcode único que pode ser adicionado em qualquer posição de qualquer conteúdo;
 * Captura de leads: Disponibilize seus posts para download no formato PDF e capture os e-mails;
+* From github

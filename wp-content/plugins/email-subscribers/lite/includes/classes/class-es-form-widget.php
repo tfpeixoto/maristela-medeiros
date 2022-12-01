@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class ES_Form_Widget extends WP_Widget {
 
 	public function __construct() {
-		parent::__construct( 'email-subscribers-form', __( 'Email Subscribers', 'email-subscribers' ), array( 'description' => __( 'Email Subscribers Form', 'email-subscribers' ) ) );
+		parent::__construct( 'email-subscribers-form', __( 'Icegram Express (formerly known as Email Subscribers & Newsletters)', 'email-subscribers' ), array( 'description' => __( 'Icegram Express (formerly known as Email Subscribers & Newsletters) Form', 'email-subscribers' ) ) );
 	}
 
 	public function widget( $args, $instance ) {
@@ -29,8 +29,9 @@ class ES_Form_Widget extends WP_Widget {
 		if ( ! empty( $form_id ) ) {
 
 			$form = ES()->forms_db->get_form_by_id( $form_id );
-
-			$form_data = ES_Forms_Table::get_form_data_from_body( $form );
+			if ( $form ) {
+				$form_data = ES_Forms_Table::get_form_data_from_body( $form );
+			}
 		}
 
 		$data = array();
@@ -40,6 +41,8 @@ class ES_Form_Widget extends WP_Widget {
 		$data['name_visible']       = ( ! empty( $form_data['name_visible'] ) && 'yes' === $form_data['name_visible'] ) ? 'yes' : '';
 		$data['name_required']      = ( ! empty( $form_data['name_required'] ) && 'yes' === $form_data['name_required'] ) ? 'yes' : '';
 		$data['list_visible']       = ( ! empty( $form_data['list_visible'] ) && 'yes' === $form_data['list_visible'] ) ? 'yes' : '';
+		$data['list_label']       = ! empty( $form_data['list_label'] ) ? $form_data['list_label'] : __( 'Select list(s)', 'email-subscribers' );
+;
 		$data['lists']              = ( ! empty( $form_data['lists'] ) ) ? $form_data['lists'] : array();
 		$data['desc']               = ( ! empty( $form_data['desc'] ) ) ? $form_data['desc'] : '';
 		$data['name_label']         = ( ! empty( $form_data['name_label'] ) ) ? $form_data['name_label'] : '';
@@ -51,6 +54,10 @@ class ES_Form_Widget extends WP_Widget {
 		$data['gdpr_consent']       = ( ! empty( $form_data['gdpr_consent'] ) ) ? $form_data['gdpr_consent'] : 'no';
 		$data['gdpr_consent_text']  = ( ! empty( $form_data['gdpr_consent_text'] ) ) ? $form_data['gdpr_consent_text'] : '';
 		$data['captcha']            = ( ! empty( $form_data['captcha'] ) ) ? $form_data['captcha'] : 'no';
+
+		if ( ! empty ( $form_data['custom_fields'] ) ) {
+			$data['custom_fields'] 		= ( ! empty( $form_data['custom_fields' ] ) ) ? $form_data['custom_fields' ] : '';
+		}
 
 		ES_Shortcode::render_form( $data );
 

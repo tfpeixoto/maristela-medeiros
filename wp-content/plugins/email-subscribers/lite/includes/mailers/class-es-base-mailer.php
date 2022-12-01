@@ -161,6 +161,8 @@ if ( ! class_exists( 'ES_Base_Mailer' ) ) {
 		public function do_response( $status = 'success', $message = '' ) {
 
 			if ( 'success' !== $status ) {
+				ES()->logger->error( 'Error in Email Sending', $this->logger_context );
+				ES()->logger->error( $message, $this->logger_context );
 				return new WP_Error( 'ig_es_email_sending_failed', $message );
 			}
 
@@ -315,6 +317,18 @@ if ( ! class_exists( 'ES_Base_Mailer' ) ) {
 		 */
 		public function clear_email_data() {
 			// Clear mailer specific data
+		}
+
+		/**
+		 * Handle throttling 
+		 *
+		 * @return void
+		 * 
+		 * @since 5.0.5
+		 */
+		public function handle_throttling() {
+			// Add ESP specific throttling logic here
+			// Should be ovverriden in the ESP mailer class
 		}
 	}
 }

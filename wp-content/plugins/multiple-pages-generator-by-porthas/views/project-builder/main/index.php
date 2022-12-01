@@ -62,26 +62,26 @@
                                     </div>
 
                                     <div class="block-with-tooltip">
-                                        <p><?php _e('Apply template if URL contain', 'mpg'); ?></p>
+                                        <p><?php _e('Apply template if URL contains', 'mpg'); ?></p>
                                         <input type="text" id="mpg_apply_condition" maxlength="199" class="form-control" style="width: 100%" placeholder="<?php _e('Like a ?lang=en or /en/ (optional)', 'mpg'); ?>">
                                         <div class="tooltip-circle" data-tippy-content="<?php _e('URLs related with the template will work ONLY if generated URL will contain specified part. Like a /en/ or ?lang=it', 'mpg'); ?>"><i class="fa fa-question"></i></div>
                                     </div>
 
                                     <div class="block-with-tooltip" style="margin-top: 15px">
-                                        <p><?php _e('Add template URL to robots.txt exclusion?', 'mpg'); ?></p>
+                                        <p><?php _e('Exclude template from crawlers and site loops', 'mpg'); ?></p>
 
                                         <input type="checkbox" style="width: 15px; margin-right: 400px;" id="mpg_exclude_template_in_robots">
 
-                                        <div class="tooltip-circle" data-tippy-content="<?php _e('It’s is highly suggested to exclude template page from being indexed by search engines as it contains shortcodes. All generated pages will remain visible.', 'mpg'); ?>"><i class="fa fa-question"></i></div>
+                                        <div class="tooltip-circle" data-tippy-content="<?php _e('It’s is highly suggested to exclude template page from being indexed by search engines as it contains shortcodes. Also, the page/post will be excluded from search results in WordPress, categories and widgets, like a Recent posts. All generated pages will remain visible.', 'mpg'); ?>"><i class="fa fa-question"></i></div>
                                     </div>
 
-                                    <!-- <div class="block-with-tooltip" style="margin-top: 15px"> -->
-                                        <!-- <p><?php // _e('Participate in the search?', 'mpg'); ?></p> -->
+                                    <div class="block-with-tooltip" style="margin-top: 15px">
+                                        <p><?php _e('Participate in the search?', 'mpg'); ?></p>
 
-                                        <!-- <input type="checkbox" style="width: 15px; margin-right: 400px;" id="mpg_participate_in_search"> -->
+                                        <input type="checkbox" style="width: 15px; margin-right: 400px;" id="mpg_participate_in_search">
 
-                                        <!-- <div class="tooltip-circle" data-tippy-content="<?php // _e('Set the tick to participate generated URLs from this project in search results.', 'mpg'); ?>"><i class="fa fa-question"></i></div> -->
-                                    <!-- </div> -->
+                                        <div class="tooltip-circle" data-tippy-content="<?php _e('Set the tick to participate generated URLs from this project in search results.', 'mpg'); ?>"><i class="fa fa-question"></i></div>
+                                    </div>
 
 
                                 </div>
@@ -144,7 +144,7 @@
 
                                                 <div class="field-button-tooltip">
                                                     <div class="field-with-tooltip">
-                                                        <input type="number" name="worksheet_id" class="form-control" style="width: 100%" placeholder="<?php _e('Like a 123456789', 'mpg');?>">
+                                                        <input type="number" name="worksheet_id" class="form-control" style="width: 100%" placeholder="<?php _e('Like a 123456789', 'mpg'); ?>">
                                                         <div class="tooltip-circle" data-tippy-content="<?php _e('Copy worksheets id from Google Sheets, and paste here. Also, you can leave it field empty', 'mpg') ?>"><i class="fa fa-question"></i></div>
                                                     </div>
                                                 </div>
@@ -161,7 +161,7 @@
 
                                                 <div class="field-button-tooltip" style="margin: 2px 0 20px 0; display: flex;">
                                                     <select name="periodicity" <?php echo  $is_pro ? '' : 'disabled="true"'; ?> class="field-with-tooltip" required style="width: 100%; max-width: 415px; margin:0;">
-                                                        <option value="now"><?php _e('Now', 'mpg'); ?></option>
+                                                        <option value="now"><?php _e('Live', 'mpg'); ?></option>
                                                         <option value="once"><?php _e('Once', 'mpg'); ?></option>
                                                         <option value="hourly"><?php _e('Hourly', 'mpg'); ?></option>
                                                         <option value="twicedaily"><?php _e('Twice per day', 'mpg'); ?></option>
@@ -178,7 +178,7 @@
                                                 <p><?php _e('First Fetch Date/Time', 'mpg'); ?><?php echo $is_pro ? '' : '<span class="pro-field">Pro</span>' ?></p>
 
                                                 <div class="block-with-tooltip" style="margin-bottom:20px">
-                                                    <input class="disabled" name="datetime_upload_remote_file" <?php echo  $is_pro ? '' : 'disabled="true"'; ?> type="text">
+                                                    <input class="disabled" name="datetime_upload_remote_file" <?php echo  $is_pro ? '' : 'disabled="true"'; ?> type="text" autocomplete="off">
                                                     <div class="tooltip-circle" data-tippy-content="<?php _e('Set the date and time when MPG should first attempt to fetch your file.', 'mpg'); ?>"><i class="fa fa-question"></i></div>
                                                 </div>
                                             </div>
@@ -315,7 +315,7 @@
 
 
                                 <div class="block-with-tooltip" style="margin-top:20px">
-                                    <p><?php _e('Traling slash settings', 'mpg'); ?></p>
+                                    <p><?php _e('Trailing slash settings', 'mpg'); ?></p>
 
                                     <fieldset id="mpg_url_mode_group">
                                         <div>

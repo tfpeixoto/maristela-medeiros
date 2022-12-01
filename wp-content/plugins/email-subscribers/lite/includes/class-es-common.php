@@ -29,6 +29,197 @@ class ES_Common {
 		return $convert_template;
 	}
 
+
+	/**
+	 * Collect all emails.
+	 *
+	 * @return string $all_admin_email
+	 *
+	 * @since 5.3.18
+	 */
+	public static function fetch_admin_email() {
+		$admin_email     = get_option( 'ig_es_admin_emails', '' );
+		$all_admin_email = explode(',', $admin_email);
+
+		return $all_admin_email[0];
+	}
+
+
+	/**
+	 * Count sent emails
+	 *
+	 * @return int $total_emails_sent
+	 *
+	 * @since 5.3.18
+	 */
+	public static function count_sent_emails() {
+		$current_date = ig_es_get_current_date();
+		$current_hour = ig_es_get_current_hour();
+
+		// Get total emails sent in this hour
+		$email_sent_data = self::get_ig_option( 'email_sent_data', array() );
+
+		$total_emails_sent = 0;
+		if ( is_array( $email_sent_data ) && ! empty( $email_sent_data[ $current_date ] ) && ! empty( $email_sent_data[ $current_date ][ $current_hour ] ) ) {
+			$total_emails_sent = $email_sent_data[ $current_date ][ $current_hour ];
+		}
+
+		return $total_emails_sent;
+	}
+
+	/**
+	 * Process the email template and get variable fallbacks
+	 *
+	 * @param $template
+	 */
+	public static function get_template_fallbacks( $template ) {
+		preg_match_all( '/{{(.*?)}}/', $template, $matches );
+		$default_keywords = array();
+		if ( 1 < count( $matches ) ) {
+			$fallback_matches = $matches[1];
+			foreach ( $fallback_matches as $keyword ) {
+				if ( strstr( $keyword, '|' ) ) {
+					list( $variable_name, $variable_params ) = explode( '|', $keyword, 2 );
+				} else {
+					$variable_name   = $keyword;
+					$variable_params = '';
+				}
+				$variable_name = trim( $variable_name );
+				$variable      = new IG_ES_Workflow_Variable_Parser();
+				$parameters    = $variable->parse_parameters_from_string( trim( $variable_params ) );
+				if ( is_array( $parameters ) && ! empty( $parameters ) ) {
+					if ( isset( $parameters['fallback'] ) && ! empty( $parameters['fallback'] ) ) {
+						$replace_with_fallback = self::un_quote( $parameters['fallback'] );
+						$is_nested_variable    = strpos( $variable_name, '.' ); // Check if variable has dont(.) in its name
+						if ( $is_nested_variable ) {
+							$variable_parts = explode( '.', $variable_name );
+							$variable_type  = $variable_parts[0];
+							$variable_slug  = $variable_parts[1];
+							/**
+							 * For variables like subscribers.name, we need to pass the fallback data as nested array
+							 * $default_keywords['subscribers']['name'] = fallback_value
+							 **/ 
+							$default_keywords[ $variable_type ][ $variable_slug ] = $replace_with_fallback;
+						} else {
+							$default_keywords[ $variable_name ] = $replace_with_fallback;
+						}
+					}
+				}
+			}
+		}
+		return $default_keywords;
+	}
+
+
+	/**
+	 * Callback to replace keywords
+	 *
+	 * @param $keyword
+	 * @param $search_and_replace
+	 *
+	 * @return mixed|string
+	 */
+	public static function callback_replace_keywords( $keyword, $search_and_replace ) {
+		if ( strstr( $keyword, '|' ) ) {
+			list( $variable_name, $variable_params ) = explode( '|', $keyword, 2 );
+		} else {
+			$variable_name   = $keyword;
+			$variable_params = '';
+		}
+		$variable_name = trim( $variable_name );
+
+		//If there is no key found in replaceable array, then return the keyword
+		if ( ! isset( $search_and_replace[ $variable_name ] ) ) {
+			return '{{' . $keyword . '}}';
+		}
+
+		$replace_with          = $search_and_replace[ $variable_name ];
+		$replace_with_fallback = '';
+
+		//Extract fallback content from the keyword
+		$variable   = new IG_ES_Workflow_Variable_Parser();
+		$parameters = $variable->parse_parameters_from_string( trim( $variable_params ) );
+		if ( is_array( $parameters ) && ! empty( $parameters ) ) {
+			if ( isset( $parameters['fallback'] ) && ! empty( $parameters['fallback'] ) ) {
+				$replace_with_fallback = self::un_quote($parameters['fallback']);
+			}
+		}
+
+		//If replaceable value is contain fallback keyword, then return the replaceable value with fallback value
+		if ( strstr( $replace_with, '%%fallback%%' ) ) {
+			return str_replace( '%%fallback%%', $replace_with_fallback, $replace_with );
+		}
+
+		//If replaceable value is not empty, then return the replaceable value
+		if ( ! empty( $replace_with ) ) {
+			return $replace_with;
+		}
+
+		// return fallback value
+		return $replace_with_fallback;
+	}
+
+	/**
+	 * Decode the html quotes
+	 *
+	 * @param $string
+	 *
+	 * @return string
+	 */
+	public static function decode_html_quotes( $string ) {
+		$entities_dictionary = [
+			'&#145;'  => "'", // Opening single quote
+			'&#146;'  => "'", // Closing single quote
+			'&#147;'  => '"', // Closing double quote
+			'&#148;'  => '"', // Opening double quote
+			'&#8216;' => "'", // Closing single quote
+			'&#8217;' => "'", // Opening single quote
+			'&#8218;' => "'", // Single low quote
+			'&#8220;' => '"', // Closing double quote
+			'&#8221;' => '"', // Opening double quote
+			'&#8222;' => '"', // Double low quote
+		];
+
+		// Decode decimal entities
+		$string = str_replace( array_keys( $entities_dictionary ), array_values( $entities_dictionary ), $string );
+
+		return html_entity_decode( $string, ENT_QUOTES | ENT_HTML5, 'UTF-8' );
+	}
+
+	/**
+	 * Remove quotes from string
+	 *
+	 * @param $string
+	 *
+	 * @return string
+	 */
+	public static function un_quote( $string ) {
+		$string = self::decode_html_quotes( $string );
+
+		return trim( trim( $string ), "'" );
+	}
+
+	/**
+	 * Parse keywords
+	 *
+	 * @since 5.3.5
+	 * @return false|void
+	 */
+	public static function replace_keywords_with_fallback( $content, $search_and_replace ) {
+		if ( empty( $content ) || empty( $search_and_replace ) ) {
+			return $content;
+		}
+		$replacer = new IG_ES_Replace_Helper( $content, 'ES_Common::callback_replace_keywords', 'variables', $search_and_replace );
+
+		$processed_content = $replacer->process();
+
+		if ( $processed_content ) {
+			return $processed_content;
+		}
+
+		return $content;
+	}
+
 	/**
 	 * Process template body
 	 *
@@ -41,11 +232,15 @@ class ES_Common {
 	 * @since 4.0.0
 	 */
 	public static function es_process_template_body( $content, $tmpl_id = 0, $campaign_id = 0 ) {
-		$content = convert_smilies( wptexturize( $content ) );
 
+		$content = convert_smilies( wptexturize( $content ) );
 		$content = self::handle_oembed_content( $content );
 
-		$content             = wpautop( $content );
+		// Add p tag only if we aren't getting <html> tags inside the content, otherwise html gets marked as invalid.
+		if ( false === strpos( $content, '<html' ) ) {
+			$content = wpautop( $content );
+		}
+
 		$content             = do_shortcode( shortcode_unautop( $content ) );
 		$data                = array();
 		$data['content']     = $content;
@@ -56,12 +251,15 @@ class ES_Common {
 		// total contacts
 		$total_contacts = ES()->contacts_db->count_active_contacts_by_list_id();
 		$content        = str_replace( '{{TOTAL-CONTACTS}}', $total_contacts, $content );
+		$content        = str_replace( '{{site.total_contacts}}', $total_contacts, $content );
 		// blog title
 		$blog_name = get_option( 'blogname' );
 		$content   = str_replace( '{{SITENAME}}', $blog_name, $content );
+		$content   = str_replace( '{{site.name}}', $blog_name, $content );
 		// site url
 		$site_url = home_url( '/' );
 		$content  = str_replace( '{{SITEURL}}', $site_url, $content );
+		$content  = str_replace( '{{site.url}}', $site_url, $content );
 
 		/*
 		TODO: Enable it once Pre header issue fix
@@ -88,8 +286,10 @@ class ES_Common {
 
 		if ( ! empty( $content ) && isset( $GLOBALS['wp_embed'] ) ) {
 			add_filter( 'embed_oembed_html', array( 'ES_Common', 'handle_link_in_email_content' ), 10, 4 );
+			add_filter( 'embed_handler_html', array( 'ES_Common', 'handle_link_in_email_content' ), 10, 3 );
 			$content = $GLOBALS['wp_embed']->autoembed( $content );
 			remove_filter( 'embed_oembed_html', array( 'ES_Common', 'handle_link_in_email_content' ), 10, 4 );
+			remove_filter( 'embed_handler_html', array( 'ES_Common', 'handle_link_in_email_content' ), 10, 3 );
 		}
 
 		return $content;
@@ -113,9 +313,14 @@ class ES_Common {
 	 *
 	 * @since 4.4.9
 	 */
-	public static function handle_link_in_email_content( $html, $url, $attr, $post_ID ) {
+	public static function handle_link_in_email_content( $html, $url, $attr, $post_ID = 0 ) {
 
-		$post_link = get_permalink( $post_ID );
+		$post_link = '';
+
+		if ( ! empty( $post_ID ) ) {
+			$post_link = get_permalink( $post_ID );
+		}
+
 		// Check if current URL is same as current post's permalink.
 		if ( ! empty( $post_link ) && $url === $post_link ) {
 			// Convert URL HTML back to URL itself if it a current post URL.
@@ -151,8 +356,16 @@ class ES_Common {
 					}
 
 					ob_start();
-					$thumbnail_width  = ! empty( $oembed_response->width ) ? $oembed_response->width . 'px' : 'auto';
-					$thumbnail_height = ! empty( $oembed_response->height ) ? $oembed_response->height . 'px' : 'auto';
+					$thumbnail_width  = 'auto';
+					$thumbnail_height = 'auto';
+
+					if ( ! empty( $oembed_response->thumbnail_width ) && ! empty( $oembed_response->thumbnail_height ) ) {
+						$thumbnail_width  = $oembed_response->thumbnail_width . 'px';
+						$thumbnail_height = $oembed_response->thumbnail_height . 'px';
+					} elseif ( ! empty( $oembed_response->width ) && ! empty( $oembed_response->height ) ) {
+						$thumbnail_width  = $oembed_response->width . 'px';
+						$thumbnail_height = $oembed_response->height . 'px';
+					}
 					?>
 					<table style="margin-bottom: 1em;">
 						<tbody>
@@ -180,12 +393,13 @@ class ES_Common {
 	 * Get Statuses key name map
 	 *
 	 * @param bool $reverse
+	 * @param string $page
 	 *
 	 * @return array
 	 *
 	 * @since 4.0.0
 	 */
-	public static function get_statuses_key_name_map( $reverse = false ) {
+	public static function get_statuses_key_name_map( $reverse = false, $page = '') {
 
 		$statuses = array(
 			'subscribed'   => __( 'Subscribed', 'email-subscribers' ),
@@ -193,6 +407,7 @@ class ES_Common {
 			'unsubscribed' => __( 'Unsubscribed', 'email-subscribers' ),
 		);
 
+		$statuses = apply_filters( 'ig_es_get_statuses_key_name_map', $statuses, $page );
 		if ( $reverse ) {
 			$statuses = array_flip( $statuses );
 		}
@@ -210,7 +425,7 @@ class ES_Common {
 	 *
 	 * @since 4.0.0
 	 */
-	public static function prepare_statuses_dropdown_options( $selected = '', $default_label = '' ) {
+	public static function prepare_statuses_dropdown_options( $selected = '', $default_label = '', $page = '' ) {
 
 		if ( empty( $default_label ) ) {
 			$default_label = __( 'Select Status', 'email-subscribers' );
@@ -218,7 +433,7 @@ class ES_Common {
 
 		$default_status[0] = $default_label;
 
-		$statuses = self::get_statuses_key_name_map();
+		$statuses = self::get_statuses_key_name_map(false, $page);
 		$statuses = array_merge( $default_status, $statuses );
 
 		$dropdown = '';
@@ -334,6 +549,22 @@ class ES_Common {
 		return $guid;
 	}
 
+
+	/**
+	 * Generate random string
+	 *
+	 * @param int $length
+	 *
+	 * @return string
+	 *
+	 * @since 4.8.2
+	 */
+	public static function generate_random_string( $length = 6 ) {
+		$str = 'abcdefghijklmnopqrstuvwxyz';
+
+		return substr( str_shuffle( $str ), 0, $length );
+	}
+
 	/**
 	 * Prepare template dropdown options
 	 *
@@ -342,7 +573,7 @@ class ES_Common {
 	 *
 	 * @return string
 	 */
-	public static function prepare_templates_dropdown_options( $type = 'newsletter', $selected = '' ) {
+	public static function prepare_templates_dropdown_options( $type = 'newsletter', $selected = '', $editor_type = IG_ES_DRAG_AND_DROP_EDITOR ) {
 
 		$default_template_option = new stdClass();
 
@@ -351,7 +582,7 @@ class ES_Common {
 
 		$default_template_option = array( $default_template_option );
 
-		$templates   = self::get_templates( $type );
+		$templates   = self::get_templates( $type, $editor_type );
 		$allowedtags = ig_es_allowed_html_tags_in_esc();
 		if ( is_array( $templates ) ) {
 			$templates = array_merge( $default_template_option, $templates );
@@ -417,7 +648,7 @@ class ES_Common {
 	 *
 	 * @since 4.0.0
 	 */
-	public static function get_templates( $type = 'newsletter' ) {
+	public static function get_templates( $type = '', $editor_type = '' ) {
 
 		$es_args = array(
 			'posts_per_page'   => - 1,
@@ -426,14 +657,25 @@ class ES_Common {
 			'order'            => 'DESC',
 			'post_status'      => 'publish',
 			'suppress_filters' => true,
-			'meta_query'       => array(
+		);
+
+		if ( ! empty( $type ) ) {
+			$es_args['meta_query'][] = array(
+				'key'     => 'es_template_type',
+				'value'   => $type,
+				'compare' => '=',
+			);
+		}
+
+		if ( ! empty( $editor_type ) ) {
+			$es_args['meta_query'][] = array(
 				array(
-					'key'     => 'es_template_type',
-					'value'   => $type,
+					'key'     => 'es_editor_type',
+					'value'   => $editor_type,
 					'compare' => '=',
 				),
-			),
-		);
+			);
+		}
 
 		$es_templates = get_posts( $es_args );
 
@@ -461,7 +703,7 @@ class ES_Common {
 			$category_names = array();
 		}
 		$checked_selected = ! array_intersect( array( 'All', 'None' ), $category_names ) ? "checked='checked'" : '';
-		$category_html    = '<tr><td style="padding-top:4px;padding-bottom:4px;padding-right:10px;" ><span class="block ml-6 pr-4 text-sm font-normal text-gray-600 pb-1"><input class="es-note-category-parent form-radio text-indigo-600" type="radio" ' . esc_attr( $checked_selected ) . ' value="selected_cat"  name="es_note_cat_parent">' . __(
+		$category_html    = '<tr><td style="padding-top:4px;padding-bottom:4px;padding-right:10px;" ><span class="block pr-4 text-sm font-normal text-gray-600 pb-1"><input class="es-note-category-parent form-radio text-indigo-600" type="radio" ' . esc_attr( $checked_selected ) . ' value="selected_cat"  name="campaign_data[es_note_cat_parent]">' . __(
 			'Select Categories',
 			'email-subscribers'
 		) . '</td></tr>';
@@ -473,21 +715,68 @@ class ES_Common {
 				$checked = '';
 			}
 
-			$category_html .= '<tr class="es-note-child-category"><td style="padding-top:4px;padding-bottom:4px;padding-right:10px;"><span class="block ml-6 pr-4 text-sm font-normal text-gray-600 pb-1"><input type="checkbox" class="form-checkbox" ' . esc_attr( $checked ) . ' value="' . esc_attr( $category->term_id ) . '" id="es_note_cat[]" name="es_note_cat[]">' . esc_html( $category->name ) . '</td></tr>';
+			$category_html .= '<tr class="es-note-child-category"><td style="padding-top:4px;padding-bottom:4px;padding-right:10px;"><span class="block pr-4 text-sm font-normal text-gray-600 pb-1"><input type="checkbox" class="form-checkbox" ' . esc_attr( $checked ) . ' value="' . esc_attr( $category->term_id ) . '" id="es_note_cat[]" name="campaign_data[es_note_cat][]">' . esc_html( $category->name ) . '</td></tr>';
 		}
 		$checked_all = in_array( 'All', $category_names ) ? "checked='checked'" : '';
-		$all_html    = '<tr><td style="padding-top:4px;padding-bottom:4px;padding-right:10px;"><span class="block ml-6 pr-4 text-sm font-normal text-gray-600 pb-1"><input type="radio" class="form-radio text-indigo-600 es-note-category-parent"  ' . esc_attr( $checked_all ) . ' value="{a}All{a}"  name="es_note_cat_parent">' . __(
+		$all_html    = '<tr><td style="padding-top:4px;padding-bottom:4px;padding-right:10px;"><span class="block pr-4 text-sm font-normal text-gray-600 pb-1"><input type="radio" class="form-radio text-indigo-600 es-note-category-parent"  ' . esc_attr( $checked_all ) . ' value="{a}All{a}"  name="campaign_data[es_note_cat_parent]">' . __(
 			'All Categories (Also include all categories which will create later)',
 			'email-subscribers'
 		) . '</td></tr>';
 
 		$checked_none = in_array( 'None', $category_names, true ) ? "checked='checked'" : '';
-		$none_html    = '<tr><td style="padding-top:4px;padding-bottom:4px;padding-right:10px;"><span class="block ml-6 pr-4 text-sm font-normal text-gray-600 pb-1"><input type="radio" class="form-radio text-indigo-600 es-note-category-parent"  ' . esc_attr( $checked_none ) . ' value="{a}None{a}"  name="es_note_cat_parent">' . __(
+		$none_html    = '<tr><td style="padding-top:4px;padding-bottom:4px;padding-right:10px;"><span class="block pr-4 text-sm font-normal text-gray-600 pb-1"><input type="radio" class="form-radio text-indigo-600 es-note-category-parent"  ' . esc_attr( $checked_none ) . ' value="{a}None{a}"  name="campaign_data[es_note_cat_parent]">' . __(
 			'None (Don\'t include post from any category)',
 			'email-subscribers'
 		) . '</td></tr>';
 
 		return $none_html . $all_html . $category_html;
+	}
+
+	/**
+	 * Get list of default post types
+	 *
+	 * @since 5.3.17
+	 *
+	 * @return array $default_post_types List of default post types
+	 */
+	public static function get_default_post_types() {
+
+		$args = array(
+			'public'              => true,
+			'exclude_from_search' => false,
+			'_builtin'            => true,
+		);
+
+		$default_post_types = get_post_types( $args );
+
+		// remove attachment from the list
+		unset( $default_post_types['attachment'] );
+
+		// remove attachment from the list
+		unset( $default_post_types['post'] );
+
+		return $default_post_types;
+	}
+
+
+	/**
+	 * Get list of registered custom post types
+	 *
+	 * @since 5.4.0
+	 *
+	 * @return array $custom_post_types List of custom post types
+	 */
+	public static function get_custom_post_types() {
+
+		$args = array(
+			'public'              => true,
+			'exclude_from_search' => false,
+			'_builtin'            => false,
+		);
+
+		$custom_post_types = get_post_types( $args );
+
+		return $custom_post_types;
 	}
 
 	/**
@@ -512,18 +801,66 @@ class ES_Common {
 			$custom_post_type_html = '';
 			foreach ( $post_types as $post_type ) {
 				$post_type_search = '{T}' . $post_type . '{T}';
-				if ( is_array( $custom_post_types ) && in_array( $post_type_search, $custom_post_types ) ) {
+				if ( is_array( $custom_post_types ) && in_array( $post_type_search, $custom_post_types, true ) ) {
 					$checked = "checked='checked'";
 				} else {
 					$checked = '';
 				}
-				$custom_post_type_html .= '<tr><td style="padding-top:4px;padding-bottom:4px;padding-right:10px;"><span class="block ml-12 pr-4 text-sm font-medium text-gray-600 pb-2"><input type="checkbox" ' . esc_attr( $checked ) . ' value="{T}' . esc_html( $post_type ) . '{T}" id="es_note_cat[]" class="es_custom_post_type form-checkbox" name="es_note_cat[]">' . esc_html( $post_type ) . '</td></tr>';
+				$custom_post_type_html .= '<tr><td style="padding-top:4px;padding-bottom:4px;padding-right:10px;"><span class="block pr-4 text-sm font-medium text-gray-600 pb-2"><input type="checkbox" ' . esc_attr( $checked ) . ' value="{T}' . esc_html( $post_type ) . '{T}" class="es_custom_post_type form-checkbox" name="campaign_data[es_note_cpt][]">' . esc_html( $post_type ) . '</td></tr>';
 			}
 		} else {
-			$custom_post_type_html = '<tr><span class="block ml-12 pr-4 text-sm font-normal text-gray-600 pb-2">' . __( 'No Custom Post Types Available', 'email-subscribers' ) . '</tr>';
+			$custom_post_type_html = '<tr><span class="block pr-4 text-sm font-normal text-gray-600 pb-2">' . __( 'No Custom Post Types Available', 'email-subscribers' ) . '</tr>';
 		}
 
 		return $custom_post_type_html;
+	}
+
+
+	/**
+	 * Get categories for given post types
+	 *
+	 * @since 5.3.13
+	 *
+	 * @param array $post_type Post type
+	 *
+	 * @return array $post_type_categories List of categories for given post types
+	 */
+	public static function get_post_type_categories( $post_type ) {
+
+		$taxonomies = get_object_taxonomies( $post_type, 'objects' );
+		if ( empty( $taxonomies ) ) {
+			return array();
+		}
+
+		$post_type_categories = array();
+
+		foreach ( $taxonomies as $taxonomy_slug => $taxonomy ) {
+			$is_category_taxonomy = $taxonomy->hierarchical;
+			if ( ! $is_category_taxonomy ) {
+				continue;
+			}
+			$categories = get_categories(
+				array(
+					'hide_empty' => false,
+					'taxonomy'   => $taxonomy_slug,
+					'type'       => $post_type,
+					'orderby'    => 'id',
+				)
+			);
+
+			if ( empty( $categories ) ) {
+				continue;
+			}
+
+			$taxonomy_categories = array();
+			foreach ( $categories as $category ) {
+				$taxonomy_categories[ $category->term_id ] = $category->name;
+			}
+
+			$post_type_categories[ $taxonomy_slug ] = $taxonomy_categories;
+		}
+
+		return $post_type_categories;
 	}
 
 	/**
@@ -1335,9 +1672,9 @@ class ES_Common {
 			'installed_on'             => get_option( 'ig_es_installed_on', '' ),
 			'is_premium'               => ES()->is_premium() ? 'yes' : 'no',
 			'plan'                     => ES()->get_plan(),
-			'is_trial'                 => ES()->is_trial() ? 'yes' : 'no',
-			'is_trial_expired'         => ES()->is_trial_expired() ? 'yes' : 'no',
-			'trial_start_at'           => ES()->get_trial_start_date(),
+			'is_trial'                 => ES()->trial->is_trial() ? 'yes' : 'no',
+			'is_trial_expired'         => ES()->trial->is_trial_expired() ? 'yes' : 'no',
+			'trial_start_at'           => ES()->trial->get_trial_start_date(),
 			'total_contacts'           => $total_contacts,
 			'total_lists'              => $total_lists,
 			'total_forms'              => $total_forms,
@@ -1472,6 +1809,10 @@ class ES_Common {
 				'sequences',
 				'settings',
 				'ig_redirect',
+				'custom_fields',
+				'drag_drop_editor',
+				'gallery',
+				'template',
 			);
 
 			return $sub_menus;
@@ -1535,24 +1876,27 @@ class ES_Common {
 
 		if ( $upsell ) {
 
-			$articles_upsell = array(
-				array(
-					'title'       => __( 'Email Subscribers PRO', 'email-subscribers' ),
-					'link'        => 'https://www.icegram.com/er6r',
-					'label'       => __( 'Lifetime', 'email-subscribers' ),
-					'label_class' => 'bg-green-100 text-green-800',
-				),
-				array(
-					'title'       => __( '<b>Email Subscribers Secret Club</b>', 'email-subscribers' ),
-					'link'        => 'https://www.facebook.com/groups/2298909487017349/',
-					'label'       => __( 'Join Now', 'email-subscribers' ),
-					'label_class' => 'bg-green-100 text-green-800',
-				),
+			$pricing_page_url = admin_url( 'admin.php?page=es_pricing' );
+
+			$articles_upsell[] = array(
+				'title'       => __( '<b>Icegram Express</b> (formerly known as <br/><b>Email Subscribers & Newsletters</b>) Secret Club', 'email-subscribers' ),
+				'link'        => 'https://www.facebook.com/groups/2298909487017349/',
+				'label'       => __( 'Join Now', 'email-subscribers' ),
+				'label_class' => 'bg-green-100 text-green-800',
 			);
+
+			if ( ! ES()->is_premium() ) {
+				$articles_upsell[] = array(
+					'title'       => __( 'Icegram Express (formerly known as Email Subscribers & Newsletters) MAX', 'email-subscribers' ),
+					'link'        => $pricing_page_url,
+					'label'       => __( 'MAX', 'email-subscribers' ),
+					'label_class' => 'bg-green-100 text-green-800',
+				);
+			}
 		}
 
 		$articles = array_merge( $blog_articles, $articles_upsell );
-
+		
 		return $articles;
 	}
 
@@ -2074,7 +2418,7 @@ class ES_Common {
 				<svg class="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
 				<span class="break-words invisible h-auto lg:w-48 xl:w-64 tracking-wide absolute z-70 tooltip-text bg-black text-gray-300 text-xs rounded p-3 py-2">
 					' . $tooltip_text . '
-					<svg class="absolute mt-2 text-black text-opacity-100 h-2.5 left-0" x="0px" y="0px" viewBox="0 0 255 255" xml:space="preserve">
+					<svg class="tooltip-arrow absolute mt-2 text-black text-opacity-100 h-2.5 left-0" x="0px" y="0px" viewBox="0 0 255 255" xml:space="preserve">
 						<polygon class="fill-current" points="0,0 127.5,127.5 255,0"/>
 					</svg>
 				</span>
@@ -2120,7 +2464,7 @@ class ES_Common {
 	 */
 	public static function override_tinymce_formatting_options( $init, $editor_id = '' ) {
 
-		if ( 'edit-es-broadcast-body' === $editor_id ) {
+		if ( 'edit-es-campaign-body' === $editor_id ) {
 
 			$init['wpautop']      = false; // Disable stripping of p tags in Text mode.
 			$init['tadv_noautop'] = true; // Disable stripping of p tags in Text mode.
@@ -2130,9 +2474,28 @@ class ES_Common {
 			$opts                            = '*[*]';
 			$init['valid_elements']          = $opts;
 			$init['extended_valid_elements'] = $opts;
+
 		}
 
 		return $init;
+	}
+
+	/**
+	 * Add external plugins for TinyMCE(WordPress classic) editor
+	 *
+	 * @param array  $plugin_array
+	 * @return array $plugin_array
+	 *
+	 * @since 5.0.6
+	 */
+	public static function add_mce_external_plugins( $plugin_array ) {
+
+		if ( is_array( $plugin_array ) ) {
+			$plugin_array['undo_style_to_image'] = ES_PLUGIN_URL . 'lite/admin/js/tinymce-plugins/custom/undo-style-to-img-tag-conversion/plugin.js';
+			$plugin_array['fullpage'] 			 = ES_PLUGIN_URL . 'lite/admin/js/tinymce-plugins/pre-built/fullpage/plugin.min.js';
+		}
+
+		return $plugin_array;
 	}
 
 	/**
@@ -2201,5 +2564,334 @@ class ES_Common {
 		return $status;
 	}
 
-}
+	/**
+	 * Prepare custom field type dropdown options
+	 *
+	 * @param $selected
+	 * @param $default_label
+	 *
+	 * @return string
+	 *
+	 * @since 4.8.4
+	 */
+	public static function prepare_fieldtype_dropdown_options( $selected = '', $default_label = '' ) {
 
+		$default_status[0] = __( 'Select field type', 'email-subscribers' );
+
+		$cf_type = array(
+			'text' 		=> __( 'Text', 'email-subscribers' ),
+			'textarea'  => __( 'TextArea', 'email-subscribers' ),
+			'dropdown'  => __( 'Dropdown', 'email-subscribers' ),
+			'radio'  	=> __( 'Radio', 'email-subscribers' ),
+			'number' 	=> __( 'Number', 'email-subscribers' ),
+			'date' 		=> __( 'Date', 'email-subscribers' ),
+		);
+
+		$field_types = array_merge( $default_status, $cf_type );
+
+		$dropdown = '';
+		foreach ( $field_types as $key => $type ) {
+			$dropdown .= '<option value="' . esc_attr( $key ) . '" ';
+
+			if ( strtolower( $selected ) === strtolower( $key ) ) {
+				$dropdown .= 'selected = selected';
+			}
+
+			$dropdown .= '>' . esc_html( $type ) . '</option>';
+		}
+
+		return $dropdown;
+	}
+
+	/**
+	 * Get slug name without prefix
+	 *
+	 * @param $selected
+	 *
+	 * @return string
+	 *
+	 * @since 4.8.4
+	 */
+	public static function get_slug_without_prefix( $slug ) {
+
+		$slug_name = explode( '_', $slug );
+		unset( $slug_name[0] );
+		unset( $slug_name[1] );
+		return implode( '_', $slug_name	 );
+	}
+
+	/**
+	 * Get column datatype for custom field in contacts table
+	 *
+	 * @param $selected
+	 *
+	 * @return string
+	 *
+	 * @since 4.8.4
+	 */
+	public static function get_custom_field_col_datatype( $custom_field_type = 'text' ) {
+
+		switch ( $custom_field_type ) {
+			case 'number':
+				return 'int(50)';
+			case 'date':
+				return 'date';
+			case 'radio':
+			case 'dropdown':
+				return 'varchar(100)';
+			default:
+				return 'longtext';
+		}
+
+	}
+
+	/**
+	 * Prepare month year date filter dropdown options
+	 *
+	 * @param $selected
+	 * @param $default_label
+	 *
+	 * @return string
+	 *
+	 * @since 5.0.5
+	 */
+	public static function prepare_datefilter_dropdown_options( $selected = '', $default_label = '' ) {
+
+		global $wpdb;
+
+		$results = $wpdb->get_results( "SELECT DISTINCT MONTHNAME(`start_at`), YEAR(`start_at`) FROM {$wpdb->prefix}ig_mailing_queue;", ARRAY_A );
+
+		$field_options = array(
+			'default' => $default_label
+		);
+
+		$field_key = '';
+		$dropdown  = '';
+
+		foreach ( $results as $key => $record ) {
+
+			$month_name_value = $record['MONTHNAME(`start_at`)'];
+			$year_value 	  = $record['YEAR(`start_at`)'];
+
+			$field_key   = $year_value . gmdate( 'm', strtotime($month_name_value));
+			$field_value = $month_name_value . ' ' . $year_value;
+
+			$field_options[$field_key] = $field_value;
+
+		}
+
+		foreach ($field_options as $key => $option_value) {
+
+			$value = ( 'default'  !== $key ) ? esc_attr($key):'';
+
+			$dropdown .= '<option value = "' . $value . '" ';
+			$dropdown .= selected( $selected, $key, false );
+			$dropdown .= '>' . esc_html($option_value) . '</option>';
+
+		}
+
+		return $dropdown;
+	}
+
+	public static function get_in_between_content( $content, $start, $end ) {
+		$r = explode( $start, $content );
+		if ( isset( $r[1] ) ) {
+			$r = explode( $end, $r[1] );
+
+			return $r[0];
+		}
+
+		return '';
+	}
+
+	public static function get_popular_domains() {
+		/** Domains list from https://github.com/mailcheck/mailcheck/wiki/List-of-Popular-Domains */
+		$popular_domains = array(
+			/* Default domains included */
+			'aol.com', 'att.net', 'comcast.net', 'facebook.com', 'gmail.com', 'gmx.com', 'googlemail.com',
+			'google.com', 'hotmail.com', 'hotmail.co.uk', 'mac.com', 'me.com', 'mail.com', 'msn.com',
+			'live.com', 'sbcglobal.net', 'verizon.net', 'yahoo.com', 'yahoo.co.uk',
+
+			/* Other global domains */
+			'email.com', 'fastmail.fm', 'games.com' /* AOL */, 'gmx.net', 'hush.com', 'hushmail.com', 'icloud.com',
+			'iname.com', 'inbox.com', 'lavabit.com', 'love.com' /* AOL */, 'outlook.com', 'pobox.com', 'protonmail.ch', 'protonmail.com', 'tutanota.de', 'tutanota.com', 'tutamail.com', 'tuta.io',
+		   'keemail.me', 'rocketmail.com' /* Yahoo */, 'safe-mail.net', 'wow.com' /* AOL */, 'ygm.com' /* AOL */,
+			'ymail.com' /* Yahoo */, 'zoho.com', 'yandex.com',
+
+			/* United States ISP domains */
+			'bellsouth.net', 'charter.net', 'cox.net', 'earthlink.net', 'juno.com',
+
+			/* British ISP domains */
+			'btinternet.com', 'virginmedia.com', 'blueyonder.co.uk', 'live.co.uk',
+			'ntlworld.com', 'orange.net', 'sky.com', 'talktalk.co.uk', 'tiscali.co.uk',
+			'virgin.net', 'bt.com',
+
+			/* Domains used in Asia */
+			'sina.com', 'sina.cn', 'qq.com', 'naver.com', 'hanmail.net', 'daum.net', 'nate.com', 'yahoo.co.jp', 'yahoo.co.kr', 'yahoo.co.id', 'yahoo.co.in', 'yahoo.com.sg', 'yahoo.com.ph', '163.com', 'yeah.net', '126.com', '21cn.com', 'aliyun.com', 'foxmail.com',
+
+			/* French ISP domains */
+			'hotmail.fr', 'live.fr', 'laposte.net', 'yahoo.fr', 'wanadoo.fr', 'orange.fr', 'gmx.fr', 'sfr.fr', 'neuf.fr', 'free.fr',
+
+			/* German ISP domains */
+			'gmx.de', 'hotmail.de', 'live.de', 'online.de', 't-online.de' /* T-Mobile */, 'web.de', 'yahoo.de',
+
+			/* Italian ISP domains */
+			'libero.it', 'virgilio.it', 'hotmail.it', 'aol.it', 'tiscali.it', 'alice.it', 'live.it', 'yahoo.it', 'email.it', 'tin.it', 'poste.it', 'teletu.it',
+
+			/* Russian ISP domains */
+			'bk.ru', 'inbox.ru', 'list.ru', 'mail.ru', 'rambler.ru', 'yandex.by', 'yandex.com', 'yandex.kz', 'yandex.ru', 'yandex.ua', 'ya.ru',
+
+			/* Belgian ISP domains */
+			'hotmail.be', 'live.be', 'skynet.be', 'voo.be', 'tvcablenet.be', 'telenet.be',
+
+			/* Argentinian ISP domains */
+			'hotmail.com.ar', 'live.com.ar', 'yahoo.com.ar', 'fibertel.com.ar', 'speedy.com.ar', 'arnet.com.ar',
+
+			/* Domains used in Mexico */
+			'yahoo.com.mx', 'live.com.mx', 'hotmail.es', 'hotmail.com.mx', 'prodigy.net.mx',
+
+			/* Domains used in Canada */
+			'yahoo.ca', 'hotmail.ca', 'bell.net', 'shaw.ca', 'sympatico.ca', 'rogers.com',
+
+			/* Domains used in Brazil */
+			'yahoo.com.br', 'hotmail.com.br', 'outlook.com.br', 'uol.com.br', 'bol.com.br', 'terra.com.br', 'ig.com.br', 'r7.com', 'zipmail.com.br', 'globo.com', 'globomail.com', 'oi.com.br'
+		);
+
+		return $popular_domains;
+	}
+
+	public static function is_popular_domain( $email ) {
+
+		$is_email = is_email( $email );
+		if ( ! $is_email ) {
+			return false;
+		}
+
+		$email_parts = explode( '@', $email );
+		$domain 	 = end( $email_parts );
+		$$domain     = strtolower( $domain );
+
+		$popular_domains = self::get_popular_domains();
+
+		return in_array( $domain, $popular_domains, true );
+	}
+
+	public static function get_domain_from_url( $url ) {
+		$pieces = parse_url($url);
+		$domain = isset($pieces['host']) ? $pieces['host'] : $pieces['path'];
+		return $domain;
+	}
+	
+	public static function get_engagement_score_html( $engagement_score ) {
+		if ( is_numeric( $engagement_score ) ) {
+			$score_class = 'bad';
+
+			if ( $engagement_score > 0 ) {
+				$score_text = number_format_i18n( $engagement_score, 1 );
+			} else {
+				$score_text = 0;
+			}
+
+			if ( $engagement_score >= 4 ) {
+				$score_class = 'excellent';
+			} elseif ( $engagement_score >= 3 ) {
+				$score_class = 'good';
+			} elseif ( $engagement_score >= 2 ) {
+				$score_class = 'low';
+			} elseif ( $engagement_score >= 1 ) {
+				$score_class = 'very-low';
+			}
+		}
+		$engagement_score_html = ( is_numeric( $engagement_score ) ? '<div class="es-engagement-score ' . $score_class . '">' . $score_text . '</div>' : '-' );
+
+		return $engagement_score_html;
+	}
+
+	public static function get_email_verify_mailbox_user() {
+		$username = get_option( 'ig_es_test_mailbox_user', '' );
+		if ( !empty( $username) ) {
+			$username = 'spam_check_' . $username;
+		}
+		return( $username );
+	}
+
+	public static function get_ig_es_mailbox_domain() {
+		$domain = 'box.icegram.com';
+		return( $domain );
+	}
+
+	public static function get_email_verify_test_email() {
+		$username = self::get_email_verify_mailbox_user();
+		$domain   = self::get_ig_es_mailbox_domain();
+
+		if ( !empty( $username) ) {
+			$email = $username . '@' . $domain;
+			return( $email );
+		}
+		return '';
+	}
+
+	public static function download_image_from_url( $image_url ) {
+
+		$attachment_url = '';
+		$upload_dir     = wp_upload_dir();
+		$image_data     = file_get_contents( $image_url );
+		$filename       = basename( $image_url );
+		if ( wp_mkdir_p( $upload_dir['path'] ) ) {
+			$file = $upload_dir['path'] . '/' . $filename;
+		} else {
+			$file = $upload_dir['basedir'] . '/' . $filename;
+		}
+
+		file_put_contents( $file, $image_data );
+
+		$wp_filetype = wp_check_filetype( $filename, null );
+		$attachment  = array(
+			'post_mime_type' => $wp_filetype['type'],
+			'post_title'     => sanitize_file_name( $filename ),
+			'post_content'   => '',
+			'post_status'    => 'inherit',
+		);
+		$attach_id   = wp_insert_attachment( $attachment, $file );
+		if ( ! empty( $attach_id ) ) {
+			$attachment_url = wp_get_attachment_url( $attach_id );
+		}
+		return $attachment_url;
+	}
+
+	/**
+	 * Get list status(subscribed or unconfirmed) based on optin type(single optin or double optin)
+	 * 
+	 * @since 5.4.18
+	 * 
+	 * @return string
+	 */
+	public static function get_list_status_from_optin_type() {
+		$es_optin_type = get_option( 'ig_es_optin_type' );
+			
+		if ( in_array( $es_optin_type, array( 'double_opt_in', 'double_optin' ), true ) ) { 
+			$status = 'unconfirmed';
+		} else {
+			$status = 'subscribed';
+		}
+
+		return $status;
+	}
+
+	/**
+	 * Check if WordPress has REST API support or not
+	 * 
+	 * @since 5.4.18
+	 * 
+	 * @return bool
+	 */
+	public static function is_rest_api_supported() {
+		global $wp_version;
+
+		if ( version_compare( $wp_version, '4.4.0', '<' ) ) {
+			return false;
+		}
+
+		return true;
+	}
+}

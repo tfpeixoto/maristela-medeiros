@@ -1,0 +1,135 @@
+.header {
+  color: $white;
+  position: fixed;
+  top: 0;
+  transition: all ease-in-out 0.25s;
+  z-index: 10;
+  width: 100vw;
+
+  &.fixed {
+    background-color: $primary;
+
+    .header__contatos {
+      display: none;
+    }
+  }
+
+  &__contatos {
+    display: none;
+    transition: all ease-in-out 0.25s;
+
+    @include media-breakpoint-up(md) {
+      display: flex;
+      justify-content: flex-end;
+      padding: 0.5rem;
+    }
+
+    ul {
+      display: inline-flex;
+      margin-bottom: 0;
+
+      li {
+        list-style: none;
+        padding: 0 1rem;
+
+        svg {
+          margin-right: 10px;
+
+          &.fa-phone {
+            transform: rotate(90deg);
+          }
+        }
+
+        a {
+          color: $white;
+        }
+      }
+    }
+  }
+
+  &__navegacao {
+    padding: 0;
+
+    .navbar-toggler {
+      background: none;
+      cursor: pointer;
+      border: 2px solid $white;
+      height: 50px;
+      width: 55px;
+
+      span {
+        background-color: $white;
+        display: block;
+        height: 2px;
+        margin: 6px 0;
+        width: 100%;
+      }
+    }
+
+    .navbar-collapse {
+      display: none;
+      transition: all ease-in-out 0.25s;
+
+      @include media-breakpoint-up(lg) {
+        display: flex;
+      }
+
+      &.show {
+        background: rgba($primary, 0.95);
+        border-radius: 1rem;
+        display: flex;
+        padding: 2rem 0;
+        text-align: center;
+
+        .navbar-nav {
+          width: 100%;
+
+          li {
+            a {
+              border-radius: 0;
+              display: block;
+
+              &:hover {
+                width: 100%;
+              }
+            }
+          }
+        }
+      }
+
+      .navbar-nav {
+        margin-left: auto;
+
+        li {
+          a {
+            border-radius: 0.5rem;
+            color: $white;
+            font-size: 1rem;
+            font-weight: 500;
+            padding: 0.75rem 1rem;
+            text-transform: uppercase;
+            transition: all ease-in-out 0.25s;
+
+            &:hover {
+              background: $white;
+              color: $chumbo;
+              text-decoration: none;
+            }
+          }
+
+          &.btn-contato {
+            a {
+              background-color: $chumbo;
+              color: $white;
+              cursor: pointer;
+
+              &:hover {
+                background-color: $marrom;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -20,7 +20,7 @@
              <p class="mpg-subtitle"><?php _e('This is example of results string, that will we shown instead of [mpg_spintax] shortcode', 'mpg'); ?></p>
 
              <div class="textarea-block">
-                 <textarea id="mpg_spintax_output_textarea" readonly placeholder="<?php _e('Click Spin button to see result', 'mpg'); ?>"></textarea>
+                 <div style="height: 150px;border: 1px solid #bbb;margin: 30px; border-radius: 5px; background: #f3f3f3; padding: 15px; width: 100%;" id="mpg_spintax_output_textarea"><?php _e('Click Spin button to see result', 'mpg'); ?></div>
              </div>
 
 

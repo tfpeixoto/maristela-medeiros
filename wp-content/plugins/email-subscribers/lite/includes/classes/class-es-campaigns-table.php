@@ -51,8 +51,7 @@ class ES_Campaigns_Table extends ES_List_Table {
 
 		$this->db = new ES_DB_Campaigns();
 
-		add_action( 'ig_es_campaign_deleted', array( $this, 'delete_child_campaigns' ), 10, 1 );
-
+		$this->init();
 	}
 
 	/**
@@ -87,25 +86,6 @@ class ES_Campaigns_Table extends ES_List_Table {
 	}
 
 	/**
-	 * Delete all child campaigns based on $parent_campaign_id
-	 *
-	 * @param int $parent_campaign_id
-	 *
-	 * @since 4.3.4
-	 */
-	public function delete_child_campaigns( $parent_campaign_id = 0 ) {
-
-		if ( 0 != $parent_campaign_id ) {
-
-			$child_campaign_ids = $this->db->get_campaigns_by_parent_id( $parent_campaign_id );
-
-			// Delete All Child Campaigns
-			$this->db->delete_campaigns( $child_campaign_ids );
-		}
-	}
-
-
-	/**
 	 * Render Campaigns table
 	 *
 	 * @since 4.0
@@ -113,6 +93,8 @@ class ES_Campaigns_Table extends ES_List_Table {
 	public function render() {
 		$action = ig_es_get_request_data( 'action' );
 		global $ig_es_tracker;
+		$message      = '';
+		$message_type = '';
 		?>
 		<div class="wrap pt-4 font-sans">
 		<?php
@@ -120,9 +102,21 @@ class ES_Campaigns_Table extends ES_List_Table {
 
 			// Trigger feedback popup for broadcast creation.
 			do_action( 'ig_es_broadcast_created' );
+			$message      = __( 'Broadcast created successfully.', 'email-subscribers' );
+			$message_type = 'success';
+		} elseif ( 'campaign_created' === $action ) {
+			$message      = __( 'Campaign created successfully.', 'email-subscribers' );
+			$message_type = 'success';
+		} elseif ( 'campaign_scheduled' === $action ) {
+			$message      = __( 'Campaign scheduled successfully.', 'email-subscribers' );
+			$message_type = 'success';
+		} elseif ( 'campaign_updated' === $action ) {
+			$message      = __( 'Campaign updated successfully.', 'email-subscribers' );
+			$message_type = 'success';
+		}
 
-			$message = __( 'Broadcast created successfully.', 'email-subscribers' );
-			ES_Common::show_message( $message, 'success' );
+		if ( ! empty( $message ) ) {
+			ES_Common::show_message( $message, $message_type );
 		}
 		?>
 		<div class="flex">
@@ -132,9 +126,9 @@ class ES_Campaigns_Table extends ES_List_Table {
 			</div>
 			<div class="mt-1">
 			<!-- Start-IG-Code -->
-			<a href="admin.php?page=es_notifications&action=new" class="ig-es-title-button ml-2 align-middle"><?php esc_html_e( 'Create Post Notification', 'email-subscribers' ); ?></a>
+			<a href="admin.php?page=es_gallery&campaign-type=<?php echo esc_attr( IG_CAMPAIGN_TYPE_POST_NOTIFICATION ); ?>" class="ig-es-title-button ml-2 align-middle"><?php esc_html_e( 'Create Post Notification', 'email-subscribers' ); ?></a>
 			<!-- End-IG-Code -->
-			<a href="admin.php?page=es_newsletters" class="ig-es-title-button ml-2 align-middle"><?php esc_html_e( 'Send Broadcast', 'email-subscribers' ); ?></a>
+			<a href="admin.php?page=es_gallery&campaign-type=<?php echo esc_attr( IG_CAMPAIGN_TYPE_NEWSLETTER ); ?>" class="ig-es-title-button ml-2 align-middle"><?php esc_html_e( 'Send Broadcast', 'email-subscribers' ); ?></a>
 			
 				<?php
 				do_action( 'ig_es_after_campaign_type_buttons' );
@@ -145,15 +139,15 @@ class ES_Campaigns_Table extends ES_List_Table {
 				if ( in_array( $icegram_plugin, $active_plugins ) ) {
 					$redirect_url = admin_url( 'post-new.php?post_type=ig_campaign' );
 					?>
-					<a href="<?php echo esc_url( $redirect_url ); ?>" class="ig-es-link-button px-3 py-1 ml-2 align-middle"><?php esc_html_e( 'Onsite Campaigns', 'email-subscribers' ); ?></a>
+					<!-- <a href="<?php echo esc_url( $redirect_url ); ?>" class="ig-es-link-button px-3 py-1 ml-2 align-middle"><?php esc_html_e( 'Onsite Campaigns', 'email-subscribers' ); ?></a> -->
 				<?php } else { ?>
-					<a href="admin.php?page=go_to_icegram&action=create_campaign" class="ig-es-link-button px-3 py-1 ml-2 align-middle"><?php esc_html_e( 'Onsite Campaigns', 'email-subscribers' ); ?></a>
+					<!-- <a href="admin.php?page=go_to_icegram&action=create_campaign" class="ig-es-link-button px-3 py-1 ml-2 align-middle"><?php esc_html_e( 'Onsite Campaigns', 'email-subscribers' ); ?></a> -->
 					<?php
 				}
 				// End-IG-Code.
 				?>
 
-				<a href="edit.php?post_type=es_template" class="ig-es-imp-button px-3 py-1 ml-2 align-middle"><?php esc_html_e( 'Manage Templates', 'email-subscribers' ); ?></a>
+				<a href="admin.php?page=es_gallery&manage-templates=yes" class="ig-es-imp-button px-3 py-1 ml-2 align-middle"><?php esc_html_e( 'Manage Templates', 'email-subscribers' ); ?></a>
 
 
 			</div>
@@ -223,6 +217,7 @@ class ES_Campaigns_Table extends ES_List_Table {
 		$add_where_clause = true;
 
 		$query[] = "( deleted_at IS NULL OR deleted_at = '0000-00-00 00:00:00' )";
+		$query[] = " type != 'workflow_email'";
 
 		if ( ! empty( $search ) ) {
 			$query[] = ' name LIKE %s ';
@@ -348,7 +343,7 @@ class ES_Campaigns_Table extends ES_List_Table {
 				} else {
 					$type     = isset( $item['type'] ) ? $item['type'] : '';
 					$list_ids = array();
-					if ( 'newsletter' === $type && ! empty( $item['meta'] ) ) {
+					if ( ! empty( $item['meta'] ) ) {
 						$list_ids = ES()->campaigns_db->get_list_ids( $item );
 					}
 					if ( $list_ids ) {
@@ -435,15 +430,19 @@ class ES_Campaigns_Table extends ES_List_Table {
 
 			$slug = ( in_array( $item['type'], array( 'post_notification', 'post_digest' ) ) ) ? esc_attr( 'es_notifications' ) : 'es_' . $item['type'];
 
-			$actions ['edit'] = '<a href="?page=' . esc_attr( $slug ) . '&action=edit&list=' . absint( $item['id'] ) . '&_wpnonce=' . $nonce . '" class="text-indigo-600">' . esc_html__( 'Edit', 'email-subscribers' ) . '</a>';
+			if ( 'workflow' === $type ) {
+				$actions ['edit'] = '<a href="?page=es_workflows&action=edit&id=' . absint( $item['parent_id'] ) . '&_wpnonce=' . $nonce . '" class="text-indigo-600">' . esc_html__( 'Edit', 'email-subscribers' ) . '</a>';
+			} else {
+				$actions ['edit'] = '<a href="?page=' . esc_attr( $slug ) . '&action=edit&list=' . absint( $item['id'] ) . '&_wpnonce=' . $nonce . '" class="text-indigo-600">' . esc_html__( 'Edit', 'email-subscribers' ) . '</a>';
+			}
 
-			if ( in_array( $type, array( 'post_notification', 'post_digest' ) ) ) {
+			if ( in_array( $type, array( 'post_notification', 'post_digest' ), true ) ) {
 				// Add reports link if there are any reports related to the post notification.
 				if ( ! empty( $report ) ) {
 
 					$actions['report'] = '<a href="?page=' . esc_attr( 'es_reports' ) . '&campaign_id=' . esc_attr( $item['id'] ) . '" class="text-indigo-600">' . esc_html__( 'Report', 'email-subscribers' ) . '</a>';
 				}
-			} elseif ( 'sequence' === $type ) {
+			} elseif ( in_array( $type, array( 'sequence', 'workflow' ), true ) ) {
 
 				$actions['report'] = '<a href="?page=' . esc_attr( 'es_reports' ) . '&campaign_id=' . esc_attr( $item['id'] ) . '" class="text-indigo-600">' . esc_html__( 'Report', 'email-subscribers' ) . '</a>';
 			}
@@ -485,7 +484,9 @@ class ES_Campaigns_Table extends ES_List_Table {
 			$actions = apply_filters( 'ig_es_campaign_actions', $actions, $item );
 		}
 
-		$actions['delete'] = '<a href="?page=' . esc_attr( 'es_campaigns' ) . '&action=delete&list=' . absint( $item['id'] ) . '&_wpnonce=' . $nonce . '" onclick="return checkDelete()">' . esc_html__( 'Delete', 'email-subscribers' ) . '</a>';
+		if ( 'workflow' !== $item['type'] ) {
+			$actions['delete'] = '<a href="?page=' . esc_attr( 'es_campaigns' ) . '&action=delete&list=' . absint( $item['id'] ) . '&_wpnonce=' . $nonce . '" onclick="return checkDelete()">' . esc_html__( 'Delete', 'email-subscribers' ) . '</a>';
+		}
 
 		$title .= $this->row_actions( $actions );
 

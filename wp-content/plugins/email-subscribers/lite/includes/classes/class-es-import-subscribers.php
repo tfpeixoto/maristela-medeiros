@@ -30,6 +30,8 @@ class ES_Import_Subscribers {
 
 			add_action( 'ig_es_remove_import_data', array( __CLASS__, 'remove_import_data' ) );
 		}
+		add_action( 'ig_es_after_bulk_contact_import', array( $this, 'handle_after_bulk_contact_import' ) );
+		add_action( 'ig_es_new_contact_inserted', array( $this, 'handle_new_contact_inserted' ) );
 	}
 
 	/**
@@ -107,10 +109,10 @@ class ES_Import_Subscribers {
 						<?php
 							do_action( 'ig_es_subscriber_import_method_tab_heading' );
 						?>
-					</div>  
-					<hr class="mx-10 border-gray-100 mt-6">    
+					</div>
+					<hr class="mx-10 border-gray-100 mt-6">
 				</div>
-				<form class="ml-7 mr-4 text-left py-4 my-2 item-center" method="post" name="form_import_subscribers" id="form_import_subscribers" action="#" enctype="multipart/form-data">		
+				<form class="ml-7 mr-4 text-left py-4 my-2 item-center" method="post" name="form_import_subscribers" id="form_import_subscribers" action="#" enctype="multipart/form-data">
 					<div class="es-import-step1 flex flex-row">
 						<div class="w-5/6 flex flex-row es-import-with-csv es-import">
 							<div class="es-import-processing flex w-1/4">
@@ -137,7 +139,7 @@ class ES_Import_Subscribers {
 									</label>
 								</div>
 							</div>
-							<div class="w-3/4 ml-12 xl:ml-32 my-6 mr-4">			
+							<div class="w-3/4 ml-12 xl:ml-32 my-6 mr-4">
 								<div class="es-import-step1-body">
 									<div class="upload-method">
 										<div id="media-upload-error"></div>
@@ -176,8 +178,8 @@ class ES_Import_Subscribers {
 							<div class="w-3/4 ml-12 xl:ml-32 my-6 mr-4">
 								<div>
 									<label><input name="apikey" type="text" id="api-key" class="form-input text-sm w-1/2" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" autofocus tabindex="1" placeholder="12345678901234567890123456789012-xx1" class=""></label>
-								</div>	
-								<p class="es-api-import-status pt-4 text-sm font-medium text-gray-600 tracking-wide hidden">&nbsp;</p>			
+								</div>
+								<p class="es-api-import-status pt-4 text-sm font-medium text-gray-600 tracking-wide hidden">&nbsp;</p>
 								<div class="clearfix clear mt-10 -mb-4 ">
 									<button id="es_mailchimp_verify_api_key" class="ig-es-primary-button px-2 py-1" data-callback="verify_api_key">
 										<?php echo esc_html__( 'Next', 'email-subscribers' ); ?>
@@ -188,7 +190,7 @@ class ES_Import_Subscribers {
 										</svg>
 									</button>
 								</div>
-								
+
 							</div>
 						</div>
 
@@ -198,7 +200,7 @@ class ES_Import_Subscribers {
 
 
 					</div>
-					
+
 					<div class="mailchimp_import_step_1 w-5/6" style="display: none">
 						<div class="flex flex-row pt-6 pb-4 border-b border-gray-100">
 							<div class="flex w-1/4">
@@ -285,18 +287,18 @@ class ES_Import_Subscribers {
 										</svg>
 									</button>
 								</div>
-							</div>	
+							</div>
 						</div>
-						
+
 					</div>
-					
+
 					<div class="step2 w-full overflow-auto mb-6 mr-4 mt-4 border-b border-gray-100">
 						<h2 class="import-status text-base font-medium text-gray-600 tracking-wide"></h2>
 						<div class="step2-body overflow-auto pb-4"></div>
 						<p class="import-instruction text-base font-medium text-yellow-600 tracking-wide"></p>
 						<div id="importing-progress" class="importing-progress hidden mb-4 mr-2 text-center"><span class="bar" style="width:0%"><p class="block import_percentage text-white font-medium text-sm"></p></span></div>
 					</div>
-					<div class="step2-status">
+					<div class="step2-status es-email-status-container">
 						<div class="step2-status flex flex-row border-b border-gray-100">
 							<div class="flex w-1/4">
 								<div class="ml-6 pt-6">
@@ -347,7 +349,29 @@ class ES_Import_Subscribers {
 								</div>
 							</div>
 						</div>
-						
+
+					</div>
+					<div class="step2-send-optin-emails hidden">
+						<div class="step2-send-optin-emails flex flex-row border-b border-gray-100">
+							<div class="flex w-1/4">
+								<div class="ml-6 pt-6">
+									<label for="import_contact_list_status"><span class="block pr-4 text-sm font-medium text-gray-600 pb-2">
+										<?php esc_html_e( 'Send Confirmation/Welcome emails for this import?', 'email-subscribers' ); ?> </span>
+									</label>
+								</div>
+							</div>
+							<div class="w-3/4 mb-6 mr-4 mt-4">
+								<label for="send_optin_emails"
+									   class="inline-flex items-center mt-4 mb-1 cursor-pointer">
+									<span class="relative">
+										<input id="send_optin_emails" type="checkbox" name="send_optin_emails"
+											   value="yes" class="absolute w-0 h-0 mt-6 opacity-0 es-check-toggle ">
+										<span class="es-mail-toggle-line"></span>
+										<span class="es-mail-toggle-dot"></span>
+									</span>
+								</label>
+							</div>
+						</div>
 					</div>
 					<div class="wrapper-start-contacts-import" style="padding-top:10px;">
 							<?php wp_nonce_field( 'import-contacts', 'import_contacts' ); ?>
@@ -666,6 +690,8 @@ class ES_Import_Subscribers {
 				$fields['status']    = __( 'Status', 'email-subscribers' );
 			}
 
+			$fields = apply_filters( 'es_import_show_more_fields_for_mapping', $fields );
+
 			$html      = '<div class="flex flex-row mb-6">
 			<div class="es-import-processing flex w-1/4">
 			<div class="ml-6 mr-2 pt-6">
@@ -794,15 +820,17 @@ class ES_Import_Subscribers {
 
 		$bulkdata = array();
 		if ( isset( $_POST['options'] ) ) {
-			$bulkdata = ig_es_get_data( $_POST, 'options', array() );
+			$bulkdata = ig_es_get_data( $_POST, 'options', array(), true );
 		}
 
-		$bulkdata        = wp_parse_args( $bulkdata, get_option( 'ig_es_bulk_import' ) );
-		$erroremails     = get_option( 'ig_es_bulk_import_errors', array() );
-		$order           = isset( $bulkdata['mapping_order'] ) ? $bulkdata['mapping_order'] : array();
-		$list_id         = isset( $bulkdata['list_id'] ) ? $bulkdata['list_id'] : array();
-		$parts_at_once   = 10;
-		$selected_status = $bulkdata['status'];
+		$bulkdata                    = wp_parse_args( $bulkdata, get_option( 'ig_es_bulk_import' ) );
+		$erroremails                 = get_option( 'ig_es_bulk_import_errors', array() );
+		$order                       = isset( $bulkdata['mapping_order'] ) ? $bulkdata['mapping_order'] : array();
+		$list_id                     = isset( $bulkdata['list_id'] ) ? $bulkdata['list_id'] : array();
+		$parts_at_once               = 10;
+		$selected_status             = $bulkdata['status'];
+		$send_optin_emails           = isset( $bulkdata['send_optin_emails'] ) ? $bulkdata['send_optin_emails'] : 'no';
+		$need_to_send_welcome_emails = ( 'yes' === $send_optin_emails );
 
 		$error_codes = array(
 			'invalid' => __( 'Email address is invalid.', 'email-subscribers' ),
@@ -814,8 +842,10 @@ class ES_Import_Subscribers {
 		}
 
 		if ( isset( $_POST['id'] ) ) {
-
-			$bulkdata['current'] = (int) sanitize_text_field( $_POST['id'] );
+			set_transient( 'ig_es_contact_import_is_running', 'yes' );
+			$batch_id            = (int) sanitize_text_field( $_POST['id'] );
+			$bulkdata['current'] = $batch_id;
+			
 			$raw_list_data       = $wpdb->get_col(
 				$wpdb->prepare(
 					"SELECT data FROM {$wpdb->prefix}ig_temp_import 
@@ -840,6 +870,10 @@ class ES_Import_Subscribers {
 					__( 'Hard Bounced', 'email-subscribers' ) => 'hard_bounced',
 				);
 
+				$is_starting_import = 0 === $batch_id;
+				if ( $is_starting_import ) {
+					do_action( 'ig_es_before_bulk_contact_import' );
+				}
 				foreach ( $raw_list_data as $raw_list ) {
 					$raw_list = unserialize( base64_decode( $raw_list ) );
 					// each entry
@@ -926,14 +960,17 @@ class ES_Import_Subscribers {
 
 							$guid = ES_Common::generate_guid();
 
-							$contacts_data[ $email ]['first_name'] = $first_name;
-							$contacts_data[ $email ]['last_name']  = $last_name;
-							$contacts_data[ $email ]['email']      = $email;
-							$contacts_data[ $email ]['source']     = 'import';
-							$contacts_data[ $email ]['status']     = 'verified';
-							$contacts_data[ $email ]['hash']       = $guid;
-							$contacts_data[ $email ]['created_at'] = $created_at;
+							$contact_data['first_name'] = $first_name;
+							$contact_data['last_name']  = $last_name;
+							$contact_data['email']      = $email;
+							$contact_data['source']     = 'import';
+							$contact_data['status']     = 'verified';
+							$contact_data['hash']       = $guid;
+							$contact_data['created_at'] = $created_at;
 
+							$additional_contacts_data = apply_filters( 'es_prepare_additional_contacts_data_for_import', array(), $insert );
+
+							$contacts_data[$email] = array_merge( $contact_data, $additional_contacts_data );
 							$bulkdata['imported']++;
 						} else {
 							$bulkdata['duplicate_emails_count']++;
@@ -982,7 +1019,20 @@ class ES_Import_Subscribers {
 					}
 
 					if ( ! empty( $contacts_data ) ) {
-						ES()->contacts_db->bulk_insert( $contacts_data );
+						$insert_ids = ES()->contacts_db->bulk_insert( $contacts_data, 100, true );
+						if ( ! empty( $insert_ids ) && $need_to_send_welcome_emails ) {
+							$imported_contacts_transient = get_transient( 'ig_es_imported_contact_ids_range' );
+							if ( ! empty( $imported_contacts_transient ) && is_array( $imported_contacts_transient ) && isset( $imported_contacts_transient['rows'] ) ) {
+								$old_rows   = is_array( $imported_contacts_transient['rows'] ) ? $imported_contacts_transient['rows'] : array();
+								$all_data   = array_merge( $old_rows, $insert_ids );
+								$insert_ids = array( min( $all_data ), max( $all_data ) );
+							}
+							$imported_contact_details = array(
+								'rows'  => $insert_ids,
+								'lists' => $list_id
+							);
+							set_transient( 'ig_es_imported_contact_ids_range', $imported_contact_details );
+						}
 					}
 
 					if ( ! empty( $list_contact_data ) ) {
@@ -1072,6 +1122,8 @@ class ES_Import_Subscribers {
 					$return['html'] .= $table;
 				}
 				do_action( 'ig_es_remove_import_data' );
+				$next_task_time = time() + ( 1 * MINUTE_IN_SECONDS ); // Schedule next task after 1 minute from current time.
+				IG_ES_Background_Process_Helper::add_action_scheduler_task( 'ig_es_after_bulk_contact_import', array(), false, false, $next_task_time );
 			} else {
 				// Add current batch emails into the processed email list
 				$processed_emails             = array_merge( $processed_emails, $current_batch_emails );
@@ -1081,9 +1133,132 @@ class ES_Import_Subscribers {
 				update_option( 'ig_es_bulk_import_errors', $erroremails );
 			}
 			$return['success'] = true;
+			delete_transient( 'ig_es_contact_import_is_running');
 		}
 
 		wp_send_json( $return );
+	}
+
+	/**
+	 * Handle adding contact id to excluded contact list
+	 *
+	 * @param $contact_id
+	 */
+	public function handle_new_contact_inserted( $contact_id ) {
+		$import_status = get_transient( 'ig_es_contact_import_is_running' );
+		if ( ! empty( $import_status ) && 'yes' == $import_status && ! empty( $contact_id ) ) {
+			$old_excluded_contact_ids = $this->get_excluded_contact_id_on_import();
+			array_push( $old_excluded_contact_ids, $contact_id );
+			$this->set_excluded_contact_id_on_import($old_excluded_contact_ids);
+		}
+	}
+
+	/**
+	 * Get the excluded contact ID's list
+	 *
+	 * @return array|mixed
+	 */
+	public function get_excluded_contact_id_on_import() {
+		$old_excluded_contact_ids = get_transient( 'ig_es_excluded_contact_ids_on_import' );
+		if ( empty( $old_excluded_contact_ids ) || ! is_array( $old_excluded_contact_ids ) ) {
+			$old_excluded_contact_ids = array();
+		}
+
+		return $old_excluded_contact_ids;
+	}
+
+	/**
+	 * Set the excluded contact ID's list in transient
+	 */
+	public function set_excluded_contact_id_on_import( $list ) {
+		if ( ! is_array( $list ) ) {
+			return false;
+		}
+		if ( empty( $list ) ) {
+			delete_transient( 'ig_es_excluded_contact_ids_on_import' );
+		} else {
+			set_transient( 'ig_es_excluded_contact_ids_on_import', $list, 24 * HOUR_IN_SECONDS );
+		}
+
+		return true;
+	}
+
+	/**
+	 * Handle sending bulk welcome and confirmation email to customers using cron job
+	 */
+	public function handle_after_bulk_contact_import() {
+		global $wpbd;
+		$imported_contact_details = get_transient( 'ig_es_imported_contact_ids_range' );
+		if ( ! empty( $imported_contact_details ) && isset( $imported_contact_details['rows'] )) {
+			$imported_row_details   = is_array( $imported_contact_details['rows'] ) ? $imported_contact_details['rows'] : array();
+			if (2 == count( $imported_row_details ) ) {
+				$first_row  = intval( $imported_row_details[0] );
+				$last_row   = intval( $imported_row_details[1] );
+				$total_rows = ( $last_row - $first_row ) + 1;
+				if ( 0 < $total_rows ) {
+					$per_batch                     = 100;
+					$total_batches                 = ceil( $total_rows / $per_batch );
+					$excluded_contact_ids          = $this->get_excluded_contact_id_on_import();
+					$excluded_contact_ids_in_range = ig_es_get_values_in_range( $excluded_contact_ids, $first_row, $first_row + $per_batch );
+
+					$sql = "SELECT contacts.id, lists_contacts.list_id, lists_contacts.status FROM {$wpbd->prefix}ig_contacts AS contacts";
+					$sql .= " LEFT JOIN {$wpbd->prefix}ig_lists_contacts AS lists_contacts ON contacts.id = lists_contacts.contact_id";
+					$sql .= " LEFT JOIN {$wpbd->prefix}ig_queue AS queue ON contacts.id = queue.contact_id AND queue.campaign_id = 0";
+					$sql .= ' WHERE 1=1';
+					$sql .= ' AND queue.contact_id IS NULL';
+					$sql .= ' AND contacts.id >= %d AND contacts.id <= %d ';
+					if ( ! empty( $excluded_contact_ids_in_range ) ) {
+						$excluded_ids_for_next_batch = array_diff( $excluded_contact_ids, $excluded_contact_ids_in_range );
+						$this->set_excluded_contact_id_on_import( $excluded_ids_for_next_batch );
+						$excluded_contact_ids_in_range = array_map( 'esc_sql', $excluded_contact_ids_in_range );
+						$sql                           .= ' AND contacts.id NOT IN (' . implode( ',', $excluded_contact_ids_in_range ) . ')';
+					}
+					$sql     .= ' GROUP BY contacts.id LIMIT %d';
+					$query   = $wpbd->prepare( $sql, [ $first_row, $first_row + $per_batch, $per_batch ] );
+					$entries = $wpbd->get_results( $query );
+					if ( 0 < count( $entries ) ) {
+						$subscriber_ids     = array();
+						$subscriber_options = array();
+						foreach ( $entries as $entry ) {
+							if ( in_array( $entry->status, array( 'subscribed', 'unconfirmed' ) ) ) {
+								$subscriber_id                                = $entry->id;
+								$subscriber_ids[]                             = $subscriber_id;
+								$subscriber_options[ $subscriber_id ]['type'] = 'unconfirmed' === $entry->status ? 'optin_confirmation' : 'optin_welcome_email';
+							}
+						}
+						if ( ! empty( $subscriber_ids ) ) {
+							$timestamp = time();
+							ES()->queue->bulk_add(
+								0,
+								$subscriber_ids,
+								$timestamp,
+								20,
+								false,
+								1,
+								false,
+								$subscriber_options
+							);
+						}
+					}
+					if ( 1 == $total_batches ) {
+						delete_transient( 'ig_es_imported_contact_ids_range' );
+					} else {
+						$imported_contact_details = get_transient( 'ig_es_imported_contact_ids_range' );
+						$insert_ids = array( $first_row + $per_batch, $last_row );
+						$imported_contact_details['rows'] = $insert_ids;
+						set_transient( 'ig_es_imported_contact_ids_range', $imported_contact_details );
+						$next_task_time = time() + ( 1 * MINUTE_IN_SECONDS ); // Schedule next task after 1 minute from current time.
+						IG_ES_Background_Process_Helper::add_action_scheduler_task( 'ig_es_after_bulk_contact_import', array(), false, false, $next_task_time );
+						//Process queued Welcome and Confirmation emails immidetly
+						$request_args = array(
+							'action' => 'ig_es_process_queue',
+						);
+						// Send an asynchronous request to trigger sending of confirmation emails.
+						IG_ES_Background_Process_Helper::send_async_ajax_request( $request_args, true );
+					}
+				}
+			}
+		}
 	}
 
 	/**

@@ -24,7 +24,7 @@ class Es_Form_Action extends Integration_Base {
 	 * @return string
 	 */
 	public function get_label() {
-		return __( 'Email Subscribers & Newsletter', 'email-subscribers' );
+		return __( 'Icegram Express (formerly known as Email Subscribers & Newsletters)', 'email-subscribers' );
 	}
 
 	/**
@@ -33,31 +33,33 @@ class Es_Form_Action extends Integration_Base {
 	 * @param \ElementorPro\Modules\Forms\Widgets\Form $form
 	 */
 	public function register_settings_section( $form ) {
-		$form->start_controls_section(
-			'section_email_subscribers',
-			array(
-				'label'     => __( 'Email Subscribers', 'email-subscribers' ),
-				'condition' => array(
-					'submit_actions' => $this->get_name(),
-				),
-			)
-		);
-		$lists = ES()->lists_db->get_list_id_name_map();
+		if (method_exists($form, 'start_controls_section')&& method_exists($form, 'end_controls_section')&& method_exists($form, 'add_control')) {
+			$form->start_controls_section(
+				'section_email_subscribers',
+				array(
+					'label'     => __( 'Icegram Express', 'email-subscribers' ),
+					'condition' => array(
+						'submit_actions' => $this->get_name(),
+					),
+				)
+			);
+			$lists = ES()->lists_db->get_list_id_name_map();
 
-		$form->add_control(
-			'email_subscribers_lists',
-			array(
-				'label'       => __( 'List', 'email-subscribers' ),
-				'type'        => Controls_Manager::SELECT2,
-				'label_block' => true,
-				'options'     => $lists,
-				'render_type' => 'none',
-			)
-		);
+			$form->add_control(
+				'email_subscribers_lists',
+				array(
+					'label'       => __( 'List', 'email-subscribers' ),
+					'type'        => Controls_Manager::SELECT2,
+					'label_block' => true,
+					'options'     => $lists,
+					'render_type' => 'none',
+				)
+			);
 
-		$this->register_fields_map_control( $form );
+			$this->register_fields_map_control( $form );
 
-		$form->end_controls_section();
+			$form->end_controls_section();
+		}
 	}
 
 	public function on_export( $element ) {
@@ -125,7 +127,7 @@ class Es_Form_Action extends Integration_Base {
 	}
 
 	/**
-	 * Email subscribers fields that need to map with Elementor form fields
+	 * Icegram Express fields that need to map with Elementor form fields
 	 *
 	 * @return array
 	 */

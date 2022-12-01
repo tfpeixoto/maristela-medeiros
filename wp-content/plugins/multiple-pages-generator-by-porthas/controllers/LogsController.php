@@ -47,6 +47,8 @@ class MPG_LogsController
             wp_die();
         } catch (Exception $e) {
 
+            do_action( 'themeisle_log_event', MPG_NAME, $e->getMessage(), 'debug', __FILE__, __LINE__ );
+
             echo json_encode([
                 'success' => false,
                 'error' => $e->getMessage()
@@ -71,17 +73,20 @@ class MPG_LogsController
 
 
             $dataset_array = $wpdb->get_results('SELECT * FROM ' . $wpdb->prefix . MPG_Constant::MPG_LOGS_TABLE . ' WHERE project_id=' . $project_id);
-            $dataset_array = array_slice($dataset_array, $start, $length);
+            $dataset_partial_array = array_slice($dataset_array, $start, $length);
 
 
             echo json_encode([
                 'draw' => $draw,
                 'recordsTotal' => count($dataset_array),
                 'recordsFiltered' => count($dataset_array),
-                'data' => $dataset_array,
+                'data' => $dataset_partial_array,
                 'headers' =>  ['id', 'project_id', 'level', 'message', 'datetime']
             ]);
         } catch (Exception $e) {
+
+            do_action( 'themeisle_log_event', MPG_NAME, $e->getMessage(), 'debug', __FILE__, __LINE__ );
+
             echo json_encode(['success' => false, 'error' => $e->getMessage()]);
         }
 

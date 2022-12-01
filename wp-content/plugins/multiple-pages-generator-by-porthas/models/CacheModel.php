@@ -27,6 +27,9 @@ class MPG_CacheModel
 
             return true;
         } catch (Exception $e) {
+
+            do_action( 'themeisle_log_event', MPG_NAME, sprintf( 'Can\'t update cache type by project ID. Details: %s', $e->getMessage() ), 'debug', __FILE__, __LINE__ );
+
             throw new Exception(__('Can\'t update cache type by project ID. Details:', 'mpg') . $e->getMessage());
         }
     }

@@ -51,14 +51,19 @@ class ES_DB_Sending_Queue {
 	}
 
 	public static function get_emails_to_be_sent_by_hash( $guid, $limit ) {
-		global $wpdb;
-
-		$subscribers = $wpdb->get_results(
-			$wpdb->prepare(
-				"SELECT * FROM {$wpdb->prefix}ig_sending_queue WHERE status = %s AND mailing_queue_hash = %s ORDER BY id LIMIT 0, %d",
+		global $wpbd;
+		$where       = apply_filters( 'ig_es_get_emails_to_be_sent_by_hash_condition', 'AND 1=1' );
+		$subscribers = $wpbd->get_results(
+			$wpbd->prepare(
+				"SELECT * FROM {$wpbd->prefix}ig_sending_queue WHERE status IN( %s, %s, %s ) AND mailing_queue_hash = %s $where ORDER BY FIELD(`status`, %s, %s, %s) LIMIT 0, %d",
 				array(
-					'In Queue',
+					IG_ES_SENDING_QUEUE_STATUS_QUEUED,
+					IG_ES_SENDING_QUEUE_STATUS_SENDING,
+					IG_ES_SENDING_QUEUE_STATUS_FAILED,
 					$guid,
+					IG_ES_SENDING_QUEUE_STATUS_QUEUED,
+					IG_ES_SENDING_QUEUE_STATUS_SENDING,
+					IG_ES_SENDING_QUEUE_STATUS_FAILED,
 					$limit,
 				)
 			),
@@ -134,16 +139,34 @@ class ES_DB_Sending_Queue {
 	}
 
 	/* count cron email */
-	public static function get_total_emails_to_be_sent_by_hash( $notification_hash = '' ) {
+	public static function get_total_emails_to_be_sent_by_hash( $notification_hash = '', $statuses = array() ) {
 
-		global $wpdb;
+		global $wpbd;
 
 		$result = 0;
 		if ( ! empty( $notification_hash ) ) {
-			$result = $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT COUNT(*) AS count FROM {$wpdb->prefix}ig_sending_queue WHERE mailing_queue_hash = %s AND status = %s",
-					array( $notification_hash, 'In Queue' )
+
+			
+			$params = array( $notification_hash );
+			
+			if ( empty( $statuses ) ) {
+				$statuses = array(
+					IG_ES_SENDING_QUEUE_STATUS_QUEUED,
+					IG_ES_SENDING_QUEUE_STATUS_SENDING,
+					IG_ES_SENDING_QUEUE_STATUS_FAILED,
+				);
+			}
+
+			
+			$statuses_count        = count( $statuses );
+			$statuses_placeholders = array_fill( 0, $statuses_count, '%s' );
+			
+			$params = array_merge( $params, $statuses );
+			
+			$result = $wpbd->get_var(
+				$wpbd->prepare(
+					"SELECT COUNT(*) AS count FROM {$wpbd->prefix}ig_sending_queue WHERE mailing_queue_hash = %s AND status IN ( " . implode( ',', $statuses_placeholders ) . ' )',
+					$params
 				)
 			);
 		}
@@ -158,8 +181,12 @@ class ES_DB_Sending_Queue {
 
 		$result = $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT COUNT(*) AS count FROM {$wpdb->prefix}ig_sending_queue WHERE status = %s",
-				array( 'In Queue' )
+				"SELECT COUNT(*) AS count FROM {$wpdb->prefix}ig_sending_queue WHERE status IN ( %s, %s, %s )",
+				array( 
+					IG_ES_SENDING_QUEUE_STATUS_QUEUED,
+					IG_ES_SENDING_QUEUE_STATUS_SENDING,
+					IG_ES_SENDING_QUEUE_STATUS_FAILED
+				)
 			)
 		);
 
@@ -173,10 +200,11 @@ class ES_DB_Sending_Queue {
 
 		$result = 0;
 		if ( '' != $notification_hash ) {
+			$sent_status = IG_ES_SENDING_QUEUE_STATUS_SENT;
 			$result = $wpdb->get_var(
 				$wpdb->prepare(
 					"SELECT COUNT(*) AS count FROM {$wpdb->prefix}ig_sending_queue WHERE mailing_queue_hash = %s AND status = %s",
-					array( $notification_hash, 'Sent' )
+					array( $notification_hash, $sent_status )
 				)
 			);
 		}
@@ -321,13 +349,26 @@ class ES_DB_Sending_Queue {
 			'lists'      => $list_ids,
 			'return_sql' => true, // This flag will return the required sql query
 			'orderby'    => array( 'id' ),
+			'status'	=> 'subscribed',
+			'subscriber_status' => array( 'verified' ),
 		);
+		
+		$schedule_base_time = current_time( 'mysql' );
+		$scheduled_utc_time = current_time( 'mysql', true );
+		$current_utc_time   = current_time( 'mysql', true );
+		$send_immediately   = true;
 		if ( ! empty( $campaign ) && ! empty( $campaign['meta'] ) ) {
 			$campaign_meta = maybe_unserialize( $campaign['meta'] );
 			if ( ! empty( $campaign_meta['list_conditions'] ) ) {
 				$args['conditions'] = $campaign_meta['list_conditions'];
 			}
+			if ( isset( $campaign_meta['scheduling_option'] ) && isset( $campaign_meta['date'] ) && isset( $campaign_meta['es_schedule_date'] ) && isset( $campaign_meta['es_schedule_time'] ) && 'schedule_later' == $campaign_meta['scheduling_option'] ) {
+				$schedule_base_time = gmdate( 'Y-m-d G:i:s', strtotime( "{$campaign_meta['es_schedule_date']} {$campaign_meta['es_schedule_time']}" ) );
+				$scheduled_utc_time = $campaign_meta['date'];
+				$send_immediately   = false;
+			}
 		}
+
 		$query     = new IG_ES_Subscribers_Query();
 		$sql_query = $query->run( $args );
 
@@ -341,6 +382,21 @@ class ES_DB_Sending_Queue {
 			$queue_sent_at,
 			$queue_opened_at,
 		);
+
+		if ($send_immediately) {
+			$send_at_query = $wpbd->prepare('%s AS `send_at`', array($current_utc_time));
+		} else {
+			$send_at_query = $wpbd->prepare("
+			CASE 
+				WHEN `timezone` IS null THEN %s
+		        ELSE 
+		            CASE
+		                WHEN CONVERT_TZ(%s,`timezone`,'+0:00') < %s THEN DATE_ADD(CONVERT_TZ(%s,`timezone`,'+0:00'), INTERVAL 86400 SECOND)
+		                ELSE CONVERT_TZ(%s,`timezone`,'+0:00')
+		            END
+		    END AS `send_at`
+			", array($scheduled_utc_time,$schedule_base_time,$current_utc_time,$schedule_base_time,$schedule_base_time));
+		}
 
 		$total_contacts_added = $wpbd->query(
 			$wpbd->prepare(
@@ -356,7 +412,8 @@ class ES_DB_Sending_Queue {
 					`links`,
 					`opened`,
 					`sent_at`,
-					`opened_at`
+					`opened_at`,
+				 	`send_at`
 				)
 				SELECT 
 					%d AS `mailing_queue_id`,
@@ -369,7 +426,8 @@ class ES_DB_Sending_Queue {
 					%s AS `links`,
 					%d AS `opened`,
 					%s AS `sent_at`,
-					%s AS `opened_at`
+					%s AS `opened_at`,
+			       	{$send_at_query}
 				FROM `{$wpbd->prefix}ig_contacts` AS `ig_contacts` 
 				WHERE id IN ( " . $sql_query . ')
 				GROUP BY `ig_contacts`.`email`',
@@ -380,7 +438,6 @@ class ES_DB_Sending_Queue {
 		// Check if contacts added.
 		if ( ! empty( $total_contacts_added ) ) {
 			$is_inserted = true;
-			ES_DB_Mailing_Queue::update_subscribers_count( $mailing_queue_hash, $total_contacts_added );
 		} else {
 
 			// If some how above sql query fails then queue emails using old approach.
@@ -391,9 +448,9 @@ class ES_DB_Sending_Queue {
 				$list_ids = explode( ',', $list_ids );
 			}
 
-			$subscribers       = ES()->contacts_db->get_active_contacts_by_list_id( $list_ids );
-			$subscribers_count = count( $subscribers );
-			if ( $subscribers_count > 0 ) {
+			$subscribers          = ES()->contacts_db->get_active_contacts_by_list_id( $list_ids );
+			$total_contacts_added = count( $subscribers );
+			if ( $total_contacts_added > 0 ) {
 				// Add entry into sending queue table
 				$delivery_data                     = array();
 				$delivery_data['hash']             = $mailing_queue_hash;
@@ -402,10 +459,15 @@ class ES_DB_Sending_Queue {
 				$delivery_data['campaign_id']      = $campaign_id;
 				$delivery_data['mailing_queue_id'] = $mailing_queue_id;
 				$is_inserted                       = self::do_batch_insert( $delivery_data );
-				if ( $is_inserted ) {
-					ES_DB_Mailing_Queue::update_subscribers_count( $mailing_queue_hash, $subscribers_count );
-				}
 			}
+		}
+
+		if ( $is_inserted ) {
+			$data = array(
+				'count' => $total_contacts_added,
+				'status' => IG_ES_MAILING_QUEUE_STATUS_QUEUED
+			);
+			ES_DB_Mailing_Queue::update_mailing_queue( $mailing_queue_id, $data );
 		}
 
 		return $is_inserted;

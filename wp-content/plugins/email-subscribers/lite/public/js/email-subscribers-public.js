@@ -29,115 +29,120 @@
 	 * practising this, we should strive to set a better example in our own work.
 	 */
 
-	 $(document).ready(function () {
+    $(document).ready(function () {
 
-		$('.es_subscription_form').each(function(){
-			// For the forms which are hidden on page load, we need to use AJAX to handle their submission.
-			if ( $(this).is(':hidden') ) {
-				$(this).on('submit', function(e){
-					e.preventDefault();
-					var form = $(this);
-					handleBindFunction(form);
-				});
-			}
-		});
+        /**
+         * Extend jQuery to convert form into JSON object
+         * @returns {{}}
+         */
+        $.fn.serializeObject = function () {
+            var output = {};
+            var formData = this.serializeArray();
+            $.each(formData, function () {
+                var fieldName = this.name;
+                var fieldValue = this.value || '';
+                var isArrayField = fieldName.slice(-2) === '[]';
+                if (isArrayField) {
+                    if (output[fieldName]) {
+                        output[fieldName].push(fieldValue);
+                    } else {
+                        output[fieldName] = [fieldValue];
+                    }
+                } else {
+                    output[fieldName] = fieldValue;
+                }
+            });
+            return output;
+        };
 
-	});
+        /**
+         * Handle subscription form submission
+         */
+        $('.es_ajax_subscription_form').on('submit', function (e) {
+            var form = $(this);
+            e.preventDefault();
+            handleBindFunction(form);
+        });
 
-	function prepareFormData(form, formData) {
-		var list_ids = [];
-		var is_multiple_lists = false;
-		jQuery.each((form.serializeArray() || {}), function (i, field) {
-			// Collect all list ids
-			if(field.name === 'esfpx_lists[]') {
-				list_ids.push(field.value);
-				is_multiple_lists = true;
-			} else {
-				formData[field.name] = field.value;
-			}
-		});
+    });
 
-		if(is_multiple_lists) {
-			formData['esfpx_lists[]'] = list_ids;
-		}
+    function handleResponse(response, form) {
 
+        var status = response.status;
 
-		return formData;
-	}
+        var message_class = 'success';
+        if (status === 'ERROR') {
+            message_class = 'error';
+        }
 
-	function handleResponse(response, form) {
+        var responseText = response['message_text'];
+        var messageContainer = $(form).next('.es_subscription_message');
+        messageContainer.attr('class', 'es_subscription_message ' + message_class);
+        messageContainer.html(responseText);
+        var esSuccessEvent = {
+            detail: {
+                es_response: message_class,
+                msg: responseText
+            },
+            bubbles: true,
+            cancelable: true
+        };
 
-		var status = response.status;
+        $(form).trigger('es_response', [esSuccessEvent]);
+    }
 
-		var message_class = 'success';
-		if(status === 'ERROR') {
-			message_class = 'error';
-		}
-
-		var responseText = response['message_text'];
-		var messageContainer = $(form).next('.es_subscription_message');
-		messageContainer.attr('class', 'es_subscription_message ' + message_class);
-		messageContainer.html(responseText);
-		var esSuccessEvent = { 
-								detail: { 
-											es_response : message_class, 
-											msg: responseText
-										}, 
-								bubbles: true, 
-								cancelable: true 
-							} ;
-
-		jQuery(form).trigger('es_response', [ esSuccessEvent ]);
-	}
-
-	function handleBindFunction(form, is_ig){
-		var is_ig = is_ig || false;
-		var formData = {};
-		formData = prepareFormData(form, formData);
-		formData['es'] = 'subscribe';
-		formData['action'] = 'es_add_subscriber';
-		var actionUrl = es_data.es_ajax_url;
-		jQuery(form).find('#spinner-image').show();
-		$.ajax({
-			type: 'POST',
-			url: actionUrl,
-			data: formData,
-			dataType: 'json',
-			success: function (response) {
-				if(!is_ig){
-					if( response && typeof response.status !== 'undefined' && response.status === "SUCCESS" ) {
-						jQuery(form).slideUp('slow');
-						jQuery(form).hide();
-					} else {
-						jQuery(form).find('#spinner-image').hide();
-					}
-				}
-				jQuery(window).trigger('es.send_response', [jQuery(form) , response]);
-				handleResponse(response, form);
-			},
-			error: function (err) {
-				jQuery(form).find('#spinner-image').hide();
-				console.log(err, 'error');
-			},
-		});
+    function handleBindFunction(form, is_ig = false) {
+        form = $(form);
+        var formData = form.serializeObject();
+        formData['es'] = 'subscribe';
+        formData['action'] = 'es_add_subscriber';
+        $.ajax({
+            type: 'POST',
+            url: es_data.es_ajax_url,
+            data: formData,
+            dataType: 'json',
+            beforeSend: function () {
+                form.find('#spinner-image').show();
+                form.find('.es_submit_button').attr('disabled', true);
+            },
+            success: function (response) {
+                if (!is_ig) {
+                    if (response && typeof response.status !== 'undefined' && response.status === "SUCCESS") {
+                        form.slideUp('slow');
+                        form.hide();
+                    } else {
+                        form.find('#spinner-image').hide();
+                    }
+                }
+                form.find('.es_submit_button').attr('disabled', false);
+                jQuery(window).trigger('es.send_response', [form, response]);
+                handleResponse(response, form);
+            },
+            error: function (err) {
+                form.find('#spinner-image').hide();
+                form.find('.es_submit_button').attr('disabled', false);
+                console.log(err, 'error');
+            },
+        });
 
 
 		return false;
 	}
-	
+
 	// Compatibility of ES with IG
 	jQuery( window ).on( "init.icegram", function(e, ig) {
 		if(typeof ig !== 'undefined' && typeof ig.messages !== 'undefined' ) {
 			jQuery('.icegram .es_shortcode_form, .icegram form[data-source="ig-es"]').each(function(i, v){
 				jQuery(v).bind('submit', function (e) {
 					e.preventDefault();
+					e.stopImmediatePropagation();
 					var form = $(this);
 					handleBindFunction(form, true);
 				});
 			});
 		}
 	});
-	
+
 })(jQuery);
 
 

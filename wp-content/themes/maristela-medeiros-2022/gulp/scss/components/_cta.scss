@@ -1,0 +1,25 @@
+.cta {
+  align-items: center;
+  background: $chumbo;
+  color: $white;
+  display: flex;
+  padding: 2.5rem 0;
+
+  &__conteudo {
+    align-self: center;
+    text-align: center;
+
+    @include media-breakpoint-up(lg) {
+      text-align: left;
+    }
+
+    h3 {
+      color: white;
+      font-weight: 400;
+    }
+
+    .btn{
+      margin-top: 1rem;
+    }
+  }
+}

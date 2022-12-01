@@ -1,22 +1,22 @@
 <?php
 /**
- * Plugin Name: Email Subscribers & Newsletters
+ * Plugin Name: Icegram Express - Email Subscribers, Newsletters and Marketing Automation Plugin
  * Plugin URI: https://www.icegram.com/
  * Description: Add subscription forms on website, send HTML newsletters & automatically notify subscribers about new blog posts once it is published.
- * Version: 4.8.2
+ * Version: 5.5.0
  * Author: Icegram
  * Author URI: https://www.icegram.com/
  * Requires at least: 3.9
- * Tested up to: 5.8
+ * Tested up to: 6.0.2
  * WC requires at least: 3.6.0
  * WC tested up to: 5.5.1
- * ES WOO: 7120515:9f4c7f8bb491260ef19edf9699db73e6
+ * ES Woo: 7120515:9f4c7f8bb491260ef19edf9699db73e6
  * Requires PHP: 5.6
  * Text Domain: email-subscribers
  * Domain Path: /lite/languages/
  * License: GPLv3
  * License URI: http://www.gnu.org/licenses/gpl-3.0.html
- * Copyright (c) 2016-2021 Icegram
+ * Copyright (c) 2016-2022 Icegram
  */
 
 // If this file is called directly, abort.
@@ -25,7 +25,7 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 /**
- * Minimum PHP version required for Email Subscribers
+ * Minimum PHP version required for Icegram Express
  *
  * @since 4.4.1
  *
@@ -38,7 +38,7 @@ if ( ! defined( 'IG_ES_MIN_PHP_VER' ) ) {
 if ( ! function_exists( 'ig_es_fail_php_version_notice' ) ) {
 
 	/**
-	 * Email Subscribers admin notice for minimum PHP version.
+	 * Icegram Express admin notice for minimum PHP version.
 	 *
 	 * Warning when the site doesn't have the minimum required PHP version.
 	 *
@@ -47,7 +47,7 @@ if ( ! function_exists( 'ig_es_fail_php_version_notice' ) ) {
 	 */
 	function ig_es_fail_php_version_notice() {
 		/* translators: %s: PHP version */
-		$message      = sprintf( esc_html__( 'Email Subscribers requires PHP version %s+, plugin is currently NOT RUNNING.', 'email-subscribers' ), IG_ES_MIN_PHP_VER );
+		$message      = sprintf( esc_html__( 'Icegram Express requires PHP version %s+, plugin is currently NOT RUNNING.', 'email-subscribers' ), IG_ES_MIN_PHP_VER );
 		$html_message = sprintf( '<div class="error">%s</div>', wpautop( $message ) );
 		echo wp_kses_post( $html_message );
 	}
@@ -67,7 +67,7 @@ if ( ! version_compare( PHP_VERSION, IG_ES_MIN_PHP_VER, '>=' ) ) {
  * @since 4.3.0
  */
 if ( ! defined( 'IG_ES_FEEDBACK_TRACKER_VERSION' ) ) {
-	define( 'IG_ES_FEEDBACK_TRACKER_VERSION', '1.2.5' );
+	define( 'IG_ES_FEEDBACK_TRACKER_VERSION', '1.2.8' );
 }
 
 if ( ! defined( 'IG_ES_TRACKER_VERSION' ) ) {
@@ -113,9 +113,9 @@ if ( ! function_exists( 'ig_es_show_upgrade_pro_notice' ) ) {
 			<?php
 			echo wp_kses_post(
 				sprintf(
-					/* translators: %s: Link to Email Subscribers Premium upgrade */
-					__( 'You are using older version of <strong>Email Subscribers Premium</strong> plugin. It won\'t work because it needs plugin to be updated. Please update %s plugin.', 'email-subscribers' ),
-					'<a href="' . esc_url( $url ) . '" target="_blank">' . __( 'Email Subscribers Premium', 'email-subscribers' ) . '</a>'
+					/* translators: %s: Link to Icegram Express (formerly known as Email Subscribers & Newsletters) Premium upgrade */
+					__( 'You are using older version of <strong>Icegram Express (formerly known as Email Subscribers & Newsletters) Premium</strong> plugin. It won\'t work because it needs plugin to be updated. Please update %s plugin.', 'email-subscribers' ),
+					'<a href="' . esc_url( $url ) . '" target="_blank">' . __( 'Icegram Express (formerly known as Email Subscribers & Newsletters) Premium', 'email-subscribers' ) . '</a>'
 				)
 			);
 			?>
@@ -187,7 +187,7 @@ if ( 'premium' === $ig_es_plan ) {
 /* ***************************** Initial Compatibility Work (End) ******************* */
 
 if ( ! defined( 'ES_PLUGIN_VERSION' ) ) {
-	define( 'ES_PLUGIN_VERSION', '4.8.2' );
+	define( 'ES_PLUGIN_VERSION', '5.5.0' );
 }
 
 // Plugin Folder Path.
@@ -207,6 +207,10 @@ if ( ! defined( 'ES_PLUGIN_URL' ) ) {
 	define( 'ES_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 }
 
+if ( ! defined( 'ES_IMG_URL' ) ) {
+	define( 'ES_IMG_URL', ES_PLUGIN_URL . 'lite/admin/images/' );
+}
+
 // Start-IG-Code.
 if ( ! defined( 'IG_ES_PLUGIN_PLAN' ) ) {
 	define( 'IG_ES_PLUGIN_PLAN', 'lite' );
@@ -220,13 +224,13 @@ if ( ! defined( 'IG_ES_PLUGIN_PLAN' ) ) {
 if ( ! function_exists( 'ig_es_woocommerce_inactive_notice' ) ) {
 
 	/**
-	 * Email Subscribers admin notice when WooCommerce is in inactive.
+	 * Icegram Express admin notice when WooCommerce is in inactive.
 	 *
 	 * @return void
 	 * @since 4.6.1
 	 */
 	function ig_es_woocommerce_inactive_notice() {
-		$message      = esc_html__( 'Email Subscribers requires WooCommerce to be installed and active, plugin is currently NOT RUNNING.', 'email-subscribers' );
+		$message      = esc_html__( 'Icegram Express requires WooCommerce to be installed and active, plugin is currently NOT RUNNING.', 'email-subscribers' );
 		$html_message = sprintf( '<div class="error">%s</div>', wpautop( $message ) );
 		echo wp_kses_post( $html_message );
 	}
@@ -332,7 +336,7 @@ if ( ! function_exists( 'ig_es_may_activate_on_blog' ) ) {
 if ( ! function_exists( 'ig_es_activate_on_blog' ) ) {
 
 	/**
-	 * Function to trigger Email Subscribers' activation code for individual site/blog in a network.
+	 * Function to trigger Icegram Express' activation code for individual site/blog in a network.
 	 *
 	 * @param  int $blog_id Blog ID of newly created site/blog.
 	 *
@@ -349,7 +353,7 @@ if ( ! function_exists( 'ig_es_activate_on_blog' ) ) {
 if ( ! function_exists( 'ig_es_trigger_deactivation_in_multisite' ) ) {
 
 	/**
-	 * Function to trigger Email Subscribers' deactivation code for individual site in a network.
+	 * Function to trigger Icegram Express' deactivation code for individual site in a network.
 	 *
 	 * @param  int $blog_id Blog ID of newly created site/blog.
 	 *
@@ -425,7 +429,7 @@ require ES_PLUGIN_DIR . 'lite/includes/class-email-subscribers.php';
 if ( ! function_exists( 'ES' ) ) {
 
 	/**
-	 * Email Subscribers instance
+	 * Icegram Express instance
 	 *
 	 * @return Email_Subscribers
 	 *

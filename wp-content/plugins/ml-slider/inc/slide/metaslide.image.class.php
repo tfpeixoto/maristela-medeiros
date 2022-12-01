@@ -34,7 +34,7 @@ class MetaImageSlide extends MetaSlide
      * by PHP methods, such as in an import situation.
      *
      * @param int   $slideshow_id The id of the slider
-     * @param array $data      	  The data information for the new slide
+     * @param array $data         The data information for the new slide
      *
      * @return array | WP_error The status message and if success, an array of slide ids
      */
@@ -43,7 +43,6 @@ class MetaImageSlide extends MetaSlide
         $errors = array();
         $slides = array();
         foreach ($data as $slide_data) {
-
             // TODO check type and create slides based on that type
             // $method = 'create_' . $slide['type'] . '_slide';
             // $this->slider->add_slide($this->{$method}());
@@ -72,7 +71,7 @@ class MetaImageSlide extends MetaSlide
      * TODO refactor and put this in a Slider class
      *
      * @param int   $slideshow_id The id of the slider
-     * @param array $data      	  The data information for the new slide
+     * @param array $data         The data information for the new slide
      *
      * @return array | WP_Error The slide_id and html content
      */
@@ -81,10 +80,9 @@ class MetaImageSlide extends MetaSlide
 
         // For now this only handles images, so check it's an image
         if (!wp_attachment_is_image($data['id'])) {
-
             // TODO this is the old way to handle errors
             // Remove this later and handle errors using data returns
-            echo "<tr><td colspan='2'>ID: {$data['id']} \"" . get_the_title($data['id']) . "\" - " . __("Failed to add slide. Slide is not an image.", 'ml-slider') . "</td></tr>";
+            echo '<tr><td colspan="2">ID: ' . esc_html($data['id']) . ' "' . esc_html(get_the_title($data['id'])) . '" - ' . esc_html__("Failed to add slide. Slide is not an image.", 'ml-slider') . "</td></tr>";
 
             return new WP_Error('create_failed', __('This isn\'t an accepted image. Please try again.', 'ml-slider'), array('status' => 409));
         }
@@ -120,24 +118,53 @@ class MetaImageSlide extends MetaSlide
      */
     public function ajax_create_image_slides()
     {
-        if (!wp_verify_nonce($_REQUEST['_wpnonce'], 'metaslider_create_slide')) {
-            return wp_send_json_error(array(
+        if (! isset($_REQUEST['_wpnonce']) || ! wp_verify_nonce(sanitize_key($_REQUEST['_wpnonce']), 'metaslider_create_slide')) {
+            wp_send_json_error(array(
                 'message' => __('The security check failed. Please refresh the page and try again.', 'ml-slider')
             ), 401);
         }
 
+        $capability = apply_filters('metaslider_capability', MetaSliderPlugin::DEFAULT_CAPABILITY_EDIT_SLIDES);
+        if (! current_user_can($capability)) {
+            wp_send_json_error(
+                [
+                    'message' => __('Access denied', 'ml-slider')
+                ],
+                403
+            );
+        }
+
+        if (! isset($_POST['slider_id']) || ! isset($_POST['selection'])) {
+            wp_send_json_error(
+                [
+                    'message' => __('Bad request', 'ml-slider'),
+                ],
+                400
+            );
+        }
+
+        $capability = apply_filters('metaslider_capability', MetaSliderPlugin::DEFAULT_CAPABILITY_EDIT_SLIDES);
+        if (! current_user_can($capability)) {
+            wp_send_json_error(
+                [
+                    'message' => __('Access denied', 'ml-slider')
+                ],
+                403
+            );
+        }
+
         $slides = $this->create_slides(
             absint($_POST['slider_id']),
-            array_map(array($this, 'make_image_slide_data'), $_POST['selection'])
+            array_map(array($this, 'make_image_slide_data'), $_POST['selection']) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
         );
 
         if (is_wp_error($slides)) {
-            return wp_send_json_error(array(
+            wp_send_json_error(array(
                 'messages' => $slides->get_error_messages()
             ), 409);
         }
 
-        return wp_send_json_success($slides, 200);
+        wp_send_json_success($slides, 200);
     }
 
     /**
@@ -183,10 +210,29 @@ class MetaImageSlide extends MetaSlide
      */
     public function ajax_resize_slide()
     {
-        if (!wp_verify_nonce($_REQUEST['_wpnonce'], 'metaslider_resize')) {
-            return wp_send_json_error(array(
+        if (! isset($_REQUEST['_wpnonce']) || ! wp_verify_nonce(sanitize_key($_REQUEST['_wpnonce']), 'metaslider_resize')) {
+            wp_send_json_error(array(
                 'message' => __('The security check failed. Please refresh the page and try again.', 'ml-slider')
             ), 401);
+        }
+
+        $capability = apply_filters('metaslider_capability', MetaSliderPlugin::DEFAULT_CAPABILITY_EDIT_SLIDES);
+        if (! current_user_can($capability)) {
+            wp_send_json_error(
+                [
+                    'message' => __('Access denied', 'ml-slider')
+                ],
+                403
+            );
+        }
+
+        if (! isset($_POST['slider_id']) || ! isset($_POST['slide_id'])) {
+            wp_send_json_error(
+                [
+                    'message' => __('Bad request', 'ml-slider'),
+                ],
+                400
+            );
         }
 
         $slideshow_id = absint($_POST['slider_id']);
@@ -201,19 +247,20 @@ class MetaImageSlide extends MetaSlide
         do_action("metaslider_ajax_resize_image_slide", $slide_id, $slideshow_id, $settings);
 
         if (is_wp_error($result)) {
-            return wp_send_json_error(array(
+            wp_send_json_error(array(
                 'messages' => $result->get_error_messages()
             ), 409);
         }
-        return wp_send_json_success($result, 200);
+
+        wp_send_json_success($result, 200);
     }
 
     /**
      * Function to create new cropped images.
      *
-     * @param string $slide_id	   - The id of the slide being cropped
+     * @param string $slide_id     - The id of the slide being cropped
      * @param string $slideshow_id - The id of the slideshow
-     * @param array  $settings	   - The settings for the slideshow
+     * @param array  $settings     - The settings for the slideshow
      *
      * @return array
      */
@@ -255,21 +302,21 @@ class MetaImageSlide extends MetaSlide
 
         // get some slide settings
         $thumb       = $this->get_thumb();
-        $slide_label = apply_filters("metaslider_image_slide_label", __("Image Slide", "ml-slider"), $this->slide, $this->settings);
+        $slide_label = apply_filters("metaslider_image_slide_label", esc_html__("Image Slide", "ml-slider"), $this->slide, $this->settings);
         $slide_type = get_post_meta($this->slide->ID, 'ml-slider_type', true);
         $attachment_id = $this->get_attachment_id();
 
         ob_start();
-        echo $this->get_delete_button_html();
-        echo $this->get_update_image_button_html();
+        echo $this->get_delete_button_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        echo $this->get_update_image_button_html(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         do_action('metaslider-slide-edit-buttons', 'image', $this->slide->ID, $attachment_id);
         $edit_buttons = ob_get_clean();
 
         // slide row HTML
-        $row  = "<tr id='slide-{$this->slide->ID}' class='slide image flex responsive nivo coin' data-attachment-id='{$attachment_id}'>
+        $row  = "<tr id='slide-" . esc_attr($this->slide->ID) . "' class='slide image flex responsive nivo coin' data-attachment-id='" . esc_attr($attachment_id) . "'>
                     <td class='col-1'>
                         <div class='metaslider-ui-controls ui-sortable-handle rtl:pl-0 rtl:pr-3'>
-                        <h4 class='slide-details'>{$slide_label}</h4>";
+                        <h4 class='slide-details'>" . esc_html($slide_label) . "</h4>";
         if (metaslider_this_is_trash($this->slide)) {
             $row .= '<div class="row-actions trash-btns">';
             $row .= "<span class='untrash'>{$this->get_undelete_button_html()}</span>";
@@ -281,19 +328,19 @@ class MetaImageSlide extends MetaSlide
         }
         $row .= "</div>
                         <div class='metaslider-ui-inner'>
-                            <button class='update-image image-button' data-slide-type='{$slide_type}' data-button-text='" . __("Update slide image", "ml-slider") . "' title='" . esc_attr__("Update slide image", "ml-slider") . "' data-slide-id='{$this->slide->ID}' data-attachment-id='{$attachment_id}'>
-                                <div class='thumb' style='background-image: url({$thumb})'></div>
+                            <button class='update-image image-button' data-slide-type='" . esc_attr($slide_type) . "' data-button-text='" . esc_attr__("Update slide image", "ml-slider") . "' title='" . esc_attr__("Update slide image", "ml-slider") . "' data-slide-id='" . esc_attr($this->slide->ID) . "' data-attachment-id='" . esc_attr($attachment_id) . "'>
+                                <div class='thumb' style='background-image: url(" . esc_url($thumb) . ")'></div>
                             </button>
                         </div>
                     </td>
-					<td class='col-2'>".
+					<td class='col-2'>" .
                     // For now this is the entry point for a slide since you cant wrap around table elements.
-                    "<metaslider-slide id='{$this->slide->ID}' inline-template>
+                    "<metaslider-slide id='" . esc_attr($this->slide->ID) . "' inline-template>
                         <div class='metaslider-ui-inner flex flex-col h-full'>
                             " . $this->get_admin_slide_tabs_html() . "
-                            <input type='hidden' name='attachment[{$this->slide->ID}][type]' value='image' />
-                            <input type='hidden' class='menu_order' name='attachment[{$this->slide->ID}][menu_order]' value='{$this->slide->menu_order}' />
-                            <input type='hidden' name='resize_slide_id' data-slide_id='{$this->slide->ID}' data-width='{$this->settings['width']}' data-height='{$this->settings['height']}' />
+                            <input type='hidden' name='attachment[" . esc_attr($this->slide->ID) . "][type]' value='image' />
+                            <input type='hidden' class='menu_order' name='attachment[" . esc_attr($this->slide->ID) . "][menu_order]' value='" . esc_attr($this->slide->menu_order) . "' />
+                            <input type='hidden' name='resize_slide_id' data-slide_id='" . esc_attr($this->slide->ID) . "' data-width='" . esc_attr($this->settings['width']) . "' data-height='" . esc_attr($this->settings['height']) . "' />
 						</div>
 					</metaslider-slide>
                     </td>
@@ -341,7 +388,7 @@ class MetaImageSlide extends MetaSlide
         }
 
         ob_start();
-        include METASLIDER_PATH .'admin/views/slides/tabs/seo.php';
+        include METASLIDER_PATH . 'admin/views/slides/tabs/seo.php';
         $seo_tab = ob_get_clean();
 
         $tabs = array(
@@ -374,7 +421,7 @@ class MetaImageSlide extends MetaSlide
 
         // Adds schedule tab
         ob_start();
-        include METASLIDER_PATH .'admin/views/slides/tabs/schedule.php';
+        include METASLIDER_PATH . 'admin/views/slides/tabs/schedule.php';
         $schedule_tab = ob_get_contents();
         ob_end_clean();
 
@@ -770,21 +817,20 @@ class MetaImageSlide extends MetaSlide
         $this->add_or_update_or_delete_meta($this->slide->ID, 'title', $fields['title']);
         $this->add_or_update_or_delete_meta($this->slide->ID, 'crop_position', $fields['crop_position']);
 
-        // Store the caption source
         $this->add_or_update_or_delete_meta($this->slide->ID, 'caption_source', $fields['caption_source']);
 
-        // Store the inherit custom title and alt settings
-        $this->set_field_inherited('title', isset($fields['inherit_image_title']));
-        $this->set_field_inherited('alt', isset($fields['inherit_image_alt']));
+        $this->set_field_inherited('title', isset($fields['inherit_image_title']) && $fields['inherit_image_title'] === 'on');
+        $this->set_field_inherited('alt', isset($fields['inherit_image_alt']) && $fields['inherit_image_alt'] === 'on');
 
         if (isset($fields['alt'])) {
             update_post_meta($this->slide->ID, '_wp_attachment_image_alt', $fields['alt']);
         }
 
-        // store the 'new window' setting
-        $new_window = isset($fields['new_window']) ? 'true' : 'false';
-
-        $this->add_or_update_or_delete_meta($this->slide->ID, 'new_window', $new_window);
+        $this->add_or_update_or_delete_meta(
+            $this->slide->ID,
+            'new_window',
+            isset($fields['new_window']) && $fields['new_window'] === 'on'
+        );
     }
 
     /**
@@ -807,7 +853,6 @@ class MetaImageSlide extends MetaSlide
      */
     private function set_field_inherited($field, $value)
     {
-
         // TODO eventually I would like to handle errors / successful updates to the database even if just sending it to a log file
         return update_post_meta($this->slide->ID, 'ml-slider_inherit_image_' . $field, (bool) $value);
     }

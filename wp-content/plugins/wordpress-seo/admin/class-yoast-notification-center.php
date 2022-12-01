@@ -298,7 +298,7 @@ class Yoast_Notification_Center {
 	 */
 	public function add_notification( Yoast_Notification $notification ) {
 
-		$callback = [ $this, __METHOD__ ];
+		$callback = [ $this, __FUNCTION__ ];
 		$args     = func_get_args();
 		if ( $this->queue_transaction( $callback, $args ) ) {
 			return;
@@ -405,7 +405,7 @@ class Yoast_Notification_Center {
 	 */
 	public function remove_notification( Yoast_Notification $notification, $resolve = true ) {
 
-		$callback = [ $this, __METHOD__ ];
+		$callback = [ $this, __FUNCTION__ ];
 		$args     = func_get_args();
 		if ( $this->queue_transaction( $callback, $args ) ) {
 			return;
@@ -812,9 +812,8 @@ class Yoast_Notification_Center {
 			unset( $notification_data['options']['nonce'] );
 		}
 
-		if (
-			isset( $notification_data['message'] ) &&
-			\is_subclass_of( $notification_data['message'], Abstract_Presenter::class, false )
+		if ( isset( $notification_data['message'] )
+			&& \is_subclass_of( $notification_data['message'], Abstract_Presenter::class, false )
 		) {
 			$notification_data['message'] = $notification_data['message']->present();
 		}

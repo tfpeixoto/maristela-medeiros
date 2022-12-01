@@ -36,7 +36,7 @@ class ES_Services {
 	 *
 	 * @since 4.6.0
 	 */
-	public function send_request( $options = array(), $method = 'POST' ) {
+	public function send_request( $options = array(), $method = 'POST', $validate_request = true ) {
 
 		$response = array();
 
@@ -44,16 +44,19 @@ class ES_Services {
 			return new WP_Error( '404', 'Command Not Found' );
 		}
 
-		// Request is valid if trial is valid or user is on a premium plan.
-		$is_request_valid = ES()->is_trial_valid() || ES()->is_premium();
-
-		// Allow custom validation logic for some services e.g. sending es cron delete request even after trial is inactive.
-		$is_request_valid = apply_filters( 'ig_es_service_request_custom_validation', $is_request_valid, $options );
-
-		// Don't process request if request is not valid.
-		if ( ! $is_request_valid ) {
-			return $options;
+		if ( $validate_request ) {
+			// Request is valid if trial is valid or user is on a premium plan.
+			$is_request_valid = ES()->trial->is_trial_valid() || ES()->is_premium();
+	
+			// Allow custom validation logic for some services e.g. sending es cron delete request even after trial is inactive.
+			$is_request_valid = apply_filters( 'ig_es_service_request_custom_validation', $is_request_valid, $options );
+	
+			// Don't process request if request is not valid.
+			if ( ! $is_request_valid ) {
+				return $options;
+			}
 		}
+
 
 		$url = $this->api_url . $this->cmd;
 

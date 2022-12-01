@@ -128,6 +128,14 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 		public $ip_address;
 
 		/**
+		 * Reference Site
+		 *
+		 * @since 5.4.0
+		 * @var
+		 */
+		public $reference_site;
+
+		/**
 		 * If the user is subscribed from Rainmaker
 		 *
 		 * @since 4.0.0
@@ -144,13 +152,33 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 		 */
 		public function __construct( $from_rainmaker = false ) {
 			if ( defined( 'DOING_AJAX' ) && ( true === DOING_AJAX ) ) {
-				add_action( 'wp_ajax_es_add_subscriber', array( $this, 'process_request' ), 10 );
-				add_action( 'wp_ajax_nopriv_es_add_subscriber', array( $this, 'process_request' ), 10 );
+				add_action( 'wp_ajax_es_add_subscriber', array( $this, 'process_ajax_request' ), 10 );
+				add_action( 'wp_ajax_nopriv_es_add_subscriber', array( $this, 'process_ajax_request' ), 10 );
 			}
 
 			$this->from_rainmaker = $from_rainmaker;
 
 			$this->handle_subscription();
+		}
+
+		/**
+		 * Process form submission via ajax call
+		 */
+		public function process_ajax_request() {
+			$es_subscribe = ! empty( $_POST['esfpx_es-subscribe'] ) ? sanitize_text_field( wp_unslash( $_POST['esfpx_es-subscribe'] ) ) : '';
+
+			if ( ! empty( $es_subscribe ) && wp_verify_nonce( $es_subscribe, 'es-subscribe' ) ) {
+				$nonce_verified = true;
+			}
+
+			if ( ! empty( $es_subscribe ) ) {
+				defined( 'IG_ES_RETURN_HANDLE_RESPONSE' ) || define( 'IG_ES_RETURN_HANDLE_RESPONSE', true );
+				$response = $this->process_request( wp_unslash( $_POST ) );
+			} else {
+				$response = array( 'status' => 'ERROR', 'message' => 'es_unexpected_error_notice', );
+			}
+			$response = $this->do_response( $response );
+			wp_send_json( $response );
 		}
 
 		/**
@@ -176,14 +204,13 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 			$es_subscribe = ! empty( $_POST['esfpx_es-subscribe'] ) ? sanitize_text_field( wp_unslash( $_POST['esfpx_es-subscribe'] ) ) : '';
 
 			if ( ! empty( $es_subscribe ) && wp_verify_nonce( $es_subscribe, 'es-subscribe' ) ) {
-				// TODO: Verify Nonce
 				$nonce_verified = true;
 			}
 
 			$doing_ajax      = defined( 'DOING_AJAX' ) && DOING_AJAX;
 			$return_response = defined( 'IG_ES_RETURN_HANDLE_RESPONSE' ) && IG_ES_RETURN_HANDLE_RESPONSE;
 
-			// Verify nonce only if it is submitted through Email Subscribers' subscription form else check if we have form data in $external_form_data.
+			// Verify nonce only if it is submitted through Icegram Express (formerly known as Email Subscribers & Newsletters)' subscription form else check if we have form data in $external_form_data.
 			if ( ( 'subscribe' === $es ) || ! empty( $external_form_data ) ) {
 
 				// Get form data from external source if passed.
@@ -226,16 +253,17 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 					$last_name  = $name_parts['last_name'];
 				}
 
-				$this->name          = $first_name;
-				$this->first_name    = $first_name;
-				$this->last_name     = $last_name;
-				$this->email         = $email;
-				$this->ip_address    = $ip_address;
-				$this->list_hashes   = isset( $form_data['esfpx_lists'] ) ? $form_data['esfpx_lists'] : array();
-				$this->es_nonce      = isset( $form_data['esfpx_es-subscribe'] ) ? trim( $form_data['esfpx_es-subscribe'] ) : '';
-				$this->form_id       = isset( $form_data['esfpx_form_id'] ) ? trim( $form_data['esfpx_form_id'] ) : 0;
-				$this->es_optin_type = get_option( 'ig_es_optin_type' );
-				$this->guid          = ES_Common::generate_guid();
+				$this->name           = $first_name;
+				$this->first_name     = $first_name;
+				$this->last_name      = $last_name;
+				$this->email          = $email;
+				$this->ip_address     = $ip_address;
+				$this->list_hashes    = isset( $form_data['esfpx_lists'] ) ? $form_data['esfpx_lists'] : array();
+				$this->es_nonce       = isset( $form_data['esfpx_es-subscribe'] ) ? trim( $form_data['esfpx_es-subscribe'] ) : '';
+				$this->form_id        = isset( $form_data['esfpx_form_id'] ) ? trim( $form_data['esfpx_form_id'] ) : 0;
+				$this->reference_site = isset( $form_data['esfpx_reference_site'] ) ? esc_url_raw( $form_data['esfpx_reference_site'] ) : null;
+				$this->es_optin_type  = get_option( 'ig_es_optin_type' );
+				$this->guid           = ES_Common::generate_guid();
 
 				if ( in_array( $this->es_optin_type, array( 'double_opt_in', 'double_optin' ) ) ) { // Backward Compatibility
 					$this->is_double_optin = true;
@@ -266,7 +294,6 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 							$data['source']     = 'form';
 							$data['form_id']    = $this->form_id;
 							$data['email']      = $this->email;
-							$data['hash']       = $this->guid;
 							$data['ip_address'] = $this->ip_address;
 							$data['status']     = 'verified';
 							$data['hash']       = $this->guid;
@@ -274,7 +301,13 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 							$data['updated_at'] = null;
 							$data['meta']       = null;
 
+							if ( ! is_null( $this->reference_site ) ) {
+								$data['reference_site'] = $this->reference_site;
+							}
+
 							$data = apply_filters( 'ig_es_add_subscriber_data', $data );
+
+							$data = apply_filters( 'ig_es_add_custom_field_data' , $data, $form_data );
 							if ( 'ERROR' === $data['status'] ) {
 								$response = $this->do_response( $validate_response );
 								if ( $return_response ) {
@@ -359,14 +392,15 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 							);
 
 							if ( $this->is_double_optin ) {
-								$response            = ES()->mailer->send_double_optin_email( $this->email, $merge_tags );
 								$response['message'] = 'es_optin_success_message';
+
+								do_action( 'ig_es_contact_unconfirmed', $merge_tags );
 							} else {
-								// Send Welcome Email
-								ES()->mailer->send_welcome_email( $this->email, $merge_tags );
+
+								do_action( 'ig_es_contact_subscribed', $merge_tags );
 
 								// Send Notifications to admins
-								ES()->mailer->send_add_new_contact_notification_to_admins( $merge_tags );
+								//ES()->mailer->send_add_new_contact_notification_to_admins( $merge_tags );
 
 								$response['message'] = 'es_optin_success_message';
 							}
@@ -426,7 +460,7 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 			$message                  = isset( $response['message'] ) ? $response['message'] : '';
 			$response['message_text'] = '';
 			if ( ! empty( $message ) ) {
-				$response['message_text'] = $this->get_messages( $message );
+				$response['message_text'] = self::get_messages( $message );
 			}
 
 			return $response;
@@ -543,10 +577,16 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 			}
 
 			$rev_email = strrev( $email );
-			foreach ( $domains as $item ) {
-				$item = trim( $item );
-				if ( strpos( $rev_email, strrev( $item ) ) === 0 ) {
-					return true;
+			foreach ( $domains as $domain ) {
+				$domain = trim( $domain );
+				if ( strpos( $rev_email, strrev( $domain ) ) === 0 ) {
+					$email_parts = explode( '@', $email );
+					if ( ! empty( $email_parts[1] ) ) {
+						$email_domain = $email_parts[1];
+						if ( $email_domain === $domain ) {
+							return true;
+						}
+					}
 				}
 			}
 
@@ -562,11 +602,11 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 		 *
 		 * @since 4.0.0
 		 */
-		public function get_messages( $message ) {
+		public static function get_messages( $message ) {
 			$ig_es_form_submission_success_message = get_option( 'ig_es_form_submission_success_message' );
 			$messages                              = array(
 				'es_empty_email_notice'       => __( 'Please enter email address', 'email-subscribers' ),
-				'es_rate_limit_notice'        => __( 'You need to wait for sometime before subscribing again', 'email-subscribers' ),
+				'es_rate_limit_notice'        => __( 'You need to wait for some time before subscribing again', 'email-subscribers' ),
 				'es_optin_success_message'    => ! empty( $ig_es_form_submission_success_message ) ? $ig_es_form_submission_success_message : __( 'Successfully Subscribed.', 'email-subscribers' ),
 				'es_email_exists_notice'      => __( 'Email Address already exists!', 'email-subscribers' ),
 				'es_unexpected_error_notice'  => __( 'Oops.. Unexpected error occurred.', 'email-subscribers' ),
@@ -597,10 +637,21 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 
 			$external_action = ig_es_get_request_data( 'ig_es_external_action' );
 			if ( ! empty( $external_action ) && 'subscribe' === $external_action ) {
-				$list_hash = ig_es_get_request_data( 'list' );
-				$list      = ES()->lists_db->get_by( 'hash', $list_hash );
-				if ( ! empty( $list ) ) {
-					$list_id    = $list['id'];
+				$subscription_api_enabled = 'yes' === get_option( 'ig_es_allow_api', 'yes' );
+				if ( ! $subscription_api_enabled ) {
+					return;
+				}
+				$list_hash  = ig_es_get_request_data( 'list' );
+				$lists_hash = ig_es_get_request_data( 'lists' );
+				if ( ! empty( $list_hash ) ) {
+					$list  = ES()->lists_db->get_by( 'hash', $list_hash );
+					$lists = array( $list );
+					$lists_hash = array( $list_hash );
+				} elseif ( ! empty( $lists_hash ) ) {
+					$lists = ES()->lists_db->get_lists_by_hash( $lists_hash );
+				}
+
+				if ( ! empty( $lists ) ) {
 					$name       = ig_es_get_request_data( 'name' );
 					$email      = ig_es_get_request_data( 'email' );
 					$hp_email   = ig_es_get_request_data( 'es_hp_email' );
@@ -611,13 +662,12 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 						'esfpx_email'       => $email,
 						'esfpx_es_hp_email' => $hp_email,
 						'esfpx_ip_address'  => $ip_address,
-						'esfpx_lists'       => array(
-							$list_hash,
-						),
+						'esfpx_lists'       => $lists_hash,
 						'form_type'         => 'external',
 					);
 
-					$this->process_request( $form_data );
+					$response = $this->process_request( $form_data );
+					wp_send_json( $response );
 				}
 			}
 

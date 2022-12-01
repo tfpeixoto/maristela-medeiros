@@ -224,7 +224,7 @@ class ES_DB_Lists_Contacts extends ES_DB {
 			$this->remove_contacts_from_lists( $contact_ids );
 
 			$contact_data = $this->prepare_contact_data( $contact_ids, $list_id );
-
+			
 			return $this->bulk_insert( $contact_data );
 		}
 
@@ -524,6 +524,7 @@ class ES_DB_Lists_Contacts extends ES_DB {
 		return $this->get_contacts( $status, $list_id, 0, true, true );
 	}
 
+
 	/**
 	 * Get total distinct contacts by condition
 	 *
@@ -644,15 +645,30 @@ class ES_DB_Lists_Contacts extends ES_DB {
 			}
 			return $result;
 		} elseif ( 'unsubscribed' === $status ) {
-			return $wpbd->query(
-				$wpbd->prepare(
-					"UPDATE {$wpbd->prefix}ig_lists_contacts SET status = %s, unsubscribed_at = %s WHERE contact_id IN( {$ids_str} )",
-					array(
-						$status,
-						$current_date,
+			if ( ! empty( $list_ids ) ) {
+
+				$list_ids_str = implode( ',', $list_ids );
+
+				return $wpbd->query(
+					$wpbd->prepare(
+						"UPDATE {$wpbd->prefix}ig_lists_contacts SET status = %s, unsubscribed_at = %s WHERE contact_id IN( {$ids_str} ) AND list_id IN( {$list_ids_str} )",
+						array(
+							$status,
+							$current_date,
+						)
 					)
-				)
-			);
+				);
+			} else {
+				return $wpbd->query(
+					$wpbd->prepare(
+						"UPDATE {$wpbd->prefix}ig_lists_contacts SET status = %s, unsubscribed_at = %s WHERE contact_id IN( {$ids_str} )",
+						array(
+							$status,
+							$current_date,
+						)
+					)
+				);
+			}
 		} elseif ( 'unconfirmed' === $status ) {
 			return $wpbd->query(
 				$wpbd->prepare(

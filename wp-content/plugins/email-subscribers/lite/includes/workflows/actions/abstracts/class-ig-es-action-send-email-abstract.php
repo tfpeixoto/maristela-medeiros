@@ -37,7 +37,7 @@ abstract class ES_Action_Send_Email_Abstract extends ES_Workflow_Action {
 	public function load_fields() {
 		$send_to = new ES_Text();
 		$send_to->set_name( 'ig-es-send-to' );
-		$send_to->set_title( __( 'Send To', 'email-subscribers' ) );
+		$send_to->set_title( __( 'Send to', 'email-subscribers' ) );
 		$send_to->set_description( __( 'Enter emails here or use variable such as {{EMAIL}}. Multiple emails can be separated by commas.', 'email-subscribers' ) );
 		$send_to->set_placeholder( __( 'E.g. {{EMAIL}}, admin@example.com', 'email-subscribers' ) );
 		$send_to->set_required();

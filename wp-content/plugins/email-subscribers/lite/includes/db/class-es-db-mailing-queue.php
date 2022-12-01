@@ -7,21 +7,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class ES_DB_Mailing_Queue {
 
-	public $table_name;
+	public static $table_name = IG_MAILING_QUEUE_TABLE;
 
-	public $version;
+	public static $primary_key = 'id';
 
-	public $primary_key;
-
-	public function __construct() {
-
-		global $wpdb;
-
-		$this->table_name  = IG_MAILING_QUEUE_TABLE;
-		$this->primary_key = 'id';
-		$this->version     = '1.0';
-
-	}
+	public static $version = '1.0';
 
 	/**
 	 * Get columns and formats
@@ -262,7 +252,7 @@ class ES_DB_Mailing_Queue {
 			$results = ES_Cache::get( $cache_key, 'query' );
 		}
 
-		if ( count( $results ) > 0 ) {
+		if ( is_array( $results ) && count( $results ) > 0 ) {
 			$notification = array_shift( $results );
 		}
 
@@ -523,21 +513,43 @@ class ES_DB_Mailing_Queue {
 	 *
 	 * @since 4.6.3
 	 */
-	public static function update_subscribers_count( $hash = '', $count = 0 ) {
+	public static function update_mailing_queue( $mailing_queue_id = 0, $data = array() ) {
 
-		global $wpdb;
-
-		if ( empty( $hash ) ) {
+		if ( empty( $mailing_queue_id ) ) {
 			return;
 		}
 
-		$wpdb->query(
-			$wpdb->prepare(
-				"UPDATE {$wpdb->prefix}ig_mailing_queue SET count = %d WHERE hash = %s",
-				$count,
-				$hash
-			)
-		);
+		global $wpdb;
+
+		// Row ID must be positive integer
+		$mailing_queue_id = absint( $mailing_queue_id );
+
+		if ( empty( $mailing_queue_id ) ) {
+			return false;
+		}
+
+		if ( empty( $where ) ) {
+			$where = self::$primary_key;
+		}
+
+		// Initialise column format array
+		$column_formats = self::get_columns();
+
+		// Force fields to lower case
+		$data = array_change_key_case( $data );
+
+		// White list columns
+		$data = array_intersect_key( $data, $column_formats );
+
+		// Reorder $column_formats to match the order of columns given in $data
+		$data_keys      = array_keys( $data );
+		$column_formats = array_merge( array_flip( $data_keys ), $column_formats );
+
+		if ( false === $wpdb->update( self::$table_name, $data, array( $where => $mailing_queue_id ), $column_formats ) ) {
+			return false;
+		}
+
+		return true;
 	}
 
 	/**

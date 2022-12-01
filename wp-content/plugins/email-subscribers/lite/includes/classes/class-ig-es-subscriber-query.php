@@ -109,6 +109,8 @@ class IG_ES_Subscribers_Query {
 		'_subscribed_before',
 	);
 
+	private $custom_fields = array();
+
 	private static $_instance = null;
 
 	public function __construct( $args = null, $campaign_id = null ) {
@@ -145,13 +147,7 @@ class IG_ES_Subscribers_Query {
 			$this->args['select'] = array();
 		}
 
-		if ( false !== $this->args['status'] && is_null( $this->args['status'] ) ) {
-			if ( ! $this->args['s'] ) {
-				$this->args['status'] = array( 1 );
-			}
-		}
-
-		if ( false !== $this->args['status'] && ! is_null( $this->args['status'] ) && ! is_array( $this->args['status'] ) ) {
+		if ( !empty( $this->args['status'] ) && ! is_null( $this->args['status'] ) && !is_array( $this->args['status'] ) ) {
 			$this->args['status'] = explode( ',', $this->args['status'] );
 		}
 
@@ -225,7 +221,7 @@ class IG_ES_Subscribers_Query {
 							if ( '_lists__in' === $field ) {
 
 								if ( $value ) {
-									$sub_cond[] = "lists_subscribers.contact_id IN ( SELECT contact_id FROM {$wpbd->prefix}ig_lists_contacts WHERE list_id IN (" . implode( ',', array_filter( $value, 'is_numeric' ) ) . ') )';
+									$sub_cond[] = "lists_subscribers.contact_id IN ( SELECT contact_id FROM {$wpbd->prefix}ig_lists_contacts WHERE list_id IN (" . implode( ',', array_filter( $value, 'is_numeric' ) ) . ") AND status IN( 'subscribed', 'confirmed' ) )";
 								}
 							} elseif ( '_lists__not_in' === $field ) {
 
@@ -336,8 +332,16 @@ class IG_ES_Subscribers_Query {
 			$wheres[] = 'AND ( ' . implode( ' AND ', $cond ) . ' )';
 		}
 
-		$joins[]  = "LEFT JOIN {$wpbd->prefix}ig_lists_contacts AS lists_subscribers ON subscribers.id = lists_subscribers.contact_id";
-		$wheres[] = "AND lists_subscribers.status IN( 'subscribed', 'confirmed' )";
+		$joins[] = "LEFT JOIN {$wpbd->prefix}ig_lists_contacts AS lists_subscribers ON subscribers.id = lists_subscribers.contact_id";
+		
+		// Added where clause for including status if only sent in parameters
+		if ( !empty( $this->args['status']) ) {
+			$wheres[] = "AND lists_subscribers.status IN( '" . implode("', '", esc_sql( $this->args['status'] ) ) . "' ) ";
+		}
+		
+		if ( ! empty( $this->args['subscriber_status'] ) ) {
+			$wheres[] = "AND subscribers.status IN( '" . implode("', '", esc_sql( $this->args['subscriber_status'] ) ) . "' )";
+		}
 
 		if ( ! is_bool( $this->args['lists'] ) ) {
 			// unassigned members if NULL
@@ -346,7 +350,7 @@ class IG_ES_Subscribers_Query {
 				if ( empty( $this->args['lists'] ) ) {
 					$wheres[] = 'AND lists_subscribers.list_id = 0';
 				} else {
-					$wheres[] = 'AND lists_subscribers.list_id IN (' . implode( ',', $this->args['lists'] ) . ')';
+					$wheres[] = 'AND lists_subscribers.list_id IN (' . implode( ',', esc_sql( $this->args['lists'] ) ) . ')';
 				}
 				$wheres[] = "AND lists_subscribers.status IN( 'subscribed', 'confirmed' )";
 				// not in any list
@@ -483,7 +487,7 @@ class IG_ES_Subscribers_Query {
 
 		// sanitation
 		$field    = esc_sql( $field );
-		$value    = addslashes( stripslashes( $value ) );
+		$value    = addslashes( stripslashes( esc_sql( $value ) ) );
 		$operator = $this->get_field_operator( $operator );
 
 		$is_empty = '' === $value;
@@ -560,7 +564,12 @@ class IG_ES_Subscribers_Query {
 			case '<':
 			case 'is_smaller':
 				$f     = "subscribers.$field";
-				$value = (float) $value;
+				$is_numeric = is_numeric( $value );
+				if ( $is_numeric ) {
+					$value = (float) $value;
+				} else {
+					$value = ! empty( $value ) ? "'$value'" : '';
+				}
 
 				$c = $f . ' ' . ( in_array( $operator, array( 'is_greater', 'is_greater_equal', '>', '>=' ) ) ? '>' . $extra : '<' . $extra ) . " $value";
 

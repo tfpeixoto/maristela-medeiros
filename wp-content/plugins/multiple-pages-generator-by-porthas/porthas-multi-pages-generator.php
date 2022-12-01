@@ -1,74 +1,107 @@
 <?php
 
 /**
- * Plugin Name: Multiple Pages Generator by Porthas
- * Plugin URI: https://mpgwp.com/
+ * Plugin Name: Multiple Pages Generator by Themeisle
+ * Plugin URI: https://themeisle.com/plugins/multi-pages-generator/
  * Description: Plugin for generation of multiple frontend pages from CSV data file.
- * Author: <a href='https://mpgwp.com/'>Porthas inc</a>
- * Author URI: https://mpgwp.com/
- * Version: 2.8.12
+themeisle-headers
+ * Author: Themeisle
+ * Author URI: https://themeisle.com
+ * Version: 3.3.6
  */
-if ( !defined( 'ABSPATH' ) ) {
-    exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
 }
 
-if ( function_exists( 'mpg_app' ) ) {
-    mpg_app()->set_basename( false, __FILE__ );
-} else {
-    // DO NOT REMOVE THIS IF, IT IS ESSENTIAL FOR THE `function_exists` CALL ABOVE TO PROPERLY WORK.
-    
-    if ( !function_exists( 'mpg_app' ) ) {
-        // Create a helper function for easy SDK access.
-        function mpg_app()
-        {
-            global  $mpg_app ;
-            
-            if ( !isset( $mpg_app ) ) {
-                // Activate multisite network integration.
-                if ( !defined( 'WP_FS__PRODUCT_2867_MULTISITE' ) ) {
-                    define( 'WP_FS__PRODUCT_2867_MULTISITE', true );
-                }
-                // Include Freemius SDK.
-                require_once realpath( __DIR__ . '/vendor/freemius/wordpress-sdk/start.php' );
-                $mpg_app = fs_dynamic_init( array(
-                    'id'              => '2867',
-                    'slug'            => 'multi-pages-plugin',
-                    'type'            => 'plugin',
-                    'public_key'      => 'pk_0c4166c5c398b9b750cf04df59173',
-                    'is_premium'      => false,
-                    'premium_suffix'  => 'Pro',
-                    'has_addons'      => false,
-                    'has_paid_plans'  => true,
-                    'has_affiliation' => 'customers',
-                    'menu'            => array(
-                    'slug'       => 'mpg-dataset-library',
-                    'first-path' => 'admin.php?page=mpg-dataset-library',
-                    'support'    => false,
-                ),
-                    'is_live'         => true,
-                ) );
-            }
-            
-            return $mpg_app;
-        }
-        
-        // Init Freemius.
-        mpg_app();
-        // Signal that SDK was initiated.
-        do_action( 'mpg_app_loaded' );
-    }
-    
-    // ... Your plugin's main file logic ...
-    require_once 'controllers/CoreController.php';
-    require_once 'controllers/HookController.php';
-    require_once 'controllers/MenuController.php';
-    require_once 'controllers/SearchController.php';
-    // Запуск базового функционала подмены данных
-    MPG_HookController::init_replacement();
-    // Запуск всяких actions, hooks, filters
-    MPG_HookController::init_base();
-    // Запуск хуков для ajax. Связываем роуты и функции
-    MPG_HookController::init_ajax();
-    // Инициализация бокового меню в WordPress
-    MPG_MenuController::init();
+defined( 'MPG_BASENAME' ) || define( 'MPG_BASENAME', __FILE__ );
+defined( 'MPG_MAIN_DIR' ) || define( 'MPG_MAIN_DIR', dirname( __FILE__ ) );
+defined( 'MPG_UPLOADS_DIR' ) || define( 'MPG_UPLOADS_DIR', WP_CONTENT_DIR . DIRECTORY_SEPARATOR . 'mpg-uploads' . DIRECTORY_SEPARATOR );
+defined( 'MPG_CACHE_DIR' ) || define( 'MPG_CACHE_DIR', WP_CONTENT_DIR . DIRECTORY_SEPARATOR . 'mpg-cache' . DIRECTORY_SEPARATOR );
+defined( 'MPG_CACHE_URL' ) || define( 'MPG_CACHE_URL', WP_CONTENT_URL . DIRECTORY_SEPARATOR . 'mpg-uploads' . DIRECTORY_SEPARATOR );
+defined( 'MPG_NAME' ) || define( 'MPG_NAME', 'Multiple Pages Generator' );
+
+// to redirect all themeisle_log_event to error log.
+if ( ! defined( 'MPG_LOCAL_DEBUG' ) ) {
+	define( 'MPG_LOCAL_DEBUG', false );
 }
+
+add_action( 'admin_init', function () {
+	if ( is_plugin_active( 'multi-pages-plugin/porthas-multi-pages-generator.php' )
+	     && is_plugin_active( 'multi-pages-plugin-premium/porthas-multi-pages-generator.php' ) ) {
+		deactivate_plugins( [ 'multi-pages-plugin/porthas-multi-pages-generator.php' ] );
+		add_action( 'admin_notices', function () {
+			printf(
+				'<div class="notice notice-warning"><p><strong>%s</strong><br>%s</p><p></p></div>',
+				sprintf(
+				/* translators: %s: Name of deactivated plugin */
+					__( '%s plugin deactivated.' ),
+					'Multiple Pages Generator(Free)'
+				),
+				'Using the Premium version of Multiple Pages Generator is not requiring using the Free version anymore.'
+			);
+		} );
+	}
+} );
+
+if ( ! function_exists( 'mpg_run' ) ) {
+	function mpg_run() {
+		static $has_run = false;
+		if ( $has_run ) {
+			return;
+		}
+		// ... Your plugin's main file logic ...
+		require_once 'controllers/CoreController.php';
+		require_once 'controllers/HookController.php';
+		require_once 'controllers/MenuController.php';
+		require_once 'controllers/SearchController.php';
+		// Запуск базового функционала подмены данных
+		MPG_HookController::init_replacement();
+		// Запуск всяких actions, hooks, filters
+		MPG_HookController::init_base();
+		// Запуск хуков для ajax. Связываем роуты и функции
+		MPG_HookController::init_ajax();
+		// Инициализация бокового меню в WordPress
+		MPG_MenuController::init();
+
+		add_filter( 'themeisle_sdk_products', function ( $products ) {
+			$products[] = __FILE__;
+
+			return $products;
+		} );
+		add_filter( 'themeisle_sdk_hide_dashboard_widget', '__return_false' );
+
+		// Filter screen option value.
+		add_filter(
+			'set-screen-option',
+			function( $status, $option, $value ) {
+				if ( 'mpg_projects_per_page' === $option ) {
+					return $value;
+				}
+			},
+			99,
+			3
+		);
+		$vendor_file = trailingslashit( plugin_dir_path( __FILE__ ) ) . 'vendor/autoload.php';
+		if ( is_readable( $vendor_file ) ) {
+			require_once $vendor_file;
+		}
+		if ( ! $has_run ) {
+			$has_run = true;
+		}
+	}
+}
+
+if ( MPG_LOCAL_DEBUG ) {
+	add_action( 'themeisle_log_event', 'mpg_themeisle_log_event', 10, 5 );
+
+	/**
+	 * Redirect themeisle_log_event to error log.
+	 */
+	function mpg_themeisle_log_event( $name, $msg, $type, $file, $line ) {
+		if ( MPG_NAME === $name ) {
+			error_log( sprintf( '%s (%s:%d): %s', $type, $file, $line, $msg ) );
+		}
+	}
+}
+
+require_once 'helpers/Themeisle.php';

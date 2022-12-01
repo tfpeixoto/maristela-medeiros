@@ -36,6 +36,12 @@ const english = {
     'We will use this file as source':
         'We will use this file as source',
 
+    'Worksheet ID cannot be zero. If your document has one sheet or you would like to use the first sheet - just keep this field empty':
+        'Worksheet ID cannot be zero. If your document has one sheet or you would like to use the first sheet - just keep this field empty',
+
+    'Wrong worksheet id':
+        'Wrong worksheet id',
+
     'Can not update project':
         'Can not update project',
 

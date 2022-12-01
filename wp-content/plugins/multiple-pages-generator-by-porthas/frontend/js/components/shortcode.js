@@ -305,7 +305,7 @@ jQuery('#mpg_order_by').on('change', function () {
 });
 
 jQuery('#mpg_unique_rows').on('change', function () {
-  const uniqueRowsValue = jQuery(this).find('option:checked').text();
+  const uniqueRowsValue = jQuery(this).find('option:checked').val();
 
   mpgUpdateState('unique-rows', uniqueRowsValue.toLowerCase());
   rebuildSandboxShortcode();

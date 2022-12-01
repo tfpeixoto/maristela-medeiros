@@ -40,6 +40,7 @@ jQuery(document).ready(async function () {
             console.error(err);
         }
 
+
         // Фильтр-плагин для страницы Create New;
         let filter = jQuery('input#filterinput'), clearfilter = jQuery('input#clearfilter');
         let counter = jQuery('#mpg_result_count');
@@ -73,7 +74,7 @@ jQuery(document).ready(async function () {
                 statusCode: {
                     500: function (xhr) {
                         toastr.error(
-                            translate['Looks like you attempt to use large source file, that reached memory allocated to PHP or reached max_post_size. Please, increase memory limit according to documentation for your web server. For additional information, check .log files of web server or'] + `<a target="_blank" style="text-decoration: underline" href="https://docs.mpgwp.com/article/30-500-internal-server-error"> ${translate['read our article']}</a>.`,
+                            translate['Looks like you attempt to use large source file, that reached memory allocated to PHP or reached max_post_size. Please, increase memory limit according to documentation for your web server. For additional information, check .log files of web server or'] + `<a target="_blank" style="text-decoration: underline" href="https://docs.themeisle.com/article/1443-500-internal-server-error"> ${translate['read our article']}</a>.`,
                             translate['Server settings limitation'], { timeOut: 30000 });
                     }
                 }
@@ -93,7 +94,7 @@ jQuery(document).ready(async function () {
             toastr.success('Dataset was successfully deployed. Wait few seconds', 'Deployed!')
 
             setTimeout(() => {
-                location.href = `${backendData.projectPage}&id=${datasetResponse.data.projectId}`;
+                location.href = `${backendData.projectPage}&action=edit_project&id=${datasetResponse.data.projectId}`;
             }, 3000);
 
         });
