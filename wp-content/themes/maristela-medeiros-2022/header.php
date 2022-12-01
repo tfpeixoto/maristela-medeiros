@@ -24,9 +24,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400&family=Montserrat+Alternates:wght@400;700&display=swap" rel="stylesheet">
 
   <!-- CSS -->
-  <link rel="stylesheet" href="<?= get_template_directory_uri() . "/css/" . $estiloPagina ?>" as="style" media="print" onload="this.media='all'; this.onload=null;">
-
   <?php wp_head(); ?>
+  <link rel="stylesheet" href="<?= get_template_directory_uri() . "/css/" . $estiloPagina ?>" as="style" media="print" onload="this.media='all'; this.onload=null;">
 </head>
 
 <body <?php body_class(); ?>>
