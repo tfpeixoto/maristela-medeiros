@@ -20,7 +20,7 @@ jobs:
           password: ${{ secrets.FTP_SECRET }}
           protocol: ftps
           port: 21
-          server-dir: public_html/
+          server-dir: domains/maristelamedeiros.com.br/public_html/
           exclude: | 
             **/wp-content/uploads/**
             **/wp-content/updraft/**
