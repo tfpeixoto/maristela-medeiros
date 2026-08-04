@@ -17,8 +17,8 @@
   <div class="container">
     <div class="row footer__info">
       <div class="col-12 col-md-4 footer__marca">
-        <a href="<?= site_url(); ?>" class="logo-rodape">
-          <img src="<?php bloginfo("template_url"); ?>/images/marca.svg" width="132" height="72" alt="Maristela Medeiros Nutricionista" />
+        <a href="<?php echo esc_url(home_url('/')); ?>" class="logo-rodape">
+          <img src="<?php echo esc_url(get_template_directory_uri()); ?>/images/marca.svg" width="132" height="72" alt="Maristela Medeiros Nutricionista" />
         </a>
       </div>
 
@@ -63,7 +63,7 @@
 
     <div class="row footer__copy">
       <div class="col-12">
-        <p>© <?php the_date('Y'); ?> Copyright . Todos os direitos Reservados . <a href="<?= site_url(); ?>" title="Maristela Medeiros Nutricionista"><?php bloginfo(); ?></a></p>
+        <p>© <?php echo date('Y'); ?> Copyright . Todos os direitos Reservados . <a href="<?php echo esc_url(home_url('/')); ?>" title="Maristela Medeiros Nutricionista"><?php echo esc_html(get_bloginfo('name')); ?></a></p>
       </div>
     </div>
   </div>

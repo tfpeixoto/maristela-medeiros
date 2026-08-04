@@ -25,7 +25,9 @@
 
   <!-- CSS -->
   <?php wp_head(); ?>
-  <link rel="stylesheet" href="<?= get_template_directory_uri() . "/css/" . $estiloPagina ?>" as="style" media="print" onload="this.media='all'; this.onload=null;">
+  <?php if (!empty($estiloPagina)) : ?>
+    <link rel="stylesheet" href="<?php echo esc_url(get_template_directory_uri() . "/css/" . sanitize_file_name($estiloPagina)); ?>" as="style" media="print" onload="this.media='all'; this.onload=null;">
+  <?php endif; ?>
 </head>
 
 <body <?php body_class(); ?>>
@@ -45,8 +47,8 @@
       <div class="row">
         <div class="col-12 header__navegacao">
           <nav class="navbar navbar-expand-lg">
-            <a class="navbar-brand" href="<?= site_url(); ?>">
-              <img src="<?= get_template_directory_uri(); ?>/images/marca.svg" width="170" height="92" alt="<?php bloginfo("name"); ?>" />
+            <a class="navbar-brand" href="<?php echo esc_url(home_url('/')); ?>">
+              <img src="<?php echo esc_url(get_template_directory_uri()); ?>/images/marca.svg" width="170" height="92" alt="<?php echo esc_attr(get_bloginfo("name")); ?>" />
             </a>
 
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#nav-mobile" aria-controls="nav-mobile" aria-expanded="false" aria-label="Alterna navegação">
