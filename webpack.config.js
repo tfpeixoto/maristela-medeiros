@@ -8,7 +8,7 @@ const TerserPlugin = require('terser-webpack-plugin');
 const BrowserSyncPlugin = require('browser-sync-webpack-plugin');
 
 const themeDir = path.resolve(__dirname, 'wp-content/themes/maristela-medeiros-2022');
-const srcDir = path.resolve(themeDir, 'gulp');
+const srcDir = path.resolve(themeDir, 'src');
 
 module.exports = (env, argv) => {
   const isProduction = argv.mode === 'production';

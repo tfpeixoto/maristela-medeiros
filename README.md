@@ -21,7 +21,7 @@ O tema principal do projeto encontra-se em `wp-content/themes/maristela-medeiros
 
 ```text
 wp-content/themes/maristela-medeiros-2022/
-├── gulp/                          # Arquivos fonte de assets
+├── src/                           # Arquivos fonte de assets
 │   ├── scss/                      # Estilos SCSS (style.scss, home.scss, critical.scss, components/)
 │   ├── js/                        # Scripts JS fonte (main.js)
 │   └── images/                    # Imagens originais do tema
