@@ -25,6 +25,13 @@ module.exports = (env, argv) => {
       filename: '[name].js',
       clean: false,
     },
+    stats: {
+      warnings: false,
+    },
+    ignoreWarnings: [
+      /Deprecation Warning/,
+      /sass-loader/,
+    ],
     module: {
       rules: [
         {
@@ -46,7 +53,8 @@ module.exports = (env, argv) => {
                     path.resolve(__dirname),
                     path.resolve(__dirname, 'node_modules'),
                   ],
-                  silenceDeprecations: ['import', 'legacy-js-api', 'color-functions', 'global-builtin'],
+                  quietDeps: true,
+                  silenceDeprecations: ['import', 'legacy-js-api', 'color-functions', 'global-builtin', 'abs-percent', 'if-function'],
                 },
               },
             },
